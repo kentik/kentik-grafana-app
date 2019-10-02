@@ -187,8 +187,8 @@
         "allValue": null,
         "current": {
           "tags": [],
-          "text": "disable",
-          "value": "disable"
+          "text": "disabled",
+          "value": "disabled"
         },
         "hide": 0,
         "includeAll": false,
@@ -207,7 +207,7 @@
             "value": "disabled"
           }
         ],
-        "query": "enable,disable",
+        "query": "enabled,disabled",
         "skipUrlSync": false,
         "type": "custom"
       },
