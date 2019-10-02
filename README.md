@@ -42,14 +42,14 @@ Grafana docs about plugin installation: https://grafana.com/docs/plugins/install
 
 #### Install plugin
 ```bash
-grafana-cli --pluginUrl "https://github.com/kentik/kentik-grafana-app/releases/download/v1.3.5/kentik-app-1.3.5.zip" plugins install kentik-app
+grafana-cli --pluginUrl "https://github.com/kentik/kentik-grafana-app/releases/download/v1.3.6/kentik-app-1.3.6.zip" plugins install kentik-app
 sudo systemctl restart grafana-server
 ```
 
 #### Update plugin
 
 ```bash
-grafana-cli --pluginUrl "https://github.com/kentik/kentik-grafana-app/releases/download/v1.3.5/kentik-app-1.3.5.zip" plugins update kentik-app
+grafana-cli --pluginUrl "https://github.com/kentik/kentik-grafana-app/releases/download/v1.3.6/kentik-app-1.3.6.zip" plugins update kentik-app
 sudo systemctl restart grafana-server
 ```
 
@@ -63,7 +63,7 @@ sudo systemctl restart grafana-server
 
 - Download kentik-app
 ```bash
-wget https://github.com/kentik/kentik-grafana-app/releases/download/v1.3.5/kentik-app-1.3.5.tar.gz
+wget https://github.com/kentik/kentik-grafana-app/releases/download/v1.3.6/kentik-app-1.3.6.tar.gz
 ```
 
 - Remove old kentik-app (if it exists)
@@ -73,7 +73,7 @@ rm -rf kentik-app
 
 - Unpack downloaded files
 ```bash
-tar -zxvf kentik-app-1.3.5.tar.gz
+tar -zxvf kentik-app-1.3.6.tar.gz
 ```
 
 - Restart Grafana
@@ -90,7 +90,7 @@ You can install Kentik App to Grafana in Docker passing it as the environment va
 ```bash
 docker run \
   -p 3000:3000 \
-  -e "GF_INSTALL_PLUGINS=https://github.com/kentik/kentik-grafana-app/releases/download/v1.3.5/kentik-app-1.3.5.zip;kentik-grafana-app" \
+  -e "GF_INSTALL_PLUGINS=https://github.com/kentik/kentik-grafana-app/releases/download/v1.3.6/kentik-app-1.3.6.zip;kentik-grafana-app" \
   grafana/grafana
 ```
 
