@@ -6,6 +6,7 @@
       "es6",
       "dom"
     ],
+    "module": "esnext",
     "rootDir": "./src",
     "declaration": false,
     "allowSyntheticDefaultImports": true,
