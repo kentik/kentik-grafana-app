@@ -1,3 +1,6 @@
+import './styles/dark.scss';
+import './styles/light.scss';
+
 import { ConfigCtrl } from './config/config';
 import { DeviceListCtrl } from './components/device_list';
 import { DeviceDetailsCtrl } from './components/device_details';

@@ -10,8 +10,6 @@ All notable changes to this project will be documented in this file.
 
 ## [1.3.5] - 2019-09-23
 
-Merge pull request #15 from kentik/autocomplete-for-plugin-#4
-
 Autocomplete for plugin #4
 
 ## [1.3.4] - 2019-05-24
