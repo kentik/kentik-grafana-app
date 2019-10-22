@@ -73,6 +73,19 @@ jobs:
       - store_artifacts:
           path: dist
 
+  tslint:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-npm-deps-{{ checksum "package-lock.json" }}
+      - run:
+          name: TSLint
+          command: |
+            npm install
+            npm run tslint
+
   test:
     <<: *defaults
     steps:
@@ -93,6 +106,10 @@ workflows:
     jobs:
       - build:
           filters: *filter-only-master
+      - tslint:
+          requires:
+            - build
+          filters: *filter-only-master
       - test:
           requires:
             - build
@@ -101,6 +118,10 @@ workflows:
   build-branches-and-prs:
     jobs:
       - build:
+          filters: *filter-not-release-or-master
+      - tslint:
+          requires:
+            - build
           filters: *filter-not-release-or-master
       - test:
           requires:
