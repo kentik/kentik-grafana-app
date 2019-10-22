@@ -135,7 +135,7 @@ class KentikQueryCtrl extends QueryCtrl {
       this.target.hostnameLookup = this.hostnameLookup.value;
       this.panelCtrl.refresh();
     } else {
-      if(!choices.includes(this.hostnameLookup.value)) {
+      if (!choices.includes(this.hostnameLookup.value)) {
         showAlert(
           `${this.hostnameLookup.value} isn't valid hostname lookup value. Use one of ${['enable', 'disable']}`
         );

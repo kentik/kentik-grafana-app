@@ -4,6 +4,6 @@ export default {
       directive: jest.fn(),
       factory: jest.fn(),
       service: jest.fn()
-    }
+    };
   }
-}
+};

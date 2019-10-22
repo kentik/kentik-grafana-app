@@ -6,7 +6,8 @@
   "scripts": {
     "build": "webpack --config build/webpack.prod.conf.js",
     "dev": "webpack --config build/webpack.dev.conf.js",
-    "test": "jest --config jest.config.js"
+    "test": "jest --config jest.config.js",
+    "tslint": "tslint -c tslint.json --project tsconfig.json"
   },
   "repository": {
     "type": "git",
@@ -39,6 +40,7 @@
     "style-loader": "0.23.1",
     "ts-jest": "23.10.5",
     "ts-loader": "5.4.5",
+    "tslint": "^5.20.0",
     "typescript": "3.4.5",
     "webpack": "4.32.2",
     "webpack-cli": "3.3.2"

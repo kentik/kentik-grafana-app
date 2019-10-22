@@ -59,7 +59,7 @@ export class KentikProxy {
         if (query.hostname_lookup) {
           const resultData = result.results[0].data;
           resultData.forEach((row: any) => {
-            if(row.lookup !== undefined) {
+            if (row.lookup !== undefined) {
               row.key = row.lookup;
             }
           });

@@ -84,11 +84,11 @@ class KentikDatasource {
     if (mode === 'table') {
       return this.processTableData(bucketData, metricDef, unitDef);
     } else {
-      return this.processTimeSeries(bucketData, query, options);
+      return this.processTimeSeries(bucketData, query);
     }
   }
 
-  processTimeSeries(bucketData: any, query: any, options?: any) {
+  processTimeSeries(bucketData: any, query: any) {
     const seriesList: any[] = [];
     let endIndex = query.topx;
     if (bucketData.length < endIndex) {
@@ -97,8 +97,8 @@ class KentikDatasource {
 
     for (let i = 0; i < endIndex; i++) {
       const series = bucketData[i];
-      const timeseries = _.find(series.timeSeries, series => {
-        return series.flow && series.flow.length;
+      const timeseries = _.find(series.timeSeries, serie => {
+        return serie.flow && serie.flow.length;
       });
       const seriesName = series.key;
 

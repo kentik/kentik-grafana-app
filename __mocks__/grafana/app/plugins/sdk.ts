@@ -1,1 +1,1 @@
-export const QueryCtrl = null;
+export class QueryCtrl {}
