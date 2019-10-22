@@ -40,7 +40,7 @@ describe('KentikProxy', () => {
   });
 });
 
-function getKentikProxyInstance(ctx, data) {
+function getKentikProxyInstance(ctx: any, data: any) {
   ctx.backendSrv = {
     get: () => {
       return Promise.resolve([
@@ -68,5 +68,5 @@ function getKentikProxyInstance(ctx, data) {
 
   ctx.kentikAPI = new KentikAPI(ctx.backendSrv, ctx.$http);
   ctx.kentikAPI.setRegion('default');
-  ctx.kentikProxy = new KentikProxy({}, ctx.kentikAPI);
+  ctx.kentikProxy = new KentikProxy(ctx.kentikAPI);
 }

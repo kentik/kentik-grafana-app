@@ -1,6 +1,9 @@
 import configTemplate from './config.html';
+
 import { KentikAPI } from '../datasource/kentikAPI';
 import { showAlert, showCustomAlert } from '../datasource/alertHelper';
+
+import { BackendSrv } from 'grafana/app/core/services/backend_srv';
 
 import * as _ from 'lodash';
 
@@ -14,7 +17,7 @@ class KentikConfigCtrl {
   regionTypes = [{ value: 'default', text: 'US (default)' }, { value: 'eu', text: 'EU' }, { value: 'custom', text: 'Custom' }];
 
   /** @ngInject */
-  constructor(public $scope, $injector, $http, public backendSrv: any) {
+  constructor(public $scope: ng.IScope, $http: ng.IHttpService, public backendSrv: BackendSrv) {
     this.appEditCtrl.setPreUpdateHook(this.preUpdate.bind(this));
     this.appEditCtrl.setPostUpdateHook(this.postUpdate.bind(this));
 
@@ -88,7 +91,7 @@ class KentikConfigCtrl {
   initDatasource() {
     const self = this;
     //check for existing datasource.
-    return self.backendSrv.get('/api/datasources').then(results => {
+    return self.backendSrv.get('/api/datasources').then((results: any) => {
       let foundKentikDS = false;
       let updateKentikDS = false;
       let dsID = NaN;

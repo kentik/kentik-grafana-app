@@ -2,6 +2,9 @@ import { KentikAPI } from '../datasource/kentikAPI';
 import { showCustomAlert } from '../datasource/alertHelper';
 import { getRegion } from '../datasource/regionHelper';
 
+import { BackendSrv } from 'grafana/app/core/services/backend_srv';
+import { AlertSrv } from 'grafana/app/core/services/alert_srv';
+
 export class DeviceDetailsCtrl {
   static templateUrl: string;
   device: any;
@@ -12,12 +15,16 @@ export class DeviceDetailsCtrl {
   region = '';
 
   /** @ngInject */
-  constructor($scope, $injector, $http, public $location: any, public backendSrv: any, public alertSrv: any) {
+  constructor(
+    $http: ng.IHttpService,
+    public $location: ng.ILocationService,
+    public backendSrv: BackendSrv,
+    public alertSrv: AlertSrv
+  ) {
     this.device = {};
     this.deviceDTO = {};
     this.pageReady = false;
     // get region from datasource
-    //this.region = "default";
     backendSrv.get('/api/datasources').then((allDS: any) => {
       this.region = getRegion(allDS);
       this.kentik = new KentikAPI(this.backendSrv, $http);
@@ -30,12 +37,12 @@ export class DeviceDetailsCtrl {
     this.otherIps.push({ ip: '' });
   }
 
-  removeIP(index) {
+  removeIP(index: number) {
     this.otherIps.splice(index, 1);
   }
 
-  getDevice(deviceId) {
-    this.backendSrv.get(`/api/plugin-proxy/kentik-app/${this.region}/api/v5/device/` + deviceId).then(resp => {
+  getDevice(deviceId: string) {
+    this.backendSrv.get(`/api/plugin-proxy/kentik-app/${this.region}/api/v5/device/` + deviceId).then((resp: any) => {
       this.device = resp.device;
       this.updateDeviceDTO();
       this.pageReady = true;
@@ -74,7 +81,7 @@ export class DeviceDetailsCtrl {
     const data = { device: this.deviceDTO };
 
     this.backendSrv.put(`/api/plugin-proxy/kentik-app/${this.region}/api/v5/device/` + this.deviceDTO.device_id, data).then(
-      resp => {
+      (resp: any) => {
         if ('err' in resp) {
           showCustomAlert('Device Update failed.', resp.err, 'error');
         } else {
@@ -82,7 +89,7 @@ export class DeviceDetailsCtrl {
           return this.getDevice(this.deviceDTO.device_id);
         }
       },
-      error => {
+      (error: any) => {
         if ('error' in error.data) {
           showCustomAlert('Device Update failed.', error.data.error, 'error');
           return;

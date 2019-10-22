@@ -1,5 +1,8 @@
 import * as _ from 'lodash';
 import angular from 'angular';
+
+import { BackendSrv } from 'grafana/app/core/services/backend_srv';
+
 import { getRegion } from '../datasource/regionHelper';
 
 const defaults = {
@@ -22,7 +25,7 @@ export class AddDeviceCtrl {
   region = '';
 
   /** @ngInject */
-  constructor($scope, $injector, public $location: any, public backendSrv: any, public alertSrv: any) {
+  constructor(public $location: ng.ILocationService, public backendSrv: BackendSrv, public alertSrv: any) {
     this.device = angular.copy(defaults);
     this.sendingIps = [{ ip: '' }];
     // get region from datasource
@@ -36,7 +39,7 @@ export class AddDeviceCtrl {
     this.sendingIps.push({ ip: '' });
   }
 
-  removeIP(index) {
+  removeIP(index: number) {
     this.sendingIps.splice(index, 1);
   }
 
@@ -46,7 +49,7 @@ export class AddDeviceCtrl {
       ips.push(ip.ip);
     });
     this.device.sending_ips = ips.join();
-    this.backendSrv.post(`/api/plugin-proxy/kentik-app/${this.region}/api/v5/device`, this.device).then(resp => {
+    this.backendSrv.post(`/api/plugin-proxy/kentik-app/${this.region}/api/v5/device`, this.device).then((resp: any) => {
       if ('err' in resp) {
         this.alertSrv.set('Device Add failed.', resp.err, 'error');
       } else {

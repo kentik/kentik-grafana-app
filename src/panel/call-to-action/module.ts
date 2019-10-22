@@ -3,6 +3,8 @@ import { showAlert } from '../../datasource/alertHelper';
 import { PanelCtrl, loadPluginCss } from 'grafana/app/plugins/sdk';
 import { getRegion } from '../../datasource/regionHelper';
 
+import { BackendSrv } from 'grafana/app/core/services/backend_srv';
+
 import * as _ from 'lodash';
 
 loadPluginCss({
@@ -22,13 +24,17 @@ class CallToActiontCtrl extends PanelCtrl {
   region = '';
 
   /** @ngInject */
-  constructor($scope, $injector, $http, public backendSrv: any, private datasourceSrv) {
+  constructor(
+    $scope: ng.IScope,
+    $injector: ng.auto.IInjectorService,
+    $http: ng.IHttpService,
+    public backendSrv: BackendSrv
+  ) {
     super($scope, $injector);
     _.defaults(this.panel, panelDefaults);
     this.deviceStatus = '';
     this.allDone = false;
     // get region from datasource
-    //this.region = "default";
     backendSrv
       .get('/api/datasources')
       .then((allDS: any) => {

@@ -10,7 +10,6 @@ function getRegion(datasources: any): string {
       aRegion = datasources[index].jsonData.region;
       if (aRegion === 'custom') {
         console.log('getRegion(): Custom Dynamic URL: ' + datasources[index].jsonData.dynamicUrl);
-        //console.log("getRegion(): Custom DS Info: " + JSON.stringify(datasources[index]));
       }
       return aRegion;
     }

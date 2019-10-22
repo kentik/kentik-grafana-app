@@ -1,5 +1,5 @@
-import { Datasource } from './module';
 import { KentikAPI } from './kentikAPI';
+import { Datasource } from './module';
 import { KentikProxy } from './kentikProxy';
 
 describe('KentikDatasource', () => {
@@ -38,7 +38,7 @@ describe('KentikDatasource', () => {
   });
 });
 
-function createDatasourceInstance(ctx, data) {
+function createDatasourceInstance(ctx: any, data: any) {
   ctx.instanceSettings = {};
   ctx.templateSrv = {};
   ctx.backendSrv = {
@@ -69,7 +69,7 @@ function createDatasourceInstance(ctx, data) {
   ctx.kentikAPI = new KentikAPI(ctx.backendSrv, ctx.$http);
   ctx.kentikAPI.setRegion('default');
 
-  ctx.kentikProxy = new KentikProxy({}, ctx.kentikAPI);
+  ctx.kentikProxy = new KentikProxy(ctx.kentikAPI);
 
   ctx.ds = new Datasource(ctx.instanceSettings, ctx.templateSrv, ctx.kentikProxy);
 }

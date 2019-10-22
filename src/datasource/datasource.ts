@@ -1,5 +1,5 @@
 import './kentikProxy';
-import { metricList, unitList, filterFieldList, Metric, Unit } from './metric_def';
+import { metricList, unitList, filterFieldList, Metric, Unit, FilterField } from './metric_def';
 import queryBuilder from './query_builder';
 
 import TableModel from 'grafana/app/core/table_model';
@@ -59,7 +59,7 @@ class KentikDatasource {
     return this.kentik
       .invokeTopXDataQuery(query)
       .then(this.processResponse.bind(this, query, target.mode, options))
-      .then(result => {
+      .then((result: any) => {
         return {
           data: result,
         };
@@ -153,8 +153,8 @@ class KentikDatasource {
       return unitList;
     }
 
-    return this.kentik.getDevices().then(devices => {
-      return devices.map(device => {
+    return this.kentik.getDevices().then((devices: any) => {
+      return devices.map((device: any) => {
         return { text: device.device_name, value: device.device_name };
       });
     });
@@ -164,7 +164,7 @@ class KentikDatasource {
     if (query.text === undefined && query.value === undefined) {
       throw new Error('At least one of text / value must be defined');
     }
-    const metric = _.find(metricList, query);
+    const metric = _.find<Metric>(metricList, query);
     if (metric === undefined) {
       return null;
     }
@@ -176,7 +176,7 @@ class KentikDatasource {
     if (query.text === undefined && query.value === undefined) {
       throw new Error('At least one of text / value must be defined');
     }
-    const unit = _.find(unitList, query);
+    const unit = _.find<Unit>(unitList, query);
     if (unit === undefined) {
       return null;
     }
@@ -192,22 +192,22 @@ class KentikDatasource {
 
   async getTagValues(options: any) {
     if (options) {
-      let filter = _.find(filterFieldList, { text: options.key });
+      let filter = _.find<FilterField>(filterFieldList, { text: options.key });
 
       if (filter === undefined) {
         const savedFilters = await this.kentik.getSavedFilters();
         filter = _.find(savedFilters, { text: options.key });
         if (filter === undefined) {
           const customDimensions = await this.kentik.getCustomDimensions();
-          const dimension = _.find(customDimensions, { text: options.key });
-          return dimension.values.map(value => ({ text: value }));
+          const dimension: any = _.find(customDimensions, { text: options.key });
+          return dimension.values.map((value: any) => ({ text: value }));
         } else {
           return [{ text: 'include' }, { text: 'exclude' }];
         }
       } else {
         const field = filter.field;
-        return this.kentik.getFieldValues(field).then(result => {
-          return result.rows.map(row => {
+        return this.kentik.getFieldValues(field).then((result: any) => {
+          return result.rows.map((row: any) => {
             return { text: row[field].toString() };
           });
         });

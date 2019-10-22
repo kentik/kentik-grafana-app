@@ -72,11 +72,11 @@ function toPerSecondRate(value: number, row: any): number {
   return value / row.i_duration;
 }
 
-function totalToAvgPerSecond(value: number, row, rangeSeconds: number): number {
+function totalToAvgPerSecond(value: number, row: any, rangeSeconds: number): number {
   return value / rangeSeconds;
 }
 
-function totalToBitsPerSecond(value: number, row, rangeSeconds: number): number {
+function totalToBitsPerSecond(value: number, row: any, rangeSeconds: number): number {
   return (value * 8) / rangeSeconds;
 }
 

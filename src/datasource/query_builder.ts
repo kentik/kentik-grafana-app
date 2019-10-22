@@ -1,5 +1,7 @@
+import { unitList, filterFieldList, Unit, FilterField } from './metric_def';
+
 import * as _ from 'lodash';
-import { unitList, filterFieldList } from './metric_def';
+
 
 const KENTIK_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 
@@ -96,8 +98,8 @@ function formatFilters(kentikFilterGroups: any[]) {
   return filtersObj;
 }
 
-function buildTopXdataQuery(options) {
-  const unitDef = _.find(unitList, { value: options.unit });
+function buildTopXdataQuery(options: any) {
+  const unitDef = _.find<Unit>(unitList, { value: options.unit });
   const startingTime = options.range.from.utc().format(KENTIK_TIME_FORMAT);
   const endingTime = options.range.to.utc().format(KENTIK_TIME_FORMAT);
 
@@ -152,7 +154,7 @@ function convertToKentikFilterGroup(filters: any[], customDimensions: any[], sav
   if (filters.length) {
     const filterFieldListExtended = _.concat(filterFieldList, customDimensions);
     for (const filter of filters) {
-      const filterFieldDef = _.find(filterFieldListExtended, { text: filter.key });
+      const filterFieldDef = _.find<FilterField>(filterFieldListExtended, { text: filter.key });
       if (filterFieldDef === undefined) {
         const savedFilterDef = _.find(savedFiltersList, { text: filter.key });
         savedFilters.push(convertToKentikSavedFilter(filter, savedFilterDef));

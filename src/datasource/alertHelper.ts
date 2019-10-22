@@ -1,7 +1,9 @@
 import { appEvents } from 'grafana/app/core/core';
+
 import * as _ from 'lodash';
 
-function showAlert(error) {
+
+function showAlert(error: any) {
   let message = '';
   message += error.status ? `(${error.status}) ` : '';
   message += error.statusText ? error.statusText + ': ' : '';
@@ -16,7 +18,7 @@ function showAlert(error) {
   appEvents.emit('alert-error', ["Can't connect to Kentik API", message]);
 }
 
-function showCustomAlert(message, exceptionData, exceptionType) {
+function showCustomAlert(message: string, exceptionData: any, exceptionType: any) {
   let errMessage = '';
   errMessage += exceptionData.status ? `(${exceptionData.status}) ` : '';
   errMessage += exceptionData.statusText ? exceptionData.statusText + ': ' : '';

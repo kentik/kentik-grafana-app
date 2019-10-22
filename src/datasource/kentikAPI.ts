@@ -1,14 +1,18 @@
-import * as _ from 'lodash';
-import angular from 'angular';
 import { getRegion } from './regionHelper';
 import { showAlert } from '../datasource/alertHelper';
+
+import { BackendSrv } from 'grafana/app/core/services/backend_srv';
+
+import * as _ from 'lodash';
+import angular from 'angular';
+
 
 export class KentikAPI {
   baseUrl: string;
   apiReady: boolean;
   region?: string;
   /** @ngInject */
-  constructor(public backendSrv: any, public $http: any) {
+  constructor(public backendSrv: BackendSrv, public $http: ng.IHttpService) {
     this.apiReady = false;
     this.baseUrl = '/api/plugin-proxy/kentik-app';
   }
@@ -20,11 +24,11 @@ export class KentikAPI {
     this.apiReady = true;
   }
 
-  setRegion(region: string) {
+  setRegion(region: string): void {
     this.region = region;
   }
 
-  async getDevices() {
+  async getDevices(): Promise<any> {
     const resp = await this._get('/api/v5/devices');
 
     if (resp.data && resp.data.devices) {
@@ -34,26 +38,26 @@ export class KentikAPI {
     }
   }
 
-  async getUsers() {
+  async getUsers(): Promise<any> {
     return this._get('/api/v5/users');
   }
 
-  getFieldValues(field: string) {
+  async getFieldValues(field: string): Promise<any> {
     const query = `SELECT DISTINCT ${field} FROM all_devices ORDER BY ${field} ASC`;
     return this.invokeSQLQuery(query);
   }
 
-  async getCustomDimensions() {
+  async getCustomDimensions(): Promise<any> {
     const data = await this._get('/api/v5/customdimensions');
     return data.data.customDimensions;
   }
 
-  async getSavedFilters() {
+  async getSavedFilters(): Promise<any> {
     const data = await this._get('/api/v5/saved-filters');
     return data.data;
   }
 
-  invokeTopXDataQuery(query: any) {
+  async invokeTopXDataQuery(query: any): Promise<any> {
     const kentikV5Query = {
       queries: [{ query: query, bucketIndex: 0 }],
     };
@@ -61,7 +65,7 @@ export class KentikAPI {
     return this._post('/api/v5/query/topXdata', kentikV5Query);
   }
 
-  invokeSQLQuery(query: any) {
+  async invokeSQLQuery(query: any): Promise<any> {
     const data = {
       query: query,
     };
@@ -69,7 +73,7 @@ export class KentikAPI {
     return this._post('/api/v5/query/sql', data);
   }
 
-  private async _get(url: string) {
+  private async _get(url: string): Promise<any> {
     if (this.region === undefined) {
       await this._getRegionFromDatasource();
     }
@@ -91,7 +95,7 @@ export class KentikAPI {
     }
   }
 
-  private async _post(url: string, data: any) {
+  private async _post(url: string, data: any): Promise<any> {
     if (this.region === undefined) {
       await this._getRegionFromDatasource();
     }

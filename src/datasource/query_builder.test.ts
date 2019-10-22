@@ -1,9 +1,9 @@
 import queryBuilder from './query_builder';
 
 class Moment {
-  time;
+  time: string;
 
-  constructor(time) {
+  constructor(time: string) {
     this.time = time;
   }
   utc() {

@@ -1,11 +1,13 @@
 import { KentikAPI } from '../../datasource/kentikAPI';
 import { showAlert } from '../../datasource/alertHelper';
+import { getRegion } from '../../datasource/regionHelper';
 
 import { PanelCtrl } from 'grafana/app/plugins/sdk';
 import { loadPluginCss } from 'grafana/app/plugins/sdk';
-import { getRegion } from '../../datasource/regionHelper';
+import { BackendSrv } from 'grafana/app/core/services/backend_srv';
 
 import * as _ from 'lodash';
+
 
 loadPluginCss({
   dark: 'plugins/kentik-app/styles/dark.css',
@@ -17,14 +19,20 @@ const panelDefaults = {
 };
 
 class DeviceListCtrl extends PanelCtrl {
-  static templateUrl: any;
+  static templateUrl: string;
   devices: any[];
   pageReady: boolean;
   kentik: KentikAPI = {} as KentikAPI;
   region = '';
 
   /** @ngInject */
-  constructor($scope, $injector, $http, public $location: any, public backendSrv: any) {
+  constructor(
+    $scope: ng.IScope,
+    $injector: ng.auto.IInjectorService,
+    $http: ng.IHttpService,
+    public $location: ng.ILocationService,
+    public backendSrv: BackendSrv
+  ) {
     super($scope, $injector);
     _.defaults(this.panel, panelDefaults);
     this.devices = [];
@@ -56,11 +64,11 @@ class DeviceListCtrl extends PanelCtrl {
     this.getDevices();
   }
 
-  gotoDashboard(device) {
+  gotoDashboard(device: any) {
     this.$location.path('/dashboard/db/kentik-top-talkers').search({ 'var-device': device.device_name });
   }
 
-  gotoDeviceDetail(device) {
+  gotoDeviceDetail(device: any) {
     this.$location.url('/plugins/kentik-app/page/device-details?device=' + device.id);
   }
 }

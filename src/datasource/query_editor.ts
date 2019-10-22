@@ -1,16 +1,16 @@
-import * as _ from 'lodash';
+import { showAlert } from './alertHelper';
 
 import { QueryCtrl } from 'grafana/app/plugins/sdk';
 import { UiSegmentSrv, MetricSegment } from 'grafana/app/core/services/segment_srv';
 import { TemplateSrv } from 'grafana/app/features/templating/template_srv';
 
-import { showAlert } from './alertHelper';
+import * as _ from 'lodash';
 
 const HOSTNAME_LOOKUP_TEMPLATE_VAR = '$dns_lookup';
 const HOSTNAME_LOOKUP_CHOICES = [
   'enabled',
   'disabled'
-]
+];
 
 class KentikQueryCtrl extends QueryCtrl {
   static templateUrl: string;
@@ -21,7 +21,12 @@ class KentikQueryCtrl extends QueryCtrl {
   hostnameLookup: MetricSegment;
 
   /** @ngInject */
-  constructor($scope, $injector, public templateSrv: TemplateSrv, public uiSegmentSrv: UiSegmentSrv) {
+  constructor(
+    $scope: ng.IScope,
+    $injector: ng.auto.IInjectorService,
+    public templateSrv: TemplateSrv,
+    public uiSegmentSrv: UiSegmentSrv
+  ) {
     super($scope, $injector);
 
     this.target.mode = this.target.mode || 'graph';

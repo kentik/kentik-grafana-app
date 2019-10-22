@@ -15,8 +15,9 @@
     "noEmitOnError": false,
     "noImplicitReturns": true,
     "noImplicitThis": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "noUnusedLocals": false,
-    "baseUrl": "./src"
+    "baseUrl": "./src",
+    "strict": true
   }
 }

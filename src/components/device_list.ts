@@ -1,7 +1,7 @@
 import { KentikAPI } from '../datasource/kentikAPI';
-import { showAlert } from '../datasource/alertHelper';
 
-import { getRegion } from '../datasource/regionHelper';
+import { BackendSrv } from 'grafana/app/core/services/backend_srv';
+
 class DeviceListCtrl {
   static templateUrl: string;
   devices: any[];
@@ -9,7 +9,12 @@ class DeviceListCtrl {
   kentik: KentikAPI;
 
   /** @ngInject */
-  constructor(private $scope, $injector, $http, public $location: any, public backendSrv: any) {
+  constructor(
+    private $scope: ng.IScope,
+    $http: ng.IHttpService,
+    public $location: ng.ILocationService,
+    public backendSrv: BackendSrv
+  ) {
     this.devices = [];
     this.pageReady = false;
     this.kentik = new KentikAPI(this.backendSrv, $http);
@@ -26,11 +31,11 @@ class DeviceListCtrl {
     this.getDevices();
   }
 
-  gotoDashboard(device) {
+  gotoDashboard(device: any) {
     this.$location.path('/dashboard/db/kentik-top-talkers').search({ 'var-device': device.device_name });
   }
 
-  gotoDeviceDetail(device) {
+  gotoDeviceDetail(device: any) {
     this.$location.url('/plugins/kentik-app/page/device-details?device=' + device.id);
   }
 }

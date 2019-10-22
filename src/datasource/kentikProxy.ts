@@ -1,10 +1,8 @@
+import { KentikAPI } from './kentikAPI';
+
 import angular from 'angular';
 import * as _ from 'lodash';
 import * as moment from 'moment';
-
-import { showAlert } from './alertHelper';
-import './kentikAPI';
-import { getRegion } from './regionHelper';
 
 
 function getUTCTimestamp() {
@@ -33,21 +31,19 @@ function getMaxRefreshInterval(query: any) {
 }
 
 export class KentikProxy {
-  kentikAPI: any;
   cache: any;
   cacheUpdateInterval: number;
   requestCachingIntervals: { '1d': number };
   getDevices: () => Promise<any[]>;
 
   /** @ngInject */
-  constructor(backendSrv, kentikAPISrv: any) {
-    this.kentikAPI = kentikAPISrv;
+  constructor(private kentikAPISrv: KentikAPI) {
     this.cache = {};
     this.cacheUpdateInterval = 5 * 60 * 1000; // 5 min by default
     this.requestCachingIntervals = {
       '1d': 0,
     };
-    this.getDevices = this.kentikAPI.getDevices.bind(this.kentikAPI);
+    this.getDevices = this.kentikAPISrv.getDevices.bind(this.kentikAPISrv);
   }
 
   invokeTopXDataQuery(query: any) {
@@ -57,12 +53,12 @@ export class KentikProxy {
 
     if (this.shouldInvoke(query)) {
       // Invoke query
-      return this.kentikAPI.invokeTopXDataQuery(query).then(result => {
+      return this.kentikAPISrv.invokeTopXDataQuery(query).then((result: any) => {
         const timestamp = getUTCTimestamp();
 
         if (query.hostname_lookup) {
           const resultData = result.results[0].data;
-          resultData.forEach(row => {
+          resultData.forEach((row: any) => {
             if(row.lookup !== undefined) {
               row.key = row.lookup;
             }
@@ -115,7 +111,7 @@ export class KentikProxy {
     if (this.cache[field] && ts - this.cache[field].ts < this.cacheUpdateInterval) {
       return Promise.resolve(this.cache[field].value);
     } else {
-      return this.kentikAPI.getFieldValues(field).then(result => {
+      return this.kentikAPISrv.getFieldValues(field).then((result: any) => {
         ts = getUTCTimestamp();
         this.cache[field] = {
           ts: ts,
@@ -129,8 +125,8 @@ export class KentikProxy {
 
   async getCustomDimensions() {
     if (this.cache.customDimensions === undefined) {
-      const customDimensions = await this.kentikAPI.getCustomDimensions();
-      this.cache.customDimensions = customDimensions.map(dimension => ({
+      const customDimensions = await this.kentikAPISrv.getCustomDimensions();
+      this.cache.customDimensions = customDimensions.map((dimension: any) => ({
         values: this._getDimensionPopulatorsValues(dimension),
         text: `Custom ${dimension.display_name}`,
         value: dimension.name,
@@ -142,7 +138,7 @@ export class KentikProxy {
 
   async getSavedFilters() {
     if (this.cache.savedFilters === undefined) {
-      const savedFilters = await this.kentikAPI.getSavedFilters();
+      const savedFilters = await this.kentikAPISrv.getSavedFilters();
       this.cache.savedFilters = _.map(savedFilters, filter => ({
         text: `Saved ${filter.filter_name}`,
         field: filter.filter_name,
@@ -153,7 +149,7 @@ export class KentikProxy {
   }
 
   private _getDimensionPopulatorsValues(dimension: any) {
-    return dimension.populators.reduce((values, populator) => {
+    return dimension.populators.reduce((values: any, populator: any) => {
       values.push(populator.value);
       return values;
     }, []);
