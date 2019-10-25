@@ -25,8 +25,8 @@ module.exports = {
   entry: {
     './module': './module.ts',
     'datasource/module': './datasource/module.ts',
-    'panel/call-to-action/module': './panel/call-to-action/module.ts',
-    'panel/device-list/module': './panel/device-list/module.ts',
+    'panel/call_to_action/module': './panel/call_to_action/module.ts',
+    'panel/device_list/module': './panel/device_list/module.ts',
   },
   output: {
     filename: '[name].js',

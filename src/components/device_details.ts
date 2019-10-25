@@ -1,6 +1,6 @@
-import { KentikAPI } from '../datasource/kentikAPI';
-import { showCustomAlert } from '../datasource/alertHelper';
-import { getRegion } from '../datasource/regionHelper';
+import { KentikAPI } from '../datasource/kentik_api';
+import { showCustomAlert } from '../datasource/alert_helper';
+import { getRegion } from '../datasource/region_helper';
 
 import { BackendSrv } from 'grafana/app/core/services/backend_srv';
 import { AlertSrv } from 'grafana/app/core/services/alert_srv';

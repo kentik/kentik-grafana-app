@@ -1,4 +1,4 @@
-import { KentikAPI } from '../datasource/kentikAPI';
+import { KentikAPI } from '../datasource/kentik_api';
 
 import { BackendSrv } from 'grafana/app/core/services/backend_srv';
 

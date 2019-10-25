@@ -1,7 +1,7 @@
 import configTemplate from './config.html';
 
-import { KentikAPI } from '../datasource/kentikAPI';
-import { showAlert, showCustomAlert } from '../datasource/alertHelper';
+import { KentikAPI } from '../datasource/kentik_api';
+import { showAlert, showCustomAlert } from '../datasource/alert_helper';
 
 import { BackendSrv } from 'grafana/app/core/services/backend_srv';
 

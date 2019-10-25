@@ -1,5 +1,5 @@
 // KentikAPI is imported to be injected by Angular
-import './kentikAPI';
+import './kentik_api';
 
 import { KentikDatasource } from './datasource';
 import { ConfigCtrl } from './config';
