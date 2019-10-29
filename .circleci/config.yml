@@ -20,6 +20,8 @@ defaults: &defaults
   working_directory: ~/kentik-app
   docker:
     - image: circleci/node:10.15.3-stretch
+  environment:
+    PLUGIN_NAME: kentik-app
 
 jobs:
   build:
@@ -32,7 +34,6 @@ jobs:
       - run:
           name: Build
           command: |
-            PLUGIN_NAME=kentik-app
             npm install
             npm run build
             sudo apt-get install jq
@@ -50,9 +51,8 @@ jobs:
             tar \
               --exclude .git \
               --exclude ${PLUGIN_NAME}/node_modules \
-              -cvf /tmp/${PLUGIN_NAME}-${VERSION}.tar \
+              -zcvf /tmp/${PLUGIN_NAME}-${VERSION}.tar.gz \
               ${PLUGIN_NAME}
-            gzip /tmp/${PLUGIN_NAME}-${VERSION}.tar
             # create artifacts
             mkdir -p ~/${PLUGIN_NAME}/artifacts
             mv /tmp/${PLUGIN_NAME}-${VERSION}.zip ~/${PLUGIN_NAME}/artifacts/
@@ -100,6 +100,42 @@ jobs:
             sudo npm install -g jest
             npm test
 
+  publish_github_release:
+    <<: *defaults
+    docker:
+      - image: cibuilds/github:0.12
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "b7:0b:7a:ce:3d:ef:22:1c:cd:97:7f:33:93:e6:db:fe"
+      - attach_workspace:
+          at: .
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            apk add --update --no-cache jq
+            RELEASE_NOTES=`awk 'BEGIN {FS="##"; RS=""} FNR==3 {print; exit}' CHANGELOG.md`
+            VERSION=`cat dist/plugin.json|jq '.info.version'| sed s/\"//g`
+            git config user.email "dev@corpglory.com"
+            git config user.name "CircleCI"
+            git checkout -b release-${VERSION}
+            git add --force dist/
+            git commit -m "automated release $VERSION [skip ci]"
+            git push -f origin release-${VERSION}
+            git tag -f v${VERSION}
+            git push -f origin v${VERSION}
+            ghr \
+              -t ${GITHUB_TOKEN} \
+              -u ${CIRCLE_PROJECT_USERNAME} \
+              -r ${CIRCLE_PROJECT_REPONAME} \
+              -c ${CIRCLE_SHA1} \
+              -n "${PLUGIN_NAME} v${VERSION}" \
+              -b "${RELEASE_NOTES}" \
+              -delete \
+              v${VERSION} \
+              ./artifacts/
+
 workflows:
   version: 2
   build-master:
@@ -127,3 +163,14 @@ workflows:
           requires:
             - build
           filters: *filter-not-release-or-master
+
+  - approve_release:
+      type: approval
+      requires:
+        - build-master
+      filters: *filter-only-master
+
+  - publish_github_release:
+      requires:
+        - approve_release
+      filters: *filter-only-master
