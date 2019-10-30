@@ -27,7 +27,7 @@ class CallToActiontCtrl extends PanelCtrl {
   constructor(
     $scope: ng.IScope,
     $injector: ng.auto.IInjectorService,
-    $http: ng.IHttpService,
+    public $http: ng.IHttpService,
     public backendSrv: BackendSrv
   ) {
     super($scope, $injector);
@@ -35,20 +35,19 @@ class CallToActiontCtrl extends PanelCtrl {
     this.deviceStatus = '';
     this.allDone = false;
     // get region from datasource
-    backendSrv
-      .get('/api/datasources')
-      .then((allDS: any) => {
-        this.region = getRegion(allDS);
-        this.kentik = new KentikAPI(this.backendSrv, $http);
-        this.kentik.setRegion(this.region);
-      })
-      .then(async () => {
-        await this.getTaskStatus();
-      });
+    this.initRegion();
   }
 
-  async getTaskStatus() {
-    await this.getDevices();
+  async initRegion(): Promise<void> {
+    const datasources = await this.backendSrv.get('/api/datasources');
+    this.region = getRegion(datasources);
+    this.kentik = new KentikAPI(this.backendSrv, this.$http);
+    this.kentik.setRegion(this.region);
+    await this.fetchTaskStatus();
+  }
+
+  async fetchTaskStatus() {
+    await this.fetchDevices();
 
     if (this.deviceStatus === 'hasDevices') {
       this.allDone = true;
@@ -57,7 +56,7 @@ class CallToActiontCtrl extends PanelCtrl {
     }
   }
 
-  async getDevices() {
+  async fetchDevices() {
     try {
       const devices = await this.kentik.getDevices();
 
@@ -72,7 +71,7 @@ class CallToActiontCtrl extends PanelCtrl {
   }
 
   refresh() {
-    this.getTaskStatus();
+    this.fetchTaskStatus();
   }
 }
 

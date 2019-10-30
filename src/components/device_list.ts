@@ -11,24 +11,25 @@ class DeviceListCtrl {
   /** @ngInject */
   constructor(
     private $scope: ng.IScope,
-    $http: ng.IHttpService,
     public $location: ng.ILocationService,
-    public backendSrv: BackendSrv
+    $http: ng.IHttpService,
+    backendSrv: BackendSrv
   ) {
     this.devices = [];
     this.pageReady = false;
-    this.kentik = new KentikAPI(this.backendSrv, $http);
-    this.getDevices();
+    this.kentik = new KentikAPI(backendSrv, $http);
+    this.fetchDevices();
   }
 
-  async getDevices() {
+  async fetchDevices() {
     this.devices = await this.kentik.getDevices();
+
     this.pageReady = true;
     this.$scope.$apply();
   }
 
   refresh() {
-    this.getDevices();
+    this.fetchDevices();
   }
 
   gotoDashboard(device: any) {

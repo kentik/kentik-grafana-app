@@ -16,7 +16,8 @@ export class DeviceDetailsCtrl {
 
   /** @ngInject */
   constructor(
-    $http: ng.IHttpService,
+    public $scope: ng.IScope,
+    public $http: ng.IHttpService,
     public $location: ng.ILocationService,
     public backendSrv: BackendSrv,
     public alertSrv: AlertSrv
@@ -25,13 +26,20 @@ export class DeviceDetailsCtrl {
     this.deviceDTO = {};
     this.pageReady = false;
     // get region from datasource
-    backendSrv.get('/api/datasources').then((allDS: any) => {
-      this.region = getRegion(allDS);
-      this.kentik = new KentikAPI(this.backendSrv, $http);
-      this.kentik.setRegion(this.region);
-      this.getDevice($location.search().device);
-    });
+    this.initRegion();
   }
+
+  async initRegion(): Promise<void> {
+    const datasources = await this.backendSrv.get('/api/datasources');
+    this.region = getRegion(datasources);
+    this.kentik = new KentikAPI(this.backendSrv, this.$http);
+    this.kentik.setRegion(this.region);
+    await this.getDevice(this.$location.search().device);
+
+    this.pageReady = true;
+    this.$scope.$apply();
+  }
+
 
   addIP() {
     this.otherIps.push({ ip: '' });
@@ -41,16 +49,16 @@ export class DeviceDetailsCtrl {
     this.otherIps.splice(index, 1);
   }
 
-  getDevice(deviceId: string) {
-    this.backendSrv.get(`/api/plugin-proxy/kentik-app/${this.region}/api/v5/device/` + deviceId).then((resp: any) => {
-      this.device = resp.device;
-      this.updateDeviceDTO();
-      this.pageReady = true;
-    });
+  async getDevice(deviceId: string): Promise<void> {
+    const resp = await this.backendSrv.get(
+      `/api/plugin-proxy/kentik-app/${this.region}/api/v5/device/${deviceId}`
+    );
+    this.device = resp.device;
+    this.updateDeviceDTO();
   }
 
   gotoDashboard(deviceName: string) {
-    this.$location.url('/dashboard/db/kentik-top-talkers?var-device=' + deviceName);
+    this.$location.url(`/dashboard/db/kentik-top-talkers?var-device=${deviceName}`);
   }
 
   updateDeviceDTO() {
@@ -71,7 +79,7 @@ export class DeviceDetailsCtrl {
     };
   }
 
-  update() {
+  async update(): Promise<void> {
     if (!this.deviceDTO.device_snmp_ip) {
       delete this.deviceDTO.device_snmp_ip;
     }
@@ -80,25 +88,26 @@ export class DeviceDetailsCtrl {
     }
     const data = { device: this.deviceDTO };
 
-    this.backendSrv.put(`/api/plugin-proxy/kentik-app/${this.region}/api/v5/device/` + this.deviceDTO.device_id, data).then(
-      (resp: any) => {
-        if ('err' in resp) {
-          showCustomAlert('Device Update failed.', resp.err, 'error');
-        } else {
-          showCustomAlert('Device Updated.', this.deviceDTO.device_name, 'success');
-          return this.getDevice(this.deviceDTO.device_id);
-        }
-      },
-      (error: any) => {
-        if ('error' in error.data) {
-          showCustomAlert('Device Update failed.', error.data.error, 'error');
-          return;
-        } else {
-          showCustomAlert('Device Update failed.', error, 'error');
-          return;
-        }
+    try {
+      const resp = await this.backendSrv.put(
+        `/api/plugin-proxy/kentik-app/${this.region}/api/v5/device/${this.deviceDTO.device_id}`,
+        data
+      );
+      if ('err' in resp) {
+        showCustomAlert('Device Update failed.', resp.err, 'error');
+      } else {
+        showCustomAlert('Device Updated.', this.deviceDTO.device_name, 'success');
+        return this.getDevice(this.deviceDTO.device_id);
       }
-    );
+    } catch (error) {
+      if ('error' in error.data) {
+        showCustomAlert('Device Update failed.', error.data.error, 'error');
+        return;
+      } else {
+        showCustomAlert('Device Update failed.', error, 'error');
+        return;
+      }
+    }
   }
 }
 

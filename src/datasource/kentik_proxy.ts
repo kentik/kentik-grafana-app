@@ -46,37 +46,34 @@ export class KentikProxy {
     this.getDevices = this.kentikAPISrv.getDevices.bind(this.kentikAPISrv);
   }
 
-  invokeTopXDataQuery(query: any) {
+  async invokeTopXDataQuery(query: any): Promise<any> {
     query.hostname_lookup = this.hostnameLookupToBoolean(query.hostname_lookup);
     const cachedQuery = _.cloneDeep(query);
     const hash = getHash(cachedQuery);
 
     if (this.shouldInvoke(query)) {
       // Invoke query
-      return this.kentikAPISrv.invokeTopXDataQuery(query).then((result: any) => {
-        const timestamp = getUTCTimestamp();
+      const result = await this.kentikAPISrv.invokeTopXDataQuery(query);
+      const timestamp = getUTCTimestamp();
 
-        if (query.hostname_lookup) {
-          const resultData = result.results[0].data;
-          resultData.forEach((row: any) => {
-            if (row.lookup !== undefined) {
-              row.key = row.lookup;
-            }
-          });
-        }
+      if (query.hostname_lookup) {
+        const resultData = result.results[0].data;
+        resultData.forEach((row: any) => {
+          if (row.lookup !== undefined) {
+            row.key = row.lookup;
+          }
+        });
+      }
 
-        this.cache[hash] = {
-          timestamp: timestamp,
-          query: cachedQuery,
-          result: result,
-        };
-        //console.log('Invoke Kentik query');
-        return result;
-      });
+      this.cache[hash] = {
+        timestamp: timestamp,
+        query: cachedQuery,
+        result: result,
+      };
+      return result;
     } else {
       // Get from cache
-      //console.log('Get result from cache');
-      return Promise.resolve(this.cache[hash].result);
+      return this.cache[hash].result;
     }
   }
 
@@ -106,20 +103,19 @@ export class KentikProxy {
     );
   }
 
-  getFieldValues(field: string) {
+  async getFieldValues(field: string) {
     let ts = getUTCTimestamp();
     if (this.cache[field] && ts - this.cache[field].ts < this.cacheUpdateInterval) {
-      return Promise.resolve(this.cache[field].value);
+      return this.cache[field].value;
     } else {
-      return this.kentikAPISrv.getFieldValues(field).then((result: any) => {
-        ts = getUTCTimestamp();
-        this.cache[field] = {
-          ts: ts,
-          value: result,
-        };
+      const result = await this.kentikAPISrv.getFieldValues(field);
+      ts = getUTCTimestamp();
+      this.cache[field] = {
+        ts: ts,
+        value: result,
+      };
 
-        return result;
-      });
+      return result;
     }
   }
 

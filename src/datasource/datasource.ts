@@ -56,14 +56,9 @@ class KentikDatasource {
     };
     const query = queryBuilder.buildTopXdataQuery(queryOptions);
 
-    return this.kentik
-      .invokeTopXDataQuery(query)
-      .then(this.processResponse.bind(this, query, target.mode, options))
-      .then((result: any) => {
-        return {
-          data: result,
-        };
-      });
+    const topXData = await this.kentik.invokeTopXDataQuery(query);
+    const data = await this.processResponse(query, target.mode, options, topXData);
+    return { data };
   }
 
   async processResponse(query: any, mode: string, options: any, data: any) {
@@ -153,10 +148,9 @@ class KentikDatasource {
       return unitList;
     }
 
-    return this.kentik.getDevices().then((devices: any) => {
-      return devices.map((device: any) => {
-        return { text: device.device_name, value: device.device_name };
-      });
+    const devices = await this.kentik.getDevices();
+    return devices.map((device: any) => {
+      return { text: device.device_name, value: device.device_name };
     });
   }
 
@@ -206,10 +200,9 @@ class KentikDatasource {
         }
       } else {
         const field = filter.field;
-        return this.kentik.getFieldValues(field).then((result: any) => {
-          return result.rows.map((row: any) => {
-            return { text: row[field].toString() };
-          });
+        const result = await this.kentik.getFieldValues(field);
+        return result.rows.map((row: any) => {
+          return { text: row[field].toString() };
         });
       }
     } else {

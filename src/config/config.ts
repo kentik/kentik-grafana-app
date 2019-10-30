@@ -88,49 +88,45 @@ class KentikConfigCtrl {
     this.apiValidated = false;
   }
 
-  initDatasource() {
-    const self = this;
+  async initDatasource(): Promise<any[]> {
     //check for existing datasource.
-    return self.backendSrv.get('/api/datasources').then((results: any) => {
-      let foundKentikDS = false;
-      let updateKentikDS = false;
-      let dsID = NaN;
-      _.forEach(results, ds => {
-        //console.log("Found a datasource, type is: " + ds.type);
-        // use the type
-        if (ds.type === 'kentik-ds') {
-          foundKentikDS = true;
-          dsID = ds.id;
-          //console.log("config.initDatasource: found existing datasource with region: " + ds.jsonData.region);
-          updateKentikDS = true;
+    const results = await this.backendSrv.get('/api/datasources');
+    let foundKentikDS = false;
+    let updateKentikDS = false;
+    let dsID = NaN;
+    _.forEach(results, ds => {
+      // use the type
+      if (ds.type === 'kentik-ds') {
+        foundKentikDS = true;
+        dsID = ds.id;
+        updateKentikDS = true;
 
-          if (ds.jsonData.region !== this.appModel.jsonData.region) {
-            updateKentikDS = true;
-          }
-          if (ds.jsonData !== this.appModel.jsonData) {
-            updateKentikDS = true;
-          }
-          return;
+        if (ds.jsonData.region !== this.appModel.jsonData.region) {
+          updateKentikDS = true;
         }
-      });
-      const promises: Array<Promise<any>> = [];
-      if (!foundKentikDS || updateKentikDS) {
-        // create datasource
-        const kentik = {
-          name: 'kentik',
-          type: 'kentik-ds',
-          access: 'proxy',
-          jsonData: self.appModel.jsonData,
-        };
-        if (updateKentikDS) {
-          promises.push(self.backendSrv.put(`/api/datasources/${dsID}`, kentik));
-        } else {
-          promises.push(self.backendSrv.post('/api/datasources', kentik));
+        if (ds.jsonData !== this.appModel.jsonData) {
+          updateKentikDS = true;
         }
+        return;
       }
-      // update requires a PUT with the id
-      return Promise.all(promises);
     });
+    const promisesResults: any[] = [];
+    if (!foundKentikDS || updateKentikDS) {
+      // create datasource
+      const kentik = {
+        name: 'kentik',
+        type: 'kentik-ds',
+        access: 'proxy',
+        jsonData: this.appModel.jsonData,
+      };
+      if (updateKentikDS) {
+        // update requires a PUT with the id
+        promisesResults.push(await this.backendSrv.put(`/api/datasources/${dsID}`, kentik));
+      } else {
+        promisesResults.push(await this.backendSrv.post('/api/datasources', kentik));
+      }
+    }
+    return promisesResults;
   }
 }
 

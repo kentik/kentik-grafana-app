@@ -29,10 +29,12 @@ export class AddDeviceCtrl {
     this.device = angular.copy(defaults);
     this.sendingIps = [{ ip: '' }];
     // get region from datasource
-    //this.region = "default";
-    backendSrv.get('/api/datasources').then((allDS: any) => {
-      this.region = getRegion(allDS);
-    });
+    this.initRegion();
+  }
+
+  async initRegion(): Promise<void> {
+    const datasources = await this.backendSrv.get('/api/datasources');
+    this.region = getRegion(datasources);
   }
 
   addIP() {
@@ -43,19 +45,19 @@ export class AddDeviceCtrl {
     this.sendingIps.splice(index, 1);
   }
 
-  addDevice() {
+  async addDevice(): Promise<void> {
     const ips: string[] = [];
     _.forEach(this.sendingIps, ip => {
       ips.push(ip.ip);
     });
     this.device.sending_ips = ips.join();
-    this.backendSrv.post(`/api/plugin-proxy/kentik-app/${this.region}/api/v5/device`, this.device).then((resp: any) => {
-      if ('err' in resp) {
-        this.alertSrv.set('Device Add failed.', resp.err, 'error');
-      } else {
-        this.$location.url('/plugins/kentik-app/page/device-list');
-      }
-    });
+    const resp = await this.backendSrv.post(`/api/plugin-proxy/kentik-app/${this.region}/api/v5/device`, this.device);
+    if ('err' in resp) {
+      this.alertSrv.set('Device Add failed.', resp.err, 'error');
+      throw new Error(`Device Add failed: ${resp.err}`);
+    } else {
+      this.$location.url('/plugins/kentik-app/page/device-list');
+    }
   }
 }
 
