@@ -115,7 +115,7 @@ jobs:
           name: "Publish Release on GitHub"
           command: |
             apk add --update --no-cache jq
-            RELEASE_NOTES=`awk 'BEGIN {FS="##"; RS=""} FNR==3 {print; exit}' CHANGELOG.md`
+            RELEASE_NOTES=`awk '/## \[/{if(flag){exit};flag=1;}flag' CHANGELOG.md`
             VERSION=`cat dist/plugin.json|jq '.info.version'| sed s/\"//g`
             git config user.email "dev@corpglory.com"
             git config user.name "CircleCI"
@@ -132,7 +132,6 @@ jobs:
               -c ${CIRCLE_SHA1} \
               -n "${PLUGIN_NAME} v${VERSION}" \
               -b "${RELEASE_NOTES}" \
-              -delete \
               v${VERSION} \
               ./artifacts/
 
@@ -140,15 +139,24 @@ workflows:
   version: 2
   build-master:
     jobs:
-      - build:
-          filters: *filter-only-master
       - tslint:
-          requires:
-            - build
           filters: *filter-only-master
       - test:
           requires:
+            - tslint
+          filters: *filter-only-master
+      - build:
+          requires:
+            - test
+          filters: *filter-only-master
+      - hold:
+          type: approval
+          requires:
             - build
+          filters: *filter-only-master
+      - publish_github_release:
+          requires:
+            - hold
           filters: *filter-only-master
 
   build-branches-and-prs:
@@ -162,13 +170,4 @@ workflows:
       - build:
           requires:
             - test
-          filters: *filter-not-release-or-master
-      - hold:
-          type: approval
-          requires:
-            - build
-          filters: *filter-not-release-or-master
-      - publish_github_release:
-          requires:
-            - hold
           filters: *filter-not-release-or-master
