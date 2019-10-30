@@ -34,10 +34,7 @@ export class DeviceDetailsCtrl {
     this.region = getRegion(datasources);
     this.kentik = new KentikAPI(this.backendSrv, this.$http);
     this.kentik.setRegion(this.region);
-    await this.getDevice(this.$location.search().device);
-
-    this.pageReady = true;
-    this.$scope.$apply();
+    await this.fetchDevice(this.$location.search().device);
   }
 
 
@@ -49,12 +46,15 @@ export class DeviceDetailsCtrl {
     this.otherIps.splice(index, 1);
   }
 
-  async getDevice(deviceId: string): Promise<void> {
+  async fetchDevice(deviceId: string): Promise<void> {
     const resp = await this.backendSrv.get(
       `/api/plugin-proxy/kentik-app/${this.region}/api/v5/device/${deviceId}`
     );
     this.device = resp.device;
     this.updateDeviceDTO();
+
+    this.pageReady = true;
+    this.$scope.$apply();
   }
 
   gotoDashboard(deviceName: string) {
@@ -97,7 +97,7 @@ export class DeviceDetailsCtrl {
         showCustomAlert('Device Update failed.', resp.err, 'error');
       } else {
         showCustomAlert('Device Updated.', this.deviceDTO.device_name, 'success');
-        return this.getDevice(this.deviceDTO.device_id);
+        return this.fetchDevice(this.deviceDTO.device_id);
       }
     } catch (error) {
       if ('error' in error.data) {

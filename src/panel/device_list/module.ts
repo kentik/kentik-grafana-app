@@ -27,7 +27,7 @@ class DeviceListCtrl extends PanelCtrl {
 
   /** @ngInject */
   constructor(
-    $scope: ng.IScope,
+    public $scope: ng.IScope,
     $injector: ng.auto.IInjectorService,
     public $http: ng.IHttpService,
     public $location: ng.ILocationService,
@@ -49,11 +49,12 @@ class DeviceListCtrl extends PanelCtrl {
     await this.fetchDevices();
   }
 
-
   async fetchDevices() {
     try {
       this.devices = await this.kentik.getDevices();
+
       this.pageReady = true;
+      this.$scope.$apply();
     } catch (e) {
       showAlert(e);
     }
