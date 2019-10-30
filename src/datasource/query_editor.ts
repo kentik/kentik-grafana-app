@@ -1,4 +1,4 @@
-import { showAlert } from './alertHelper';
+import { showAlert } from './alert_helper';
 
 import { QueryCtrl } from 'grafana/app/plugins/sdk';
 import { UiSegmentSrv, MetricSegment } from 'grafana/app/core/services/segment_srv';

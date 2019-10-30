@@ -1,7 +1,7 @@
-import { KentikAPI } from '../../datasource/kentikAPI';
-import { showAlert } from '../../datasource/alertHelper';
+import { KentikAPI } from '../../datasource/kentik_api';
+import { showAlert } from '../../datasource/alert_helper';
 import { PanelCtrl, loadPluginCss } from 'grafana/app/plugins/sdk';
-import { getRegion } from '../../datasource/regionHelper';
+import { getRegion } from '../../datasource/region_helper';
 
 import { BackendSrv } from 'grafana/app/core/services/backend_srv';
 
@@ -76,5 +76,5 @@ class CallToActiontCtrl extends PanelCtrl {
   }
 }
 
-CallToActiontCtrl.templateUrl = 'panel/call-to-action/module.html';
+CallToActiontCtrl.templateUrl = 'panel/call_to_action/module.html';
 export { CallToActiontCtrl as PanelCtrl };

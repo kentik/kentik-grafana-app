@@ -3,7 +3,7 @@ import angular from 'angular';
 
 import { BackendSrv } from 'grafana/app/core/services/backend_srv';
 
-import { getRegion } from '../datasource/regionHelper';
+import { getRegion } from '../datasource/region_helper';
 
 const defaults = {
   device_name: '',

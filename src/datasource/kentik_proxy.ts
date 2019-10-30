@@ -1,4 +1,4 @@
-import { KentikAPI } from './kentikAPI';
+import { KentikAPI } from './kentik_api';
 
 import angular from 'angular';
 import * as _ from 'lodash';

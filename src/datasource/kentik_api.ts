@@ -1,5 +1,5 @@
-import { getRegion } from './regionHelper';
-import { showAlert } from '../datasource/alertHelper';
+import { getRegion } from './region_helper';
+import { showAlert } from '../datasource/alert_helper';
 
 import { BackendSrv } from 'grafana/app/core/services/backend_srv';
 

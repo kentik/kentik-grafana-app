@@ -1,4 +1,4 @@
-import './kentikProxy';
+import './kentik_proxy';
 import { metricList, unitList, filterFieldList, Metric, Unit, FilterField } from './metric_def';
 import queryBuilder from './query_builder';
 
