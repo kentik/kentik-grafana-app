@@ -1,0 +1,124 @@
+{
+  "type": "app",
+  "name": "Kentik Connect Pro",
+  "id": "kentik-app",
+
+  "routes": [
+    {
+      "path": "default/api/v5/*",
+      "method": "*",
+      "url": "https://grafana-api.kentik.com/api/v5",
+      "headers": [
+        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
+        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"}
+      ]
+    },
+    {
+      "path": "custom/api/v5/*",
+      "method": "*",
+      "url": "{{.JsonData.dynamicUrl}}",
+      "headers": [
+        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
+        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"}
+      ]
+    },
+    {
+      "path": "eu/api/v5/*",
+      "method": "*",
+      "url": "https://api.kentik.eu/api/v5/",
+      "headers": [
+        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
+        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"}
+      ]
+    },
+    {
+      "path": "default/api/v4/*",
+      "method": "*",
+      "url": "https://grafanav4api.kentik.com/api/v4/",
+      "headers": [
+        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
+        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"}
+      ]
+    },
+    {
+      "path": "default/api/v1/*",
+      "method": "*",
+      "url": "https://grafanav1api.kentik.com/api/v1",
+      "headers": [
+        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
+        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"}
+      ]
+    }
+  ],
+
+  "info": {
+    "description": "Kentik Connect Pro allows you to quickly and easily add network activity visibility metrics to your Grafana dashboard.",
+    "author": {
+      "name": "Kentik.",
+      "url": "http://kentik.com"
+    },
+    "keywords": ["kentik"],
+    "logos": {
+      "small": "img/logo_small.png",
+      "large": "img/logo_large.png"
+    },
+    "links": [
+      {"name": "Kentik", "url": "http://www.kentik.com"},
+      {"name": "License & Terms", "url": "https://www.apache.org/licenses/LICENSE-2.0"}
+    ],
+    "screenshots": [
+      {"name": "Kentik Connect - Top Talkers", "path": "img/kentik-connect-top-talkers-2.png"},
+      {"name": "Kentik Connect - Home Dashboard", "path": "img/kentik-connect-home.png"},
+      {"name": "Kentik Connect - Device Details", "path": "img/kentik-connect-device-details.png"},
+      {"name": "Kentik Connect - Top Talkers 2", "path": "img/kentik-connect-top-talkers.png"}
+    ],
+    "version": "1.3.6",
+    "updated": "2019-10-30"
+  },
+
+  "includes": [
+    {
+      "type": "page",
+      "name": "Device List",
+      "component": "DeviceListCtrl",
+      "role": "Editor",
+      "addToNav": true
+    },
+    {
+      "type": "page",
+      "name": "Device Details",
+      "component": "DeviceDetailsCtrl",
+      "role": "Editor",
+      "addToNav": false
+    },
+    {
+      "type": "dashboard",
+      "name": "Kentik Top Talkers",
+      "path": "dashboards/kentik-top-talkers.json",
+      "addToNav": true
+    },
+    {
+      "type": "dashboard",
+      "name": "Kentik Home",
+      "path": "dashboards/kentik-home.json",
+      "addToNav": true,
+      "defaultNav": true
+    },
+    {
+      "type": "panel",
+      "name": "Kentik Call To Action"
+    },
+    {
+      "type": "panel",
+      "name": "Kentik Device List"
+    },
+    {
+      "type": "datasource",
+      "name": "Kentik-ds"
+    }
+  ],
+
+  "dependencies": {
+    "grafanaVersion": "6.1.x"
+  }
+}
