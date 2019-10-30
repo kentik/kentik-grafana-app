@@ -161,13 +161,14 @@ workflows:
           filters: *filter-not-release-or-master
       - test:
           requires:
-            - build
+            - tslint
           filters: *filter-not-release-or-master
-
-  github_release:
-    jobs:
       - hold:
           type: approval
+          requires:
+            - test
           filters: *filter-not-release-or-master
       - publish_github_release:
+          requires:
+            - hold
           filters: *filter-not-release-or-master
