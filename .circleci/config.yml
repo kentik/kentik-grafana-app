@@ -37,7 +37,7 @@ jobs:
             npm install
             npm run build
             sudo apt-get install jq
-            VERSION=`cat src/plugin.json|jq '.info.version'| sed s/\"//g`
+            VERSION=`cat dist/plugin.json|jq '.info.version'| sed s/\"//g`
             # create zip file
             cd ~
             echo "Creating ZIP"
@@ -50,7 +50,7 @@ jobs:
             echo "Creating TAR"
             tar \
               --exclude .git \
-              --exclude ${PLUGIN_NAME}/node_modules \
+              --exclude node_modules \
               -zcvf /tmp/${PLUGIN_NAME}-${VERSION}.tar.gz \
               ${PLUGIN_NAME}
             # create artifacts
@@ -153,20 +153,20 @@ workflows:
 
   build-branches-and-prs:
     jobs:
-      - build:
-          filters: *filter-not-release-or-master
       - tslint:
-          requires:
-            - build
           filters: *filter-not-release-or-master
       - test:
           requires:
             - tslint
           filters: *filter-not-release-or-master
+      - build:
+          requires:
+            - test
+          filters: *filter-not-release-or-master
       - hold:
           type: approval
           requires:
-            - test
+            - build
           filters: *filter-not-release-or-master
       - publish_github_release:
           requires:
