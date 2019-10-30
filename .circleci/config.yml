@@ -167,10 +167,10 @@ workflows:
   - approve_release:
       type: approval
       requires:
-        - build-master
-      filters: *filter-only-master
+        - build-branches-and-prs
+      filters: *filter-not-release-or-master
 
   - publish_github_release:
       requires:
         - approve_release
-      filters: *filter-only-master
+      filters: *filter-not-release-or-master
