@@ -164,13 +164,16 @@ workflows:
             - build
           filters: *filter-not-release-or-master
 
-  - approve_release:
-      type: approval
-      requires:
-        - build-branches-and-prs
-      filters: *filter-not-release-or-master
+  approve_release:
+    type: approval
+    requires:
+      - build-branches-and-prs
+    filters: *filter-not-release-or-master
 
-  - publish_github_release:
-      requires:
-        - approve_release
-      filters: *filter-not-release-or-master
+  github_release:
+    jobs:
+      - publish_github_release:
+          filters: *filter-not-release-or-master
+    requires:
+      - approve_release
+    filters: *filter-not-release-or-master
