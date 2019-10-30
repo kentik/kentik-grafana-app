@@ -168,8 +168,6 @@ workflows:
     jobs:
       - hold:
           type: approval
+          filters: *filter-not-release-or-master
       - publish_github_release:
           filters: *filter-not-release-or-master
-    requires:
-      - build-branches-and-prs
-    filters: *filter-not-release-or-master
