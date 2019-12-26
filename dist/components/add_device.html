@@ -1,0 +1,95 @@
+<div class="page-header">
+  <h1>Add a New Device</h1>
+</div>
+<div class="row">
+  <div class="col-md-10">
+    <p>Devices in Kentik are sources of network flow data - commonly a network component such as a switch or router, or
+      a flow generation agent on a host/server. Once configured, Kentik will automatically begin tracking and returning
+      direct insights from that source viewpoint into exactly which applications and endpoints are actively driving
+      network traffic.</p>
+  </div>
+</div>
+
+<form name="addDeviceForm">
+  <div class="gf-form-group">
+    <div class="gf-form">
+      <label class="gf-form-label width-11">Device Name</label>
+      <input class="gf-form-input max-width-21" type="text" ng-model="ctrl.device.device_name" pattern="^[A-Za-z0-9_]{1,15}$"
+        required>
+    </div>
+    <div class="gf-form">
+      <label class="gf-form-label width-11">Device Type</label>
+      <div class="gf-form-select-wrapper">
+        <select class="gf-form-input gf-size-auto" ng-model="ctrl.device.device_type">
+          <option value="router">Router</option>
+          <option value="host-nprobe-basic">Host</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="gf-form-group">
+    <div class="gf-form">
+      <label class="gf-form-label width-11">Description</label>
+      <input class="gf-form-input max-width-21" type="text" ng-model="ctrl.device.device_description">
+    </div>
+    <div class="gf-form" ng-if="ctrl.device.device_type == 'router'">
+      <label class="gf-form-label width-11">Flow Type</label>
+      <div class="gf-form-select-wrapper">
+        <select class="gf-form-input gf-size-auto" ng-model="ctrl.device.device_flow_type">
+          <option value="sflow">sFlow</option>
+          <option value="netflow.v5">NetFlow v5</option>
+          <option value="netflow.v9">NetFlow v9</option>
+          <option value="ipfix">IPFIX</option>
+        </select>
+      </div>
+    </div>
+    <div class="gf-form" ng-if="ctrl.device.device_type == 'host-nprobe-basic'">
+      <label class="gf-form-label width-11">Flow Type</label>
+      <div class="gf-form-select-wrapper">
+        <select class="gf-form-input gf-size-auto" ng-model="ctrl.device.device_flow_type">
+          <option value=hiresflow>HiresFlow</option>
+        </select>
+      </div>
+    </div>
+    <div class="gf-form">
+      <label class="gf-form-label width-11">Sample Rate</label>
+      <input class="gf-form-input max-width-5" type="number" required ng-model="ctrl.device.device_sample_rate">
+    </div>
+    <div class="gf-form" ng-repeat="ip in ctrl.sending_ips">
+      <label class="gf-form-label width-11">Source Address</label>
+      <input class="gf-form-input max-width-15" type="text" ng-model="ip.ip" required>
+      <a class="btn btn-inverse btn-small" ng-click="ctrl.addIP()" ng-if="$first"><i class="fa fa-plus"></i></a>
+      <a class="btn btn-inverse btn-small" ng-click="ctrl.removeIP($index)" ng-if="!$first"><i class="fa fa-minus"></i></a>
+    </div>
+  </div>
+  <div class="gf-form-group">
+    <div class="gf-form" ng-if="ctrl.device.device_type == 'router'">
+      <label class="gf-form-label width-11">SNMP Polling</label>
+      <div class="gf-form-select-wrapper">
+        <select class="gf-form-input gf-size-auto" ng-model="ctrl.device.minimize_snmp" ng-options="i.v as i.l for i in [{v: true, l: 'Minimum'}, {v: false, l: 'Standard'}]">
+        </select>
+      </div>
+    </div>
+    <div class="gf-form" ng-if="ctrl.device.device_type == 'router'">
+      <label class="gf-form-label width-11">SNMP Community</label>
+      <input class="gf-form-input max-width-15" type="text" ng-model="ctrl.device.device_snmp_community">
+    </div>
+    <div class="gf-form" ng-if="ctrl.device.device_type == 'router'">
+      <label class="gf-form-label width-11">Device IP</label>
+      <input class="gf-form-input max-width-15" type="text" ng-model="ctrl.device.device_snmp_ip">
+    </div>
+  </div>
+  <div class="gf-form-group">
+    <div class="gf-form">
+      <label class="gf-form-label width-11">BGP</label>
+      <div class="gf-form-select-wrapper">
+        <select class="gf-form-input max-width-15" disabled>
+          <option>Available with paid acounts</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-success" ng-click="ctrl.addDevice()">Add Device</button>
+  <a class="btn btn-link" ng-click="ctrl.cancel();">Cancel</a>
+</form>
