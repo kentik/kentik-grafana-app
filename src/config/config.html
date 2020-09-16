@@ -52,6 +52,14 @@
 </div>
 
 <div ng-if="ctrl.appModel.jsonData.tokenSet && ctrl.apiValidated" class="kentik-enabled-box">
-  <i class="icon-gf icon-gf-check icon-gf-check kentik-icon-success"></i> Successfully enabled. <strong>Next up:
-  </strong><a href="dashboard/db/kentik-home" class="external-link">Go to Kentik Home Dashboard</a>
+  <i class="icon-gf icon-gf-check kentik-api-status-icon success"></i>
+  Successfully enabled.
+  <strong>Next up: </strong>
+  <a href="dashboard/db/kentik-home" class="external-link">Go to Kentik Home Dashboard</a>
+</div>
+
+<div ng-if="ctrl.appModel.jsonData.tokenSet && ctrl.apiValidated && ctrl.apiMemberWarning" class="kentik-enabled-box">
+  <i class="fa fa-warning kentik-api-status-icon warning"></i>
+  The specified Kentik user seems to have Member access level (not Admin),
+  Custom Dimensions in the dashboard filters won't be available.
 </div>

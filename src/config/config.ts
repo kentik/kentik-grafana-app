@@ -1,7 +1,7 @@
 import configTemplate from './config.html';
 
 import { KentikAPI } from '../datasource/kentik_api';
-import { showAlert, showCustomAlert } from '../datasource/alert_helper';
+import { showCustomAlert } from '../datasource/alert_helper';
 
 import { BackendSrv } from 'grafana/app/core/services/backend_srv';
 
@@ -15,12 +15,15 @@ enum Region {
 }
 
 class KentikConfigCtrl {
+  static template: any;
+
   apiValidated = false;
   apiError = false;
+  apiMemberWarning = false;
+
   appEditCtrl: any;
   appModel: any;
   kentik: KentikAPI;
-  static template: any;
   regionTypes = [
     { value: Region.DEFAULT, text: 'US (default)' },
     { value: Region.EU, text: 'EU' },
@@ -69,23 +72,31 @@ class KentikConfigCtrl {
   }
 
   // make sure that we can hit the Kentik API.
-  async validateApiConnection() {
+  async validateApiConnection(): Promise<void> {
+    // any user (Admin / Member) can get devices
     try {
-      const result = await this.kentik.getUsers();
-      try {
-        if (result.hasOwnProperty('data')) {
-          this.apiValidated = true;
-          showCustomAlert('API working!', '', 'success');
-        }
-      } catch (e) {
-        showAlert('Unexpected result from API: ' + e);
-        this.apiValidated = false;
-        this.apiError = true;
-      }
+      await this.kentik.getDevices();
     } catch (e) {
       this.apiValidated = false;
       this.apiError = true;
+      return;
     }
+
+    // only Admin can get users list
+    try {
+      await this.kentik.getUsers();
+    } catch (e) {
+      if (e.status !== 403) {
+        this.apiValidated = false;
+        this.apiError = true;
+        return;
+      }
+
+      this.apiMemberWarning = true;
+    }
+
+    this.apiValidated = true;
+    showCustomAlert('API working!', '', 'success');
     this.$scope.$digest();
   }
 
