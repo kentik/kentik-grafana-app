@@ -77,8 +77,7 @@ class KentikConfigCtrl {
     try {
       await this.kentik.getDevices();
     } catch (e) {
-      this.apiValidated = false;
-      this.apiError = true;
+      this._onApiError();
       return;
     }
 
@@ -87,8 +86,7 @@ class KentikConfigCtrl {
       await this.kentik.getUsers();
     } catch (e) {
       if (e.status !== 403) {
-        this.apiValidated = false;
-        this.apiError = true;
+        this._onApiError();
         return;
       }
 
@@ -149,6 +147,12 @@ class KentikConfigCtrl {
       }
     }
     return promisesResults;
+  }
+
+  private _onApiError(): void {
+    this.apiValidated = false;
+    this.apiError = true;
+    this.$scope.$digest();
   }
 
   private _getUrlByRegion(region: Region): string {

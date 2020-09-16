@@ -24,7 +24,8 @@ export class KentikAPI {
   }
 
   async getUsers(): Promise<any> {
-    return this._get('/api/v5/users');
+    const requiresAdminLevel = true;
+    return this._get('/api/v5/users', requiresAdminLevel);
   }
 
   async getFieldValues(field: string): Promise<any> {
@@ -34,8 +35,8 @@ export class KentikAPI {
 
   async getCustomDimensions(): Promise<any[]> {
     try {
-      const silent = true;
-      const resp = await this._get('/api/v5/customdimensions', silent);
+      const requiresAdminLevel = true;
+      const resp = await this._get('/api/v5/customdimensions', requiresAdminLevel);
       return resp.data.customDimensions;
     } catch (e) {
       if (e.status === 403) {
@@ -66,7 +67,7 @@ export class KentikAPI {
     return this._post('/api/v5/query/sql', data);
   }
 
-  private async _get(url: string, silent = false): Promise<any> {
+  private async _get(url: string, requiresAdminLevel = false): Promise<any> {
     try {
       const resp = await this.$http({
         method: 'GET',
@@ -75,7 +76,7 @@ export class KentikAPI {
 
       return resp;
     } catch (error) {
-      if (silent === false) {
+      if (error.status !== 403 || requiresAdminLevel === false) {
         showAlert(error);
       }
       if (error.err) {
