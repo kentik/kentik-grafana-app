@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1] - 2020-09-25
+
+### Fixed
+
+- 403 error when using non-admin Kentik user [#31](https://github.com/kentik/kentik-grafana-app/issues/31)
+
 ## [1.4.0] - 2019-12-26
 
 ### Breaking changes
