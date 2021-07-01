@@ -1,0 +1,88 @@
+{
+  "type": "app",
+  "name": "Kentik Connect Pro",
+  "id": "kentik-app",
+
+  "routes": [
+    {
+      "path": "api/v5/*",
+      "method": "*",
+      "url": "{{.JsonData.url}}",
+      "headers": [
+        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
+        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"}
+      ]
+    }
+  ],
+
+  "info": {
+    "description": "Kentik Connect Pro allows you to quickly and easily add network activity visibility metrics to your Grafana dashboard.",
+    "author": {
+      "name": "Kentik.",
+      "url": "http://kentik.com"
+    },
+    "keywords": ["kentik"],
+    "logos": {
+      "small": "img/logo_small.png",
+      "large": "img/logo_large.png"
+    },
+    "links": [
+      {"name": "Kentik", "url": "http://www.kentik.com"},
+      {"name": "License & Terms", "url": "https://www.apache.org/licenses/LICENSE-2.0"}
+    ],
+    "screenshots": [
+      {"name": "Kentik Connect - Top Talkers", "path": "img/kentik-connect-top-talkers-2.png"},
+      {"name": "Kentik Connect - Home Dashboard", "path": "img/kentik-connect-home.png"},
+      {"name": "Kentik Connect - Device Details", "path": "img/kentik-connect-device-details.png"},
+      {"name": "Kentik Connect - Top Talkers 2", "path": "img/kentik-connect-top-talkers.png"}
+    ],
+    "version": "1.4.2",
+    "updated": "2021-07-01"
+  },
+
+  "includes": [
+    {
+      "type": "page",
+      "name": "Device List",
+      "component": "DeviceListCtrl",
+      "role": "Editor",
+      "addToNav": true
+    },
+    {
+      "type": "page",
+      "name": "Device Details",
+      "component": "DeviceDetailsCtrl",
+      "role": "Editor",
+      "addToNav": false
+    },
+    {
+      "type": "dashboard",
+      "name": "Kentik Top Talkers",
+      "path": "dashboards/kentik-top-talkers.json",
+      "addToNav": true
+    },
+    {
+      "type": "dashboard",
+      "name": "Kentik Home",
+      "path": "dashboards/kentik-home.json",
+      "addToNav": true,
+      "defaultNav": true
+    },
+    {
+      "type": "panel",
+      "name": "Kentik Call To Action"
+    },
+    {
+      "type": "panel",
+      "name": "Kentik Device List"
+    },
+    {
+      "type": "datasource",
+      "name": "Kentik-ds"
+    }
+  ],
+
+  "dependencies": {
+    "grafanaVersion": "6.1.x"
+  }
+}

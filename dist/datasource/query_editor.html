@@ -1,0 +1,59 @@
+<query-editor-row query-ctrl="ctrl" can-collapse="false">
+  <div class="gf-form-inline">
+    <div class="gf-form">
+      <label class="gf-form-label width-7">Device</label>
+      <metric-segment
+        class="width-11"
+        segment="ctrl.deviceSegment"
+        get-options="ctrl.getDevices($query)"
+        on-change="ctrl.onDeviceChange()"
+      ></metric-segment>
+    </div>
+    <div class="gf-form">
+      <label class="gf-form-label width-7">Metric</label>
+      <metric-segment
+        class="width-11"
+        segment="ctrl.metricSegment"
+        get-options="ctrl.getMetrics($query)"
+        on-change="ctrl.onMetricChange()"
+      ></metric-segment>
+    </div>
+    <div class="gf-form gf-form--grow">
+      <div class="gf-form-label gf-form-label--grow"></div>
+    </div>
+  </div>
+  <div class="gf-form-inline">
+    <div class="gf-form">
+      <label class="gf-form-label width-7">Unit</label>
+      <metric-segment
+        class="width-11"
+        segment="ctrl.unitSegment"
+        get-options="ctrl.getUnits($query)"
+        on-change="ctrl.onUnitChange()"
+      ></metric-segment>
+    </div>
+    <div class="gf-form">
+      <label class="gf-form-label width-7">Data mode</label>
+      <div class="gf-form-select-wrapper width-11">
+        <select class="gf-form-input" ng-model="ctrl.target.mode" ng-options="f.value as f.text for f in ctrl.queryModes" ng-change="ctrl.refresh()"></select>
+      </div>
+    </div>
+    <div class="gf-form gf-form--grow">
+      <div class="gf-form-label gf-form-label--grow"></div>
+    </div>
+  </div>
+  <div class="gf-form-inline">
+    <div class="gf-form">
+        <label class="gf-form-label width-7">DNS Lookup</label>
+        <metric-segment
+          class="width-11"
+          segment="ctrl.hostnameLookup"
+          get-options="ctrl.getHostnameLookupOptionValues()"
+          on-change="ctrl.onHostnameLookupChange()"
+        ></metric-segment>
+    </div>
+    <div class="gf-form gf-form--grow">
+        <div class="gf-form-label gf-form-label--grow"></div>
+      </div>
+  </div>
+</query-editor-row>
