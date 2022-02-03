@@ -5,7 +5,7 @@ import { AppRootProps } from '@grafana/data';
 import React, { FC, useEffect, useState  } from 'react';
 
 
-export const DeviceList: FC<AppRootProps> = ({ query, path, meta }) => {
+export const deviceList: FC<AppRootProps> = ({ query, path, meta }) => {
   const [state, setState] = useState({
     showDeviceDesc: false,
     pageReady: false,
@@ -21,7 +21,7 @@ export const DeviceList: FC<AppRootProps> = ({ query, path, meta }) => {
   }, []);
 
   async function fetchDevices(): Promise<void> {
-    let devices = await kentik.getDevices();
+    const devices = await kentik.getDevices();
     setState({
       ...state,
       pageReady: true,

@@ -9,7 +9,7 @@ import { getBackendSrv } from '@grafana/runtime';
 import * as _ from 'lodash';
 
 
-export const RootPage = React.memo(function RootPage(props: AppRootProps) {
+export const rootPage = React.memo(function getRootPage(props: AppRootProps) {
   const {
     path,
     onNavChanged,
@@ -25,10 +25,10 @@ export const RootPage = React.memo(function RootPage(props: AppRootProps) {
   const kentik = new KentikAPI(backendSrv);
 
   async function fetchDevices(): Promise<void> {
-    if(state.devices !== null) {
+    if (state.devices !== null) {
       return;
     }
-    let devices = await kentik.getDevices();
+    const devices = await kentik.getDevices();
 
     setState({
       ...state,
@@ -50,7 +50,7 @@ export const RootPage = React.memo(function RootPage(props: AppRootProps) {
   useEffect(() => {
     onNavChanged(navModel);
   }, [navModel, onNavChanged, pages]);
-
+  /* tslint:disable-next-line */
   const Page = pages.find(({ id }) => id === tab)?.component || pages[0].component;
   return <Page {...props} path={pathWithoutLeadingSlash} />;
 });

@@ -30,7 +30,7 @@ export function useNavModel({ meta, pages, path, tab }: Args) {
       tabs.push({
         ...pages[0],
         active: true
-      })
+      });
     }
 
     const node = {

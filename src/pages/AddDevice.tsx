@@ -20,7 +20,7 @@ const defaults = {
   device_snmp_community: '',
 };
 
-export const AddDevice: FC<AppRootProps> = () => {
+export const addDevice: FC<AppRootProps> = () => {
   const backendSrv = getBackendSrv();
 
   const [state, setState] = useState({
@@ -43,7 +43,7 @@ export const AddDevice: FC<AppRootProps> = () => {
   }
 
   function handleIpChange(event: React.ChangeEvent<HTMLInputElement>, index: number): void {
-    let ipsForUpdate = state.sendingIps;
+    const ipsForUpdate = state.sendingIps;
     ipsForUpdate[index] = { ip: event.target.value };
     setState({
       ...state,
@@ -53,7 +53,7 @@ export const AddDevice: FC<AppRootProps> = () => {
 
   function onDeviceFieldChange(event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>, field: string): void {
     console.log('state', state.device, field);
-    let deviceForUpdate = state.device;
+    const deviceForUpdate = state.device;
     // @ts-ignore
     deviceForUpdate[field] = event.target.value;
     setState({
@@ -62,7 +62,7 @@ export const AddDevice: FC<AppRootProps> = () => {
     });
   }
 
-  async function addDevice(event: FormEvent<HTMLFormElement>): Promise<void> {
+  async function appendDevice(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
 
     const ips: string[] = [];
@@ -88,7 +88,7 @@ export const AddDevice: FC<AppRootProps> = () => {
   }
 
   let typeSelector;
-  switch(state.device.device_type) {
+  switch (state.device.device_type) {
     case 'router':
       typeSelector = <div className="gf-form">
         <label className="gf-form-label width-11">Flow Type</label>
@@ -104,7 +104,7 @@ export const AddDevice: FC<AppRootProps> = () => {
             <option value="ipfix">IPFIX</option>
           </select>
         </div>
-      </div>
+      </div>;
       break;
     case 'host-nprobe-basic':
       typeSelector = <div className="gf-form">
@@ -118,14 +118,14 @@ export const AddDevice: FC<AppRootProps> = () => {
             <option value="hiresflow">HiresFlow</option>
           </select>
         </div>
-      </div>
+      </div>;
       break;
     default:
-      typeSelector = <div></div>
+      typeSelector = <div></div>;
   }
 
   return (
-    <form name="addDeviceForm" onSubmit={addDevice}>
+    <form name="addDeviceForm" onSubmit={appendDevice}>
       <div className="page-header">
         <h1>Add a New Device</h1>
       </div>

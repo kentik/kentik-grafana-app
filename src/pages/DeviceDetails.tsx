@@ -9,7 +9,7 @@ import React, { FC, FormEvent, useEffect, useState  } from 'react';
 import * as _ from 'lodash';
 
 
-export const DeviceDetails: FC<AppRootProps> = ({ query, path, meta }) => {
+export const deviceDetails: FC<AppRootProps> = ({ query, path, meta }) => {
   const [state, setState] = useState({
     pageReady: false,
     // TODO: Device type
@@ -63,7 +63,7 @@ export const DeviceDetails: FC<AppRootProps> = ({ query, path, meta }) => {
     event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>,
     field: string
   ): void {
-    let deviceForUpdate = state.deviceDTO;
+    const deviceForUpdate = state.deviceDTO;
     // @ts-ignore
     deviceForUpdate[field] = event.target.value;
     setState({
@@ -92,7 +92,7 @@ export const DeviceDetails: FC<AppRootProps> = ({ query, path, meta }) => {
         showCustomAlert('Device Updated.', state.deviceDTO.device_name, 'success');
         return fetchDevice(state.deviceDTO.device_id);
       }
-    } catch (error) {
+    } catch (error: any) {
       if ('error' in error.data) {
         showCustomAlert('Device Update failed.', error.data.error, 'error');
         return;
@@ -193,8 +193,8 @@ export const DeviceDetails: FC<AppRootProps> = ({ query, path, meta }) => {
                     <div className="gf-form">
                       <label className="gf-form-label width-11">Flow Type</label>
                       <div className="gf-form-select-wrapper">
-                        <select 
-                          className="gf-form-input gf-size-auto" 
+                        <select
+                          className="gf-form-input gf-size-auto"
                           value={state.deviceDTO.device_flow_type}
                           onChange={event => onFieldChange(event, 'device_flow_type')}
                         >
