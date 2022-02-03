@@ -52,20 +52,14 @@ function getKentikProxyInstance(ctx: any, data: any) {
         },
       ]);
     },
-    datasourceRequest: () => {
+    request: () => {
       return Promise.resolve({
         status: 200,
-        data,
+        ...data,
       });
     },
   };
-  ctx.$http = () => {
-    return Promise.resolve({
-      status: 200,
-      data,
-    });
-  };
 
-  ctx.kentikAPI = new KentikAPI(ctx.backendSrv, ctx.$http);
+  ctx.kentikAPI = new KentikAPI(ctx.backendSrv);
   ctx.kentikProxy = new KentikProxy(ctx.kentikAPI);
 }
