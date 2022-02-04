@@ -59,7 +59,7 @@ class DeviceListCtrl extends PanelCtrl {
   }
 
   gotoDashboard(device: any) {
-    this.$location.path('/dashboard/db/kentik-top-talkers').search({ 'var-device': device.device_name });
+    this.$location.path('/d/NS58GIo71/kentik-top-talkers').search({ 'var-device': device.device_name });
   }
 }
 

@@ -66,7 +66,7 @@ class KentikConfigCtrl {
     await this.validateApiConnection();
 
     return {
-      url: 'dashboard/db/kentik-home',
+      url: 'd/xScUGST71/kentik-home',
       message: 'Kentik Connect Pro app installed!',
     };
   }
