@@ -2,13 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2022-02-24
+
+- Added support for Grafana version 8
+- Build tooling support for official plugin
+
 ## [1.5.0] - 2021-08-06
 
 ### Breaking changes
 
 Plugin ID is changed according to [Grafana convention](https://grafana.com/docs/grafana/v7.5/developers/plugins/legacy/review-guidelines/#pluginjson): `kentik-app` -> `kentik-connect-app`.
 
-**Please refer to the updated installation instructions before updating.** 
+**Please refer to the updated installation instructions before updating.**
 It's important to **remove the existing plugin** and **enable the plugin in Grafana again**.
 
 ## [1.4.2] - 2021-05-21
