@@ -17,7 +17,7 @@ type QueryFilter = {
   operatorSegment?: MetricSegment,
   valueSegment?: MetricSegment,
   conjunctionSegment?: MetricSegment
-}
+};
 
 
 class KentikQueryCtrl extends QueryCtrl {
@@ -75,7 +75,9 @@ class KentikQueryCtrl extends QueryCtrl {
       this.hostnameLookup = this.uiSegmentSrv.newSegment({ value: HOSTNAME_LOOKUP_TEMPLATE_VAR });
     } else {
       this.hostnameLookup = this.hostnameLookup = this.uiSegmentSrv.newSegment({ value: this.target.hostnameLookup });
-    } 
+    }
+
+    this.target.prefix = this.target.prefix || '';
   }
 
   async getMetricSegments(query: string, variableName?: string, addTemplateVars = false): Promise<MetricSegment[]> {
@@ -172,6 +174,10 @@ class KentikQueryCtrl extends QueryCtrl {
         );
       }
     }
+  }
+
+  onPrefixChange(): void {
+    this.panelCtrl.refresh();
   }
 
   async onFilterInputChange(

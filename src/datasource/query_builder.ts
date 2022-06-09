@@ -100,6 +100,9 @@ function formatFilters(kentikFilterGroups: any[]) {
 
 function buildTopXdataQuery(options: any) {
   const unitDef = _.find<Unit>(unitList, { value: options.unit });
+  if (!unitDef) {
+    throw new Error('Query error: Unit field is required');
+  }
   const startingTime = options.range.from.utc().format(KENTIK_TIME_FORMAT);
   const endingTime = options.range.to.utc().format(KENTIK_TIME_FORMAT);
 

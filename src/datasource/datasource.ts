@@ -34,34 +34,42 @@ class KentikDatasource {
       return Promise.resolve({ data: [] });
     }
 
-    const target = options.targets[0];
-    const deviceNames = this.templateSrv.replace(target.device, options.scopedVars, this.interpolateDeviceField.bind(this));
+    const promises = _.map(
+      _.filter(options.targets, target => !target.hide),
+      async (target, i) => {
+        const deviceNames = this.templateSrv.replace(target.device, options.scopedVars, this.interpolateDeviceField.bind(this));
 
-    const kentikFilters = this.templateSrv.getAdhocFilters(this.name);
-    const customDimensions = await this.kentik.getCustomDimensions();
-    const savedFiltersList = await this.kentik.getSavedFilters();
-    const kentikFilterGroups = queryBuilder.convertToKentikFilterGroup(kentikFilters, customDimensions, savedFiltersList);
+        const kentikFilters = this.templateSrv.getAdhocFilters(this.name);
+        const customDimensions = await this.kentik.getCustomDimensions();
+        const savedFiltersList = await this.kentik.getSavedFilters();
+        const kentikFilterGroups = queryBuilder.convertToKentikFilterGroup(kentikFilters, customDimensions, savedFiltersList);
 
-    const queryOptions = {
-      deviceNames: deviceNames,
-      range: {
-        from: options.range.from,
-        to: options.range.to,
-      },
-      metric: this.templateSrv.replace(target.metric),
-      unit: this.templateSrv.replace(target.unit),
-      kentikFilterGroups: kentikFilterGroups.kentikFilters,
-      kentikSavedFilters: kentikFilterGroups.savedFilters,
-      hostnameLookup: this.templateSrv.replace(target.hostnameLookup),
-    };
-    const query = queryBuilder.buildTopXdataQuery(queryOptions);
+        const queryOptions = {
+          deviceNames: deviceNames,
+          range: {
+            from: options.range.from,
+            to: options.range.to,
+          },
+          metric: this.templateSrv.replace(target.metric),
+          unit: this.templateSrv.replace(target.unit),
+          kentikFilterGroups: kentikFilterGroups.kentikFilters,
+          kentikSavedFilters: kentikFilterGroups.savedFilters,
+          hostnameLookup: this.templateSrv.replace(target.hostnameLookup),
+        };
+        const query = queryBuilder.buildTopXdataQuery(queryOptions);
 
-    const topXData = await this.kentik.invokeTopXDataQuery(query);
-    const data = await this.processResponse(query, target.mode, options, topXData);
-    return { data };
+        const topXData = await this.kentik.invokeTopXDataQuery(query);
+        const data = await this.processResponse(query, target.mode, target, topXData);
+        return data;
+      }
+    );
+
+    const results = await Promise.all(promises);
+
+    return { data: _.flatten(results) };
   }
 
-  async processResponse(query: any, mode: string, options: any, data: any) {
+  async processResponse(query: any, mode: string, target: any, data: any) {
     if (!data.results) {
       return Promise.reject({ message: 'no kentik data' });
     }
@@ -74,16 +82,25 @@ class KentikDatasource {
     const extendedMetricList = await this._getExtendedDimensionsList(metricList);
     const metricDef = _.find(extendedMetricList, { value: query.dimension[0] });
 
+    if (!metricDef) {
+      throw new Error('Query error: Metric field is required');
+    }
+
     const unitDef = _.find(unitList, { value: query.metric });
+
+    if (!unitDef) {
+      throw new Error('Query error: Unit field is required');
+    }
+
 
     if (mode === 'table') {
       return this.processTableData(bucketData, metricDef, unitDef);
     } else {
-      return this.processTimeSeries(bucketData, query);
+      return this.processTimeSeries(bucketData, query, target);
     }
   }
 
-  processTimeSeries(bucketData: any, query: any) {
+  processTimeSeries(bucketData: any, query: any, target: any) {
     const seriesList: any[] = [];
     let endIndex = query.topx;
     if (bucketData.length < endIndex) {
@@ -95,7 +112,9 @@ class KentikDatasource {
       const timeseries = _.find(series.timeSeries, serie => {
         return serie.flow && serie.flow.length;
       });
-      const seriesName = series.key;
+
+      const prefix = target.prefix ? `${target.prefix} ` : '';
+      const seriesName = `${prefix}${series.key}`;
 
       if (timeseries) {
         const grafanaSeries = {
