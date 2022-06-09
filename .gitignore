@@ -13,5 +13,3 @@ dist/
 *.iml
 *.tmp
 .vscode/
-
-yarn.lock

@@ -12,6 +12,14 @@ const HOSTNAME_LOOKUP_CHOICES = [
   'disabled'
 ];
 
+type QueryFilter = {
+  keySegment: MetricSegment,
+  operatorSegment?: MetricSegment,
+  valueSegment?: MetricSegment,
+  conjunctionSegment?: MetricSegment
+}
+
+
 class KentikQueryCtrl extends QueryCtrl {
   static templateUrl: string;
   queryModes: Array<{ value: string; text: string }>;
@@ -19,6 +27,7 @@ class KentikQueryCtrl extends QueryCtrl {
   deviceSegment: MetricSegment;
   unitSegment: MetricSegment;
   hostnameLookup: MetricSegment;
+  filterList: QueryFilter[] = [];
 
   /** @ngInject */
   constructor(
@@ -66,7 +75,7 @@ class KentikQueryCtrl extends QueryCtrl {
       this.hostnameLookup = this.uiSegmentSrv.newSegment({ value: HOSTNAME_LOOKUP_TEMPLATE_VAR });
     } else {
       this.hostnameLookup = this.hostnameLookup = this.uiSegmentSrv.newSegment({ value: this.target.hostnameLookup });
-    }
+    } 
   }
 
   async getMetricSegments(query: string, variableName?: string, addTemplateVars = false): Promise<MetricSegment[]> {
@@ -88,6 +97,28 @@ class KentikQueryCtrl extends QueryCtrl {
 
   async getUnits(): Promise<MetricSegment[]> {
     return this.getMetricSegments('units()', '$unit');
+  }
+
+  addFilter(): void {
+    this.filterList.push({
+      keySegment: this.uiSegmentSrv.newSegment({ value: 'none' }),
+    });
+  }
+
+  async getAdHocFilterOptionValues(): Promise<MetricSegment[]> {
+    const options = ['a', 'b'];
+
+    return this.uiSegmentSrv.transformToSegments(false)(options.map(o => {
+      return { text: o };
+    }) as any[]);
+  }
+
+  async getOperatorOptionValues(): Promise<MetricSegment[]> {
+    const options = ['=', '!=', '<', '<=', '>', '>='];
+
+    return this.uiSegmentSrv.transformToSegments(false)(options.map(o => {
+      return { text: o };
+    }) as any[]);
   }
 
   async getHostnameLookupOptionValues(): Promise<MetricSegment[]> {
@@ -140,6 +171,18 @@ class KentikQueryCtrl extends QueryCtrl {
           `${this.hostnameLookup.value} isn't valid hostname lookup value. Use one of ${['enable', 'disable']}`
         );
       }
+    }
+  }
+
+  async onFilterInputChange(
+    idx: number, field: 'keySegment' | 'operatorSegment' | 'valueSegment' | 'conjunctionSegment'
+  ): Promise<void> {
+    console.log('onFilterInputChange', idx, field, this.filterList[idx][field]);
+    if (field === 'keySegment' && this.filterList[idx].operatorSegment === undefined) {
+      this.filterList[idx].operatorSegment = this.uiSegmentSrv.newOperator('=');
+    }
+    if (field === 'keySegment' && this.filterList[idx].valueSegment === undefined) {
+      this.filterList[idx].valueSegment = this.uiSegmentSrv.newSegment({ value: 'none' });
     }
   }
 }
