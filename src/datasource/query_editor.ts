@@ -25,6 +25,7 @@ class KentikQueryCtrl extends QueryCtrl {
   queryModes: Array<{ value: string; text: string }>;
   metricSegment: MetricSegment;
   deviceSegment: MetricSegment;
+  siteSegment: MetricSegment;
   unitSegment: MetricSegment;
   hostnameLookup: MetricSegment;
   filterList: QueryFilter[] = [];
@@ -57,6 +58,12 @@ class KentikQueryCtrl extends QueryCtrl {
       this.deviceSegment = this.uiSegmentSrv.newSegment({ value: 'select device', fake: true });
     } else {
       this.deviceSegment = this.uiSegmentSrv.newSegment({ value: this.target.device });
+    }
+
+    if (this.target.site === undefined) {
+      this.siteSegment = this.uiSegmentSrv.newSegment({ value: 'select site', fake: true });
+    } else {
+      this.siteSegment = this.uiSegmentSrv.newSegment({ value: this.target.site });
     }
 
     if (this.target.unit === undefined) {
@@ -95,6 +102,10 @@ class KentikQueryCtrl extends QueryCtrl {
 
   async getDevices(): Promise<MetricSegment[]> {
     return this.getMetricSegments('devices()', '$device');
+  }
+
+  async getSites(): Promise<MetricSegment[]> {
+    return this.getMetricSegments('sites()');
   }
 
   async getUnits(): Promise<MetricSegment[]> {
@@ -159,6 +170,12 @@ class KentikQueryCtrl extends QueryCtrl {
 
   async onDeviceChange(): Promise<void> {
     this.target.device = this.deviceSegment.value;
+
+    this.panelCtrl.refresh();
+  }
+
+  async onSiteChange(): Promise<void> {
+    this.target.site = this.siteSegment.value;
 
     this.panelCtrl.refresh();
   }
