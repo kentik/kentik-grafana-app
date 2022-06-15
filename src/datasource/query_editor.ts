@@ -107,12 +107,24 @@ class KentikQueryCtrl extends QueryCtrl {
     });
   }
 
-  async getAdHocFilterOptionValues(): Promise<MetricSegment[]> {
-    const options = ['a', 'b'];
+  onPrefixChange(): void {
+    this.panelCtrl.refresh();
+  }
 
-    return this.uiSegmentSrv.transformToSegments(false)(options.map(o => {
-      return { text: o };
-    }) as any[]);
+  async getFilterOptionValues(filterIndex: number): Promise<MetricSegment[]> {
+    const variables = _.map(this.templateSrv.variables, variable => `$${variable.name}`);
+    const formattedVariables = _.map(variables, v => { return { text: v } });
+    const values = await this.datasource.getTagValues({ key: this.filterList[filterIndex].keySegment.value });
+    const options = [...formattedVariables, ...values];   
+    return this.uiSegmentSrv.transformToSegments(false)(options);
+  }
+
+  async getFilterOptionKeys(): Promise<MetricSegment[]> {
+    const variables = _.map(this.templateSrv.variables, variable => `$${variable.name}`);
+    const formattedVariables = _.map(variables, v => { return { text: v } });
+    const keys = await this.datasource.getTagKeys();
+    const options = [...formattedVariables, ...keys];   
+    return this.uiSegmentSrv.transformToSegments(false)(options);
   }
 
   async getOperatorOptionValues(): Promise<MetricSegment[]> {
@@ -176,14 +188,9 @@ class KentikQueryCtrl extends QueryCtrl {
     }
   }
 
-  onPrefixChange(): void {
-    this.panelCtrl.refresh();
-  }
-
   async onFilterInputChange(
     idx: number, field: 'keySegment' | 'operatorSegment' | 'valueSegment' | 'conjunctionSegment'
   ): Promise<void> {
-    console.log('onFilterInputChange', idx, field, this.filterList[idx][field]);
     if (field === 'keySegment' && this.filterList[idx].operatorSegment === undefined) {
       this.filterList[idx].operatorSegment = this.uiSegmentSrv.newOperator('=');
     }

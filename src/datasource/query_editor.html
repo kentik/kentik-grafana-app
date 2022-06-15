@@ -77,11 +77,11 @@
       <label class="gf-form-label width-7"></label>
     </div>
     <div class="gf-form">
-      <metric-segment class="width-8" segment="filter.keySegment" get-options="ctrl.getAdHocFilterOptionValues()"
+      <metric-segment class="width-8" segment="filter.keySegment" get-options="ctrl.getFilterOptionKeys()"
         on-change="ctrl.onFilterInputChange($index, 'keySegment')"></metric-segment>
       <metric-segment ng-if="filter.operatorSegment !== undefined" class="width-2" segment="filter.operatorSegment" get-options="ctrl.getOperatorOptionValues()"
         on-change="ctrl.onFilterInputChange($index, 'operatorSegment')"></metric-segment>
-      <metric-segment ng-if="filter.valueSegment !== undefined" class="width-8" segment="filter.valueSegment" get-options="ctrl.getAdHocFilterOptionValues()"
+      <metric-segment ng-if="filter.valueSegment !== undefined" class="width-8" segment="filter.valueSegment" get-options="ctrl.getFilterOptionValues($index)"
         on-change="ctrl.onFilterInputChange($index, 'valueSegment')"></metric-segment>
     </div>
     <div class="gf-form gf-form--grow">
