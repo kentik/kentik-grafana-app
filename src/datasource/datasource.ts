@@ -160,7 +160,7 @@ class KentikDatasource {
   }
 
   async metricFindQuery(query: any) {
-    switch(query) {
+    switch (query) {
       case 'metrics()':
         return this._getExtendedDimensionsList(metricList);
       case 'units()':

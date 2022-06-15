@@ -124,17 +124,17 @@ class KentikQueryCtrl extends QueryCtrl {
 
   async getFilterOptionValues(filterIndex: number): Promise<MetricSegment[]> {
     const variables = _.map(this.templateSrv.variables, variable => `$${variable.name}`);
-    const formattedVariables = _.map(variables, v => { return { text: v } });
+    const formattedVariables = _.map(variables, v => ({ text: v }));
     const values = await this.datasource.getTagValues({ key: this.filterList[filterIndex].keySegment.value });
-    const options = [...formattedVariables, ...values];   
+    const options = [...formattedVariables, ...values];
     return this.uiSegmentSrv.transformToSegments(false)(options);
   }
 
   async getFilterOptionKeys(): Promise<MetricSegment[]> {
     const variables = _.map(this.templateSrv.variables, variable => `$${variable.name}`);
-    const formattedVariables = _.map(variables, v => { return { text: v } });
+    const formattedVariables = _.map(variables, v => ({ text: v }));
     const keys = await this.datasource.getTagKeys();
-    const options = [...formattedVariables, ...keys];   
+    const options = [...formattedVariables, ...keys];
     return this.uiSegmentSrv.transformToSegments(false)(options);
   }
 
