@@ -160,17 +160,25 @@ class KentikDatasource {
   }
 
   async metricFindQuery(query: any) {
-    if (query === 'metrics()') {
-      return this._getExtendedDimensionsList(metricList);
+    switch (query) {
+      case 'metrics()':
+        return this._getExtendedDimensionsList(metricList);
+      case 'units()':
+        return unitList;
+      case 'devices()':
+        const devices = await this.kentik.getDevices();
+        return devices.map((device: any) => {
+          return { text: device.device_name, value: device.device_name };
+        });
+      case 'sites()':
+        const sites = await this.kentik.getSites();
+        console.log(sites);
+        return sites.map((site: any) => {
+          return { text: site.site_name, value: site.site_name };
+        });
+      default:
+        throw new Error(`Unknown query type: ${query}`);
     }
-    if (query === 'units()') {
-      return unitList;
-    }
-
-    const devices = await this.kentik.getDevices();
-    return devices.map((device: any) => {
-      return { text: device.device_name, value: device.device_name };
-    });
   }
 
   findMetric(query: { text?: string; value?: string }): Metric | null {

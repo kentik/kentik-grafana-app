@@ -25,6 +25,7 @@ class KentikQueryCtrl extends QueryCtrl {
   queryModes: Array<{ value: string; text: string }>;
   metricSegment: MetricSegment;
   deviceSegment: MetricSegment;
+  siteSegment: MetricSegment;
   unitSegment: MetricSegment;
   hostnameLookup: MetricSegment;
   filterList: QueryFilter[] = [];
@@ -57,6 +58,12 @@ class KentikQueryCtrl extends QueryCtrl {
       this.deviceSegment = this.uiSegmentSrv.newSegment({ value: 'select device', fake: true });
     } else {
       this.deviceSegment = this.uiSegmentSrv.newSegment({ value: this.target.device });
+    }
+
+    if (this.target.site === undefined) {
+      this.siteSegment = this.uiSegmentSrv.newSegment({ value: 'select site', fake: true });
+    } else {
+      this.siteSegment = this.uiSegmentSrv.newSegment({ value: this.target.site });
     }
 
     if (this.target.unit === undefined) {
@@ -97,13 +104,17 @@ class KentikQueryCtrl extends QueryCtrl {
     return this.getMetricSegments('devices()', '$device');
   }
 
+  async getSites(): Promise<MetricSegment[]> {
+    return this.getMetricSegments('sites()');
+  }
+
   async getUnits(): Promise<MetricSegment[]> {
     return this.getMetricSegments('units()', '$unit');
   }
 
   addFilter(): void {
     this.filterList.push({
-      keySegment: this.uiSegmentSrv.newSegment({ value: 'none' }),
+      keySegment: this.uiSegmentSrv.newSegment({ value: 'select field' }),
     });
   }
 
@@ -113,17 +124,17 @@ class KentikQueryCtrl extends QueryCtrl {
 
   async getFilterOptionValues(filterIndex: number): Promise<MetricSegment[]> {
     const variables = _.map(this.templateSrv.variables, variable => `$${variable.name}`);
-    const formattedVariables = _.map(variables, v => { return { text: v } });
+    const formattedVariables = _.map(variables, v => ({ text: v }));
     const values = await this.datasource.getTagValues({ key: this.filterList[filterIndex].keySegment.value });
-    const options = [...formattedVariables, ...values];   
+    const options = [...formattedVariables, ...values];
     return this.uiSegmentSrv.transformToSegments(false)(options);
   }
 
   async getFilterOptionKeys(): Promise<MetricSegment[]> {
     const variables = _.map(this.templateSrv.variables, variable => `$${variable.name}`);
-    const formattedVariables = _.map(variables, v => { return { text: v } });
+    const formattedVariables = _.map(variables, v => ({ text: v }));
     const keys = await this.datasource.getTagKeys();
-    const options = [...formattedVariables, ...keys];   
+    const options = [...formattedVariables, ...keys];
     return this.uiSegmentSrv.transformToSegments(false)(options);
   }
 
@@ -159,6 +170,12 @@ class KentikQueryCtrl extends QueryCtrl {
 
   async onDeviceChange(): Promise<void> {
     this.target.device = this.deviceSegment.value;
+
+    this.panelCtrl.refresh();
+  }
+
+  async onSiteChange(): Promise<void> {
+    this.target.site = this.siteSegment.value;
 
     this.panelCtrl.refresh();
   }

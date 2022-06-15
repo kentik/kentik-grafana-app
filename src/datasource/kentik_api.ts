@@ -38,6 +38,15 @@ export class KentikAPI {
     }
   }
 
+  async getSites(): Promise<any> {
+    const resp = await this._get('/api/v5/sites');
+    if (resp && resp.sites) {
+      return resp.sites;
+    } else {
+      return [];
+    }
+  }
+
   async getUsers(): Promise<any> {
     const requiresAdminLevel = true;
     return this._get('/api/v5/users', requiresAdminLevel);
