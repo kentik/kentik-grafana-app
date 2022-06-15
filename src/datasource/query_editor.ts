@@ -114,7 +114,7 @@ class KentikQueryCtrl extends QueryCtrl {
 
   addFilter(): void {
     this.filterList.push({
-      keySegment: this.uiSegmentSrv.newSegment({ value: 'none' }),
+      keySegment: this.uiSegmentSrv.newSegment({ value: 'select field' }),
     });
   }
 
