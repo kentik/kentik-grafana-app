@@ -38,12 +38,19 @@ class KentikDatasource {
       _.filter(options.targets, target => !target.hide),
       async (target, i) => {
         const deviceNames = this.templateSrv.replace(target.device, options.scopedVars, this.interpolateDeviceField.bind(this));
-
         const kentikFilters = this.templateSrv.getAdhocFilters(this.name);
         const customDimensions = await this.kentik.getCustomDimensions();
         const savedFiltersList = await this.kentik.getSavedFilters();
-        const kentikFilterGroups = queryBuilder.convertToKentikFilterGroup(kentikFilters, customDimensions, savedFiltersList);
-
+        const queryCustomFilter = _.map(target.customFilters, filter => {
+          return {
+            condition: filter.conjunctionSegment?.value,
+            key: filter.keySegment?.value,
+            operator: filter.operatorSegment?.value,
+            value: filter.valueSegment?.value,
+          }
+        });
+        const filters = [...kentikFilters, ...queryCustomFilter];
+        const kentikFilterGroups = queryBuilder.convertToKentikFilterGroup(filters, customDimensions, savedFiltersList);
         const queryOptions = {
           deviceNames: deviceNames,
           range: {

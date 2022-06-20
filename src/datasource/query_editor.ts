@@ -83,6 +83,17 @@ class KentikQueryCtrl extends QueryCtrl {
     } else {
       this.hostnameLookup = this.hostnameLookup = this.uiSegmentSrv.newSegment({ value: this.target.hostnameLookup });
     }
+    
+    if (this.target.customFilters !== undefined) {
+      this.filterList = _.map(this.target.customFilters, filter => {
+        return {
+          keySegment: this.uiSegmentSrv.newSegment({ value: filter.keySegment?.value }),
+          operatorSegment: this.uiSegmentSrv.newOperator(filter.operatorSegment?.value),
+          valueSegment: this.uiSegmentSrv.newSegment({ value: filter.valueSegment?.value }),
+          conjunctionSegment: this.uiSegmentSrv.newSegment({ value: filter.conjunctionSegment?.value }),
+        }
+      });
+    }
 
     this.target.prefix = this.target.prefix || '';
   }
@@ -214,6 +225,8 @@ class KentikQueryCtrl extends QueryCtrl {
     if (field === 'keySegment' && this.filterList[idx].valueSegment === undefined) {
       this.filterList[idx].valueSegment = this.uiSegmentSrv.newSegment({ value: 'none' });
     }
+    this.target.customFilters = this.filterList;
+    this.panelCtrl.refresh();
   }
 }
 
