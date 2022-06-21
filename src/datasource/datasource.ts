@@ -34,20 +34,35 @@ class KentikDatasource {
       return Promise.resolve({ data: [] });
     }
 
+    const customDimensions = await this.kentik.getCustomDimensions();
+    const savedFiltersList = await this.kentik.getSavedFilters();
+    const kentikFilters = this.templateSrv.getAdhocFilters(this.name);
+    const allDevices = await this.kentik.getDevices();
+
     const promises = _.map(
       _.filter(options.targets, target => !target.hide),
       async (target, i) => {
-        const deviceNames = this.templateSrv.replace(target.device, options.scopedVars, this.interpolateDeviceField.bind(this));
-        const kentikFilters = this.templateSrv.getAdhocFilters(this.name);
-        const customDimensions = await this.kentik.getCustomDimensions();
-        const savedFiltersList = await this.kentik.getSavedFilters();
+        const site = this.templateSrv.replace(target.site, options.scopedVars);
+        let deviceNames = this.templateSrv.replace(target.device, options.scopedVars, this.interpolateDeviceField.bind(this));
+        // TODO: replace 'all' with null
+        if (site && site !== 'all') {
+          const filteredDevices = _.filter(deviceNames.split(','), deviceName => {
+            const device = _.find(allDevices, d => d.device_name === deviceName);
+            if (!device) {
+              throw new Error(`Can't find device with name ${deviceName}`);
+            }
+            return device.site.site_name === site;
+          });
+          deviceNames = filteredDevices.join(',');
+        }
+
         const queryCustomFilter = _.map(target.customFilters, filter => {
           return {
             condition: filter.conjunctionSegment?.value,
             key: filter.keySegment?.value,
             operator: filter.operatorSegment?.value,
             value: filter.valueSegment?.value,
-          }
+          };
         });
         const filters = [...kentikFilters, ...queryCustomFilter];
         const kentikFilterGroups = queryBuilder.convertToKentikFilterGroup(filters, customDimensions, savedFiltersList);
@@ -166,23 +181,32 @@ class KentikDatasource {
     return [table];
   }
 
-  async metricFindQuery(query: any) {
+  async metricFindQuery(query: any, target: any) {
     switch (query) {
-      case 'metrics()':
+      case 'metrics()': {
         return this._getExtendedDimensionsList(metricList);
-      case 'units()':
+      }
+      case 'units()': {
         return unitList;
-      case 'devices()':
-        const devices = await this.kentik.getDevices();
+      }
+      case 'devices()': {
+        const site = this.templateSrv.replace(target.site);
+        let devices = await this.kentik.getDevices();
+        if (target.site && target.site !== 'all') {
+          devices = _.filter(devices, device => device.site.site_name === site);
+        }
         return devices.map((device: any) => {
           return { text: device.device_name, value: device.device_name };
         });
-      case 'sites()':
+      }
+      case 'sites()': {
         const sites = await this.kentik.getSites();
-        console.log(sites);
-        return sites.map((site: any) => {
+        const res = sites.map((site: any) => {
           return { text: site.site_name, value: site.site_name };
         });
+        res.splice(0, 0, { text: 'all', value: null });
+        return res;
+      }
       default:
         throw new Error(`Unknown query type: ${query}`);
     }

@@ -83,7 +83,7 @@ class KentikQueryCtrl extends QueryCtrl {
     } else {
       this.hostnameLookup = this.hostnameLookup = this.uiSegmentSrv.newSegment({ value: this.target.hostnameLookup });
     }
-    
+
     if (this.target.customFilters !== undefined) {
       this.filterList = _.map(this.target.customFilters, filter => {
         return {
@@ -91,7 +91,7 @@ class KentikQueryCtrl extends QueryCtrl {
           operatorSegment: this.uiSegmentSrv.newOperator(filter.operatorSegment?.value),
           valueSegment: this.uiSegmentSrv.newSegment({ value: filter.valueSegment?.value }),
           conjunctionSegment: this.uiSegmentSrv.newSegment({ value: filter.conjunctionSegment?.value }),
-        }
+        };
       });
     }
 
@@ -99,7 +99,7 @@ class KentikQueryCtrl extends QueryCtrl {
   }
 
   async getMetricSegments(query: string, variableName?: string, addTemplateVars = false): Promise<MetricSegment[]> {
-    let metrics = await this.datasource.metricFindQuery(query);
+    let metrics = await this.datasource.metricFindQuery(query, this.target);
     if (this.templateSrv.variableExists(variableName)) {
       metrics = [{ text: variableName }, ...metrics];
     }
