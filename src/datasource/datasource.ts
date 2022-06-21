@@ -137,7 +137,7 @@ class KentikDatasource {
       });
 
       const prefix = target.prefix ? `${target.prefix} ` : '';
-      const seriesName = `${prefix}${series.key}`;
+      const seriesName = `${this.templateSrv.replace(prefix)}${series.key}`;
 
       if (timeseries) {
         const grafanaSeries = {
