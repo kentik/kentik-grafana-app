@@ -94,7 +94,7 @@ class KentikQueryCtrl extends QueryCtrl {
           operatorSegment,
           valueSegment,
           conjunctionOperator: filter.conjunctionOperator,
-        }
+        };
       });
     }
     if (this.target.conjunctionOperator !== undefined) {
@@ -132,7 +132,7 @@ class KentikQueryCtrl extends QueryCtrl {
     this.filterList.push({
       keySegment: this.uiSegmentSrv.newSegment({ value: 'select field' }),
     });
-    if(this.filterList.length > 1) {
+    if (this.filterList.length > 1) {
       this.conjunctionSegment = this.uiSegmentSrv.newCondition('AND');
       this.filterList[this.filterList.length - 2].conjunctionOperator = this.conjunctionSegment?.value;
     }
@@ -260,7 +260,7 @@ class KentikQueryCtrl extends QueryCtrl {
 
   async onConjunctionSegmentChange(): Promise<void> {
     this.filterList.forEach(filter => {
-      if(filter.conjunctionOperator !== undefined) {
+      if (filter.conjunctionOperator !== undefined) {
         filter.conjunctionOperator = this.conjunctionSegment?.value;
       }
     });
