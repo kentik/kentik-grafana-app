@@ -58,10 +58,10 @@ class KentikDatasource {
 
         const queryCustomFilters = _.map(target.customFilters, filter => {
           return {
-            condition: filter.conjunctionOperator,
-            key: filter.keySegment?.value,
-            operator: filter.operatorSegment?.value,
-            value: filter.valueSegment?.value,
+            condition: this.templateSrv.replace(filter.conjunctionOperator, options.scopedVars),
+            key: this.templateSrv.replace(filter.keySegment?.value, options.scopedVars),
+            operator: this.templateSrv.replace(filter.operatorSegment?.value, options.scopedVars),
+            value: this.templateSrv.replace(filter.valueSegment?.value, options.scopedVars),
           };
         });
         const kentikFilterGroups = queryBuilder.convertToKentikFilterGroup(kentikFilters, customDimensions, savedFiltersList);
