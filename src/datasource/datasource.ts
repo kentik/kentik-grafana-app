@@ -136,8 +136,8 @@ class KentikDatasource {
         return serie.flow && serie.flow.length;
       });
 
-      const prefix = target.prefix ? `${this.templateSrv.replace(target.prefix)} ` : '';
-      const seriesName = `${prefix}${series.key}`;
+      const prefix = target.prefix ? `${target.prefix} ` : '';
+      const seriesName = `${this.templateSrv.replace(prefix)}${series.key}`;
 
       if (timeseries) {
         const grafanaSeries = {
