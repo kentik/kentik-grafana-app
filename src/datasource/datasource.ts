@@ -56,16 +56,17 @@ class KentikDatasource {
           deviceNames = filteredDevices.join(',');
         }
 
-        const queryCustomFilter = _.map(target.customFilters, filter => {
+        const queryCustomFilters = _.map(target.customFilters, filter => {
           return {
-            condition: filter.conjunctionSegment?.value,
+            condition: filter.conjunctionOperator,
             key: filter.keySegment?.value,
             operator: filter.operatorSegment?.value,
             value: filter.valueSegment?.value,
           };
         });
-        const filters = [...kentikFilters, ...queryCustomFilter];
-        const kentikFilterGroups = queryBuilder.convertToKentikFilterGroup(filters, customDimensions, savedFiltersList);
+        const kentikFilterGroups = queryBuilder.convertToKentikFilterGroup(kentikFilters, customDimensions, savedFiltersList);
+        const queryCustomFilterGroups = queryBuilder.convertToKentikFilterGroup(queryCustomFilters, customDimensions, savedFiltersList);
+        const filters = [...kentikFilterGroups.kentikFilters, ...queryCustomFilterGroups.kentikFilters];
         const queryOptions = {
           deviceNames: deviceNames,
           range: {
@@ -74,7 +75,7 @@ class KentikDatasource {
           },
           metric: this.templateSrv.replace(target.metric),
           unit: this.templateSrv.replace(target.unit),
-          kentikFilterGroups: kentikFilterGroups.kentikFilters,
+          kentikFilterGroups: filters,
           kentikSavedFilters: kentikFilterGroups.savedFilters,
           hostnameLookup: this.templateSrv.replace(target.hostnameLookup),
         };

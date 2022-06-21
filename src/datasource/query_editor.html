@@ -77,6 +77,15 @@
     <span class="pointer gf-form-label width-2" ng-click="ctrl.addFilter()">
       <i class="fa fa-plus"></i>
     </span>
+    <div class="gf-form">
+      <metric-segment
+        ng-if="ctrl.conjunctionSegment !== undefined"
+        class="width-3"
+        segment="ctrl.conjunctionSegment"
+        get-options="ctrl.getConditionsOptionValues()"
+        on-change="ctrl.onConjunctionSegmentChange()"
+      ></metric-segment>
+    </div>
     <div class="gf-form gf-form--grow">
       <div class="gf-form-label gf-form-label--grow"></div>
     </div>
@@ -92,6 +101,10 @@
         on-change="ctrl.onFilterInputChange($index, 'operatorSegment')"></metric-segment>
       <metric-segment ng-if="filter.valueSegment !== undefined" class="width-8" segment="filter.valueSegment" get-options="ctrl.getFilterOptionValues($index)"
         on-change="ctrl.onFilterInputChange($index, 'valueSegment')"></metric-segment>
+      <label ng-if="filter.conjunctionOperator !== undefined" class="gf-form-label width-3">{{ filter.conjunctionOperator }}</label>
+      <span class="pointer gf-form-label width-2" ng-click="ctrl.deleteFilter($index)">
+        <i class="fa fa-times"></i>
+      </span>
     </div>
     <div class="gf-form gf-form--grow">
       <div class="gf-form-label gf-form-label--grow"></div>

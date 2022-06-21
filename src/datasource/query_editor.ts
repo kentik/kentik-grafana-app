@@ -16,7 +16,7 @@ type QueryFilter = {
   keySegment: MetricSegment,
   operatorSegment?: MetricSegment,
   valueSegment?: MetricSegment,
-  conjunctionSegment?: MetricSegment
+  conjunctionOperator?: string,
 };
 
 
@@ -28,6 +28,7 @@ class KentikQueryCtrl extends QueryCtrl {
   siteSegment: MetricSegment;
   unitSegment: MetricSegment;
   hostnameLookup: MetricSegment;
+  conjunctionSegment?: MetricSegment;
   filterList: QueryFilter[] = [];
 
   /** @ngInject */
@@ -86,15 +87,19 @@ class KentikQueryCtrl extends QueryCtrl {
 
     if (this.target.customFilters !== undefined) {
       this.filterList = _.map(this.target.customFilters, filter => {
+        const valueSegment = filter.valueSegment ? this.uiSegmentSrv.newSegment({ value: filter.valueSegment?.value }) : undefined;
+        const operatorSegment = filter.operatorSegment ? this.uiSegmentSrv.newOperator(filter.operatorSegment?.value) : undefined;
         return {
           keySegment: this.uiSegmentSrv.newSegment({ value: filter.keySegment?.value }),
-          operatorSegment: this.uiSegmentSrv.newOperator(filter.operatorSegment?.value),
-          valueSegment: this.uiSegmentSrv.newSegment({ value: filter.valueSegment?.value }),
-          conjunctionSegment: this.uiSegmentSrv.newSegment({ value: filter.conjunctionSegment?.value }),
-        };
+          operatorSegment,
+          valueSegment,
+          conjunctionSegment: filter.conjunctionSegment,
+        }
       });
     }
-
+    if (this.target.conjunctionSegment !== undefined) {
+      this.target.conjunctionSegment = this.uiSegmentSrv.newCondition(this.target.conjunctionSegment?.value);
+    }
     this.target.prefix = this.target.prefix || '';
   }
 
@@ -127,6 +132,23 @@ class KentikQueryCtrl extends QueryCtrl {
     this.filterList.push({
       keySegment: this.uiSegmentSrv.newSegment({ value: 'select field' }),
     });
+    this.conjunctionSegment = this.uiSegmentSrv.newCondition('AND');
+    if(this.filterList.length > 1) {
+      this.filterList[this.filterList.length - 2].conjunctionOperator = this.conjunctionSegment?.value;
+    }
+    this.target.conjunctionSegment = this.conjunctionSegment;
+    this.onFilterListChange();
+  }
+
+  deleteFilter(filterIdx: number): void {
+    this.filterList.splice(filterIdx, 1);
+    // @ts-ignore
+    _.last(this.filterList)?.conjunctionOperator = undefined;
+    if (this.filterList.length <= 1) {
+      this.conjunctionSegment = undefined;
+    }
+    this.target.conjunctionSegment = this.conjunctionSegment;
+    this.onFilterListChange();
   }
 
   onPrefixChange(): void {
@@ -151,6 +173,14 @@ class KentikQueryCtrl extends QueryCtrl {
 
   async getOperatorOptionValues(): Promise<MetricSegment[]> {
     const options = ['=', '!=', '<', '<=', '>', '>='];
+
+    return this.uiSegmentSrv.transformToSegments(false)(options.map(o => {
+      return { text: o };
+    }) as any[]);
+  }
+
+  async getConditionsOptionValues(): Promise<MetricSegment[]> {
+    const options = ['AND', 'OR'];
 
     return this.uiSegmentSrv.transformToSegments(false)(options.map(o => {
       return { text: o };
@@ -225,6 +255,20 @@ class KentikQueryCtrl extends QueryCtrl {
     if (field === 'keySegment' && this.filterList[idx].valueSegment === undefined) {
       this.filterList[idx].valueSegment = this.uiSegmentSrv.newSegment({ value: 'none' });
     }
+    this.onFilterListChange();
+  }
+
+  async onConjunctionSegmentChange(): Promise<void> {
+    this.filterList.forEach(filter => {
+      if(filter.conjunctionOperator !== undefined) {
+        filter.conjunctionOperator = this.conjunctionSegment?.value;
+      }
+    });
+    this.target.conjunctionSegment = this.conjunctionSegment;
+    this.panelCtrl.refresh();
+  }
+
+  onFilterListChange(): void {
     this.target.customFilters = this.filterList;
     this.panelCtrl.refresh();
   }
