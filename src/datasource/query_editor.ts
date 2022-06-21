@@ -93,12 +93,12 @@ class KentikQueryCtrl extends QueryCtrl {
           keySegment: this.uiSegmentSrv.newSegment({ value: filter.keySegment?.value }),
           operatorSegment,
           valueSegment,
-          conjunctionSegment: filter.conjunctionSegment,
+          conjunctionOperator: filter.conjunctionOperator,
         }
       });
     }
-    if (this.target.conjunctionSegment !== undefined) {
-      this.target.conjunctionSegment = this.uiSegmentSrv.newCondition(this.target.conjunctionSegment?.value);
+    if (this.target.conjunctionOperator !== undefined) {
+      this.conjunctionSegment = this.uiSegmentSrv.newCondition(this.target.conjunctionOperator);
     }
     this.target.prefix = this.target.prefix || '';
   }
@@ -132,11 +132,11 @@ class KentikQueryCtrl extends QueryCtrl {
     this.filterList.push({
       keySegment: this.uiSegmentSrv.newSegment({ value: 'select field' }),
     });
-    this.conjunctionSegment = this.uiSegmentSrv.newCondition('AND');
     if(this.filterList.length > 1) {
+      this.conjunctionSegment = this.uiSegmentSrv.newCondition('AND');
       this.filterList[this.filterList.length - 2].conjunctionOperator = this.conjunctionSegment?.value;
     }
-    this.target.conjunctionSegment = this.conjunctionSegment;
+    this.target.conjunctionOperator = this.conjunctionSegment?.value;
     this.onFilterListChange();
   }
 
@@ -147,7 +147,7 @@ class KentikQueryCtrl extends QueryCtrl {
     if (this.filterList.length <= 1) {
       this.conjunctionSegment = undefined;
     }
-    this.target.conjunctionSegment = this.conjunctionSegment;
+    this.target.conjunctionOperator = this.conjunctionSegment?.value;
     this.onFilterListChange();
   }
 
@@ -264,7 +264,7 @@ class KentikQueryCtrl extends QueryCtrl {
         filter.conjunctionOperator = this.conjunctionSegment?.value;
       }
     });
-    this.target.conjunctionSegment = this.conjunctionSegment;
+    this.target.conjunctionOperator = this.conjunctionSegment?.value;
     this.panelCtrl.refresh();
   }
 
