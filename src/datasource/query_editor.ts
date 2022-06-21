@@ -265,7 +265,7 @@ class KentikQueryCtrl extends QueryCtrl {
       }
     });
     this.target.conjunctionOperator = this.conjunctionSegment?.value;
-    this.panelCtrl.refresh();
+    this.onFilterListChange();
   }
 
   onFilterListChange(): void {
