@@ -10,7 +10,8 @@
       "url": "{{.JsonData.url}}",
       "headers": [
         {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
-        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"}
+        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
+        {"name": "User-Agent", "content": "kentik-connect-app/%VERSION%"}
       ]
     }
   ],
