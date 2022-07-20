@@ -53,7 +53,7 @@ export class KentikAPI {
       const requiresAdminLevel = true;
       const resp = await this._get('/api/v5/customdimensions', requiresAdminLevel);
       return resp.customDimensions;
-    } catch (e) {
+    } catch (e: any) {
       if (e.status === 403) {
         return [];
       }
@@ -89,7 +89,7 @@ export class KentikAPI {
       );
 
       return resp;
-    } catch (error) {
+    } catch (error: any) {
       if (error.status !== 403 || requiresAdminLevel === false) {
         showAlert(error);
       }
@@ -113,7 +113,7 @@ export class KentikAPI {
       } else {
         return [];
       }
-    } catch (error) {
+    } catch (error: any) {
       showAlert(error);
       if (error.err) {
         throw error.err;
@@ -135,7 +135,7 @@ export class KentikAPI {
       } else {
         return [];
       }
-    } catch (error) {
+    } catch (error: any) {
       showAlert(error);
       if (error.err) {
         throw error.err;
