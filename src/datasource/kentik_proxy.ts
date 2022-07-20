@@ -35,6 +35,7 @@ export class KentikProxy {
   cacheUpdateInterval: number;
   requestCachingIntervals: { '1d': number };
   getDevices: () => Promise<any[]>;
+  getSites: () => Promise<any[]>;
 
   /** @ngInject */
   constructor(private kentikAPISrv: KentikAPI) {
@@ -44,6 +45,7 @@ export class KentikProxy {
       '1d': 0,
     };
     this.getDevices = this.kentikAPISrv.getDevices.bind(this.kentikAPISrv);
+    this.getSites = this.kentikAPISrv.getSites.bind(this.kentikAPISrv);
   }
 
   async invokeTopXDataQuery(query: any): Promise<any> {

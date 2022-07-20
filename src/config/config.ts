@@ -84,7 +84,7 @@ class KentikConfigCtrl {
     // only Admin can get users list
     try {
       await this.kentik.getUsers();
-    } catch (e) {
+    } catch (e: any) {
       if (e.status !== 403) {
         this._onApiError();
         return;
