@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.1] - 2022-07-21
+
+- Query Editor: 
+  - new Filter in addition to the available on the top of the dashboard
+  - support setting filter values either as a dropdown or as a template variable
+  - support "OR" operator in addition to "AND"
+  - support multiple metrics in a panel
+  - be able to select Site as source
+
 ## [1.6.0] - 2022-02-24
 
 - Added support for Grafana version 8
