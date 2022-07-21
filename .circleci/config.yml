@@ -19,7 +19,7 @@ aliases:
 defaults: &defaults
   working_directory: ~/kentik-connect-app
   docker:
-    - image: circleci/node:10.15.3-stretch
+    - image: circleci/node:14-stretch-browsers
   environment:
     PLUGIN_NAME: kentik-connect-app
 
@@ -30,11 +30,11 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-npm-deps-{{ checksum "package-lock.json" }}
+            - v1-npm-deps-{{ checksum "yarn.lock" }}
       - run:
           name: Build
           command: |
-            npm install
+            yarn install
             npm run build
             sudo apt-get install jq
             VERSION=`cat dist/plugin.json|jq '.info.version'| sed s/\"//g`
@@ -58,7 +58,7 @@ jobs:
           no_output_timeout: 5m
       - save_cache:
           name: Save NPM Package Cache
-          key: v1-npm-deps-{{ checksum "package-lock.json" }}
+          key: v1-npm-deps-{{ checksum "yarn.lock" }}
           paths:
             - ~/.cache/npm
       - persist_to_workspace:
@@ -77,11 +77,11 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-npm-deps-{{ checksum "package-lock.json" }}
+            - v1-npm-deps-{{ checksum "yarn.lock" }}
       - run:
           name: TSLint
           command: |
-            npm install
+            yarn install
             npm run tslint
 
   test:
@@ -90,11 +90,11 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-npm-deps-{{ checksum "package-lock.json" }}
+            - v1-npm-deps-{{ checksum "yarn.lock" }}
       - run:
           name: Test
           command: |
-            npm install
+            yarn install
             sudo npm install -g jest
             npm test
 
