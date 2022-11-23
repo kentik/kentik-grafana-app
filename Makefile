@@ -11,7 +11,7 @@ build: check-env
 plugin: check-env
 	@npm install
 	@yarn build
-	@npx @grafana/toolkit plugin:sign $(SIGN_ARGS)
+	@npx @grafana/toolkit plugin:sign --signatureType=commercial $(SIGN_ARGS)
 	@rm -rf kentik-connect-app
 	@mv dist kentik-connect-app
 	@zip -r kentik-connect-app-$(VERSION).zip kentik-connect-app
