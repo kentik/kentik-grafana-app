@@ -11,6 +11,8 @@ const HOSTNAME_LOOKUP_CHOICES = [
   'enabled',
   'disabled'
 ];
+const DELETE_DEVICE_LABEL = '-- remove device --';
+const SELECT_DEVICE_LABEL = 'select device';
 
 type QueryFilter = {
   keySegment: MetricSegment,
@@ -24,7 +26,7 @@ class KentikQueryCtrl extends QueryCtrl {
   static templateUrl: string;
   queryModes: Array<{ value: string; text: string }>;
   metricSegment: MetricSegment;
-  deviceSegment: MetricSegment;
+  deviceSegments: MetricSegment[];
   siteSegment: MetricSegment;
   unitSegment: MetricSegment;
   hostnameLookup: MetricSegment;
@@ -41,6 +43,7 @@ class KentikQueryCtrl extends QueryCtrl {
     super($scope, $injector);
 
     this.target.mode = this.target.mode || 'graph';
+    this.target.devices = this.target.devices || [];
 
     this.queryModes = [{ value: 'graph', text: 'Graph' }, { value: 'table', text: 'Table' }];
 
@@ -55,10 +58,17 @@ class KentikQueryCtrl extends QueryCtrl {
       }
     }
 
-    if (this.target.device === undefined) {
-      this.deviceSegment = this.uiSegmentSrv.newSegment({ value: 'select device', fake: true });
+    if (_.isEmpty(this.target.devices)) {
+      if (this.target.device === undefined) {
+        this.deviceSegments = [this.uiSegmentSrv.newSegment({ value: SELECT_DEVICE_LABEL, fake: true })];
+      } else {
+        this.deviceSegments = [this.uiSegmentSrv.newSegment({ value: this.target.device, fake: true })];
+      }
+      
     } else {
-      this.deviceSegment = this.uiSegmentSrv.newSegment({ value: this.target.device });
+      this.deviceSegments = _.map(this.target.devices, device => {
+        return this.uiSegmentSrv.newSegment({ value: device, fake: true })
+      });
     }
 
     if (this.target.site === undefined) {
@@ -103,12 +113,15 @@ class KentikQueryCtrl extends QueryCtrl {
     this.target.prefix = this.target.prefix || '';
   }
 
-  async getMetricSegments(query: string, variableName?: string, addTemplateVars = false): Promise<MetricSegment[]> {
+  async getMetricSegments(query: string, variableName?: string, defaultNames?: string[], addTemplateVars = false): Promise<MetricSegment[]> {
     let metrics = await this.datasource.metricFindQuery(query, this.target);
     if (this.templateSrv.variableExists(variableName)) {
       metrics = [{ text: variableName }, ...metrics];
     }
-
+    if (!_.isEmpty(defaultNames)) {
+      const defaultMetrics = _.map(defaultNames, name => ({ text: name }));
+      metrics = [...defaultMetrics, ...metrics];
+    }
     return this.uiSegmentSrv.transformToSegments(addTemplateVars)(metrics);
   }
 
@@ -116,8 +129,9 @@ class KentikQueryCtrl extends QueryCtrl {
     return this.getMetricSegments('metrics()', '$metric');
   }
 
-  async getDevices(): Promise<MetricSegment[]> {
-    return this.getMetricSegments('devices()', '$device');
+  async getDevices(index: number): Promise<MetricSegment[]> {
+    const defaultNames = index > 0 ? [DELETE_DEVICE_LABEL] : undefined;
+    return this.getMetricSegments('devices()', '$device', defaultNames);
   }
 
   async getSites(): Promise<MetricSegment[]> {
@@ -126,6 +140,12 @@ class KentikQueryCtrl extends QueryCtrl {
 
   async getUnits(): Promise<MetricSegment[]> {
     return this.getMetricSegments('units()', '$unit');
+  }
+
+  addDevice(): void {
+    this.deviceSegments.push(this.uiSegmentSrv.newSegment({ value: SELECT_DEVICE_LABEL, fake: true }));
+    this.target.devices.push(SELECT_DEVICE_LABEL);
+    this.panelCtrl.refresh();
   }
 
   addFilter(): void {
@@ -209,9 +229,13 @@ class KentikQueryCtrl extends QueryCtrl {
     this.panelCtrl.refresh();
   }
 
-  async onDeviceChange(): Promise<void> {
-    this.target.device = this.deviceSegment.value;
-
+  async onDeviceChange(index: number): Promise<void> {
+    if (this.deviceSegments[index].value === DELETE_DEVICE_LABEL) {
+      this.target.devices.splice(index, 1);
+      this.deviceSegments.splice(index, 1);
+    } else {
+      this.target.devices[index] = this.deviceSegments[index].value;
+    }
     this.panelCtrl.refresh();
   }
 

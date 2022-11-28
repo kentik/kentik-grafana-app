@@ -1,15 +1,6 @@
 <query-editor-row query-ctrl="ctrl" can-collapse="false">
   <div class="gf-form-inline">
     <div class="gf-form">
-      <label class="gf-form-label width-7">Device</label>
-      <metric-segment
-        class="width-11"
-        segment="ctrl.deviceSegment"
-        get-options="ctrl.getDevices($query)"
-        on-change="ctrl.onDeviceChange()"
-      ></metric-segment>
-    </div>
-    <div class="gf-form">
       <label class="gf-form-label width-7">Site</label>
       <metric-segment
         class="width-11"
@@ -17,6 +8,27 @@
         get-options="ctrl.getSites($query)"
         on-change="ctrl.onSiteChange()"
       ></metric-segment>
+    </div>
+    <div class="gf-form gf-form--grow">
+      <div class="gf-form-label gf-form-label--grow"></div>
+    </div>
+  </div>
+  <div class="gf-form-inline">
+    <div class="gf-form">
+      <label class="gf-form-label width-7">Devices</label>
+    </div>
+    <div ng-repeat="device in ctrl.deviceSegments" class="gf-form">
+      <metric-segment
+        class="width-11"
+        segment="device"
+        get-options="ctrl.getDevices($index)"
+        on-change="ctrl.onDeviceChange($index)"
+      ></metric-segment>
+    </div>
+    <div class="gf-form">
+      <span class="pointer gf-form-label width-2" ng-click="ctrl.addDevice()">
+        <i class="fa fa-plus"></i>
+      </span>
     </div>
     <div class="gf-form gf-form--grow">
       <div class="gf-form-label gf-form-label--grow"></div>

@@ -43,7 +43,9 @@ class KentikDatasource {
       _.filter(options.targets, target => !target.hide),
       async (target, i) => {
         const site = this.templateSrv.replace(target.site, options.scopedVars);
-        let deviceNames = this.templateSrv.replace(target.device, options.scopedVars, this.interpolateDeviceField.bind(this));
+        let deviceNames = _.map(target.devices, device => {
+          return this.templateSrv.replace(device, options.scopedVars, this.interpolateDeviceField.bind(this));
+        }).join();
         // TODO: replace 'all' with null
         if (site && site !== 'all') {
           const filteredDevices = _.filter(deviceNames.split(','), deviceName => {
