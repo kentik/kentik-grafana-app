@@ -64,10 +64,9 @@ class KentikQueryCtrl extends QueryCtrl {
       } else {
         this.deviceSegments = [this.uiSegmentSrv.newSegment({ value: this.target.device, fake: true })];
       }
-      
     } else {
       this.deviceSegments = _.map(this.target.devices, device => {
-        return this.uiSegmentSrv.newSegment({ value: device, fake: true })
+        return this.uiSegmentSrv.newSegment({ value: device, fake: true });
       });
     }
 
