@@ -2,9 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.2] - 2022-11-30
+
+- Query Editor: support having multiple devices in a query
+
 ## [1.6.1] - 2022-07-21
 
-- Query Editor: 
+- Query Editor:
   - new Filter in addition to the available on the top of the dashboard
   - support setting filter values either as a dropdown or as a template variable
   - support "OR" operator in addition to "AND"
