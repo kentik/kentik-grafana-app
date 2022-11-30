@@ -1,4 +1,5 @@
 import { showAlert } from './alert_helper';
+import { migrate } from './migrations';
 
 import { QueryCtrl } from 'grafana/app/plugins/sdk';
 import { UiSegmentSrv, MetricSegment } from 'grafana/app/core/services/segment_srv';
@@ -42,6 +43,8 @@ class KentikQueryCtrl extends QueryCtrl {
   ) {
     super($scope, $injector);
 
+    migrate(this.target);
+
     this.target.mode = this.target.mode || 'graph';
     this.target.devices = this.target.devices || [];
 
@@ -59,11 +62,7 @@ class KentikQueryCtrl extends QueryCtrl {
     }
 
     if (_.isEmpty(this.target.devices)) {
-      if (this.target.device === undefined) {
-        this.deviceSegments = [this.uiSegmentSrv.newSegment({ value: SELECT_DEVICE_LABEL, fake: true })];
-      } else {
-        this.deviceSegments = [this.uiSegmentSrv.newSegment({ value: this.target.device, fake: true })];
-      }
+      this.deviceSegments = [this.uiSegmentSrv.newSegment({ value: SELECT_DEVICE_LABEL, fake: true })];
     } else {
       this.deviceSegments = _.map(this.target.devices, device => {
         return this.uiSegmentSrv.newSegment({ value: device, fake: true });

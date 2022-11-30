@@ -1,6 +1,7 @@
 import './kentik_proxy';
 import { metricList, unitList, filterFieldList, Metric, Unit, FilterField } from './metric_def';
 import queryBuilder from './query_builder';
+import { migrate } from './migrations';
 
 import TableModel from 'grafana/app/core/table_model';
 
@@ -42,6 +43,8 @@ class KentikDatasource {
     const promises = _.map(
       _.filter(options.targets, target => !target.hide),
       async (target, i) => {
+        migrate(target);
+
         const site = this.templateSrv.replace(target.site, options.scopedVars);
         let deviceNames = _.map(target.devices, device => {
           return this.templateSrv.replace(device, options.scopedVars, this.interpolateDeviceField.bind(this));
