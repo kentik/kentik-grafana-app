@@ -75,7 +75,7 @@ class KentikConfigCtrl {
   async validateApiConnection(): Promise<void> {
     // any user (Admin / Member) can get devices
     try {
-      await this.kentik.getDevices();
+      await this.kentik.getSites();
     } catch (e) {
       this._onApiError();
       return;

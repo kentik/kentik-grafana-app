@@ -12,7 +12,7 @@ export class KentikAPI {
   }
 
   async getDeviceById(deviceId: string): Promise<any> {
-    const resp = await this._get(`/api/v5/device/${deviceId}`);
+    const resp = await this._get(`/api/v5/device/${deviceId}?noCustomColumns=True`);
     if (resp && resp.device) {
       return resp.device;
     } else {
@@ -30,7 +30,7 @@ export class KentikAPI {
   }
 
   async getDevices(): Promise<any> {
-    const resp = await this._get('/api/v5/devices');
+    const resp = await this._get('/api/v5/devices?noCustomColumns=True');
     if (resp && resp.devices) {
       return resp.devices;
     } else {
