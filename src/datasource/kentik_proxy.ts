@@ -34,8 +34,6 @@ export class KentikProxy {
   cache: any;
   cacheUpdateInterval: number;
   requestCachingIntervals: { '1d': number };
-  getDevices: () => Promise<any[]>;
-  getSites: () => Promise<any[]>;
 
   /** @ngInject */
   constructor(private kentikAPISrv: KentikAPI) {
@@ -44,8 +42,6 @@ export class KentikProxy {
     this.requestCachingIntervals = {
       '1d': 0,
     };
-    this.getDevices = this.kentikAPISrv.getDevices.bind(this.kentikAPISrv);
-    this.getSites = this.kentikAPISrv.getSites.bind(this.kentikAPISrv);
   }
 
   async invokeTopXDataQuery(query: any): Promise<any> {
@@ -103,6 +99,22 @@ export class KentikProxy {
           startingTime < cacheStartingTime! ||
           Math.abs(queryRange - cachedQueryRange) > 60 * 1000)) // is time range changed?
     );
+  }
+
+  async getDevices() {
+    if (this.cache.devicesPromise !== undefined) {
+      return this.cache.devicesPromise;
+    }
+    this.cache.devicesPromise = this.kentikAPISrv.getDevices();
+    return this.cache.devicesPromise;
+  }
+
+  async getSites() {
+    if (this.cache.sitesPromise !== undefined) {
+      return this.cache.sitesPromise;
+    }
+    this.cache.sitesPromise = this.kentikAPISrv.getSites();
+    return this.cache.sitesPromise;
   }
 
   async getFieldValues(field: string) {
