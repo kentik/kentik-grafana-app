@@ -170,7 +170,7 @@ const retry = (
         return;
       }
       if (retriesLeft === 0) {
-        // Maximum retries exceeded');
+        // Maximum retries exceeded
         reject(error);
         return;
       }
