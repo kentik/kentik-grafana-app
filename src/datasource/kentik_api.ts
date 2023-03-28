@@ -1,5 +1,7 @@
 import { showAlert } from '../datasource/alert_helper';
 
+import { FetchError } from '@grafana/runtime';
+
 import * as _ from 'lodash';
 import angular from 'angular';
 
@@ -92,22 +94,20 @@ export class KentikAPI {
   }
 
   private async _get(url: string, requiresAdminLevel = false): Promise<any> {
-    try {
-      const resp = await this.backendSrv.request(
-        { method: 'GET', url: this.baseUrl + url,  showErrorAlert: !requiresAdminLevel }
-      );
-
-      return resp;
-    } catch (error: any) {
-      if (error.status !== 403 || requiresAdminLevel === false) {
-        showAlert(error);
-      }
-      if (error.err) {
-        throw error.err;
-      } else {
-        throw error;
-      }
-    }
+    return retry(
+      this.backendSrv.request.bind(this.backendSrv, { method: 'GET', url: this.baseUrl + url, showErrorAlert: !requiresAdminLevel }),
+      (error: FetchError) => {
+        // HTTP Error 429: Too Many Requests
+        if (error.status === 429) {
+          showAlert(error);
+          return true;
+        }
+        // HTTP Error 403: Forbidden
+        if (error.status !== 403 || requiresAdminLevel === false) {
+          showAlert(error);
+        }
+        return false;
+      });
   }
 
   private async _post(url: string, data: any): Promise<any> {
@@ -154,5 +154,31 @@ export class KentikAPI {
     }
   }
 }
+
+const retry = (
+  fn: Function,
+  shouldContinue: (error: FetchError) => boolean,
+  retriesLeft = 100,
+  interval = 1000
+) => new Promise((resolve, reject) => {
+  console.log(`Retries left: ${retriesLeft} - Next retry interval: ${interval}`);
+  fn()
+    .then(resolve)
+    .catch((error: FetchError) => {
+      if (!shouldContinue(error)) {
+        reject(error);
+        return;
+      }
+      if (retriesLeft === 0) {
+        // Maximum retries exceeded');
+        reject(error);
+        return;
+      }
+      setTimeout(() => {
+        // Passing on "reject" is the important part
+        retry(fn, shouldContinue, retriesLeft - 1, interval + 1000).then(resolve, reject);
+      }, interval);
+    });
+});
 
 angular.module('grafana.services').service('kentikAPISrv', KentikAPI);
