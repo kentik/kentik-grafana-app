@@ -2,9 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.2] - 2023-03-29
+
+#### Fixed
+
+- API - Grafana plugin hitting 429's through device calls [#69](https://github.com/kentik/kentik-grafana-app/issues/69)
+
 ## [1.6.1] - 2022-07-21
 
-- Query Editor: 
+- Query Editor:
   - new Filter in addition to the available on the top of the dashboard
   - support setting filter values either as a dropdown or as a template variable
   - support "OR" operator in addition to "AND"
