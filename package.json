@@ -14,7 +14,7 @@
     "url": "git+https://github.com/kentik/kentik-grafana-app.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/kentik/kentik-grafana-app/issues"
   },
