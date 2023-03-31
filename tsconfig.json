@@ -24,6 +24,5 @@
   },
   "include": [
     "src"
-  ],
-  "exclude": ["src/config/config.html", "./config/config.html", "config/config.html", "config.html"]
+  ]
 }
