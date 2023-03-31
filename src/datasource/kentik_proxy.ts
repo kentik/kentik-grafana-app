@@ -1,9 +1,9 @@
+/* eslint-disable */
 import { KentikAPI } from './kentik_api';
 
 import angular from 'angular';
 import * as _ from 'lodash';
 import * as moment from 'moment';
-
 
 function getUTCTimestamp() {
   const ts = new Date();
@@ -149,7 +149,7 @@ export class KentikProxy {
   async getSavedFilters() {
     if (this.cache.savedFilters === undefined) {
       const savedFilters = await this.kentikAPISrv.getSavedFilters();
-      this.cache.savedFilters = _.map(savedFilters, filter => ({
+      this.cache.savedFilters = _.map(savedFilters, (filter) => ({
         text: `Saved ${filter.filter_name}`,
         field: filter.filter_name,
         id: filter.id,

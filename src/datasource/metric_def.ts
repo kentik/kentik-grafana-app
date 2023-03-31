@@ -10,7 +10,7 @@ export type Unit = {
   transform?: TransformFunction;
   tableFields: Array<{ text: string; field: string; unit: string; transform?: TransformFunction }>;
 };
-export type FilterField = { text: string; field: string, unequatable?: boolean };
+export type FilterField = { text: string; field: string; unequatable?: boolean };
 
 export const metricList: Metric[] = [
   { text: 'Traffic', value: 'Traffic', field: 'traffic' },
@@ -183,5 +183,5 @@ export const filterFieldList: FilterField[] = [
   { text: 'Protocol', field: 'protocol' },
   { text: 'INET Family', field: 'inet_family' },
   { text: 'Device Name', field: 'i_device_name' },
-  { text: 'TOS/Diffserv', field: 'tos' }
+  { text: 'TOS/Diffserv', field: 'tos' },
 ];

@@ -7,18 +7,14 @@ import { TemplateSrv } from 'grafana/app/features/templating/template_srv';
 import * as _ from 'lodash';
 
 const HOSTNAME_LOOKUP_TEMPLATE_VAR = '$dns_lookup';
-const HOSTNAME_LOOKUP_CHOICES = [
-  'enabled',
-  'disabled'
-];
+const HOSTNAME_LOOKUP_CHOICES = ['enabled', 'disabled'];
 
 type QueryFilter = {
-  keySegment: MetricSegment,
-  operatorSegment?: MetricSegment,
-  valueSegment?: MetricSegment,
-  conjunctionOperator?: string,
+  keySegment: MetricSegment;
+  operatorSegment?: MetricSegment;
+  valueSegment?: MetricSegment;
+  conjunctionOperator?: string;
 };
-
 
 class KentikQueryCtrl extends QueryCtrl {
   static templateUrl: string;
@@ -42,7 +38,10 @@ class KentikQueryCtrl extends QueryCtrl {
 
     this.target.mode = this.target.mode || 'graph';
 
-    this.queryModes = [{ value: 'graph', text: 'Graph' }, { value: 'table', text: 'Table' }];
+    this.queryModes = [
+      { value: 'graph', text: 'Graph' },
+      { value: 'table', text: 'Table' },
+    ];
 
     if (this.target.metric === undefined) {
       this.metricSegment = this.uiSegmentSrv.newSegment({ value: 'select metric', fake: true });
@@ -86,9 +85,13 @@ class KentikQueryCtrl extends QueryCtrl {
     }
 
     if (this.target.customFilters !== undefined) {
-      this.filterList = _.map(this.target.customFilters, filter => {
-        const valueSegment = filter.valueSegment ? this.uiSegmentSrv.newSegment({ value: filter.valueSegment?.value }) : undefined;
-        const operatorSegment = filter.operatorSegment ? this.uiSegmentSrv.newOperator(filter.operatorSegment?.value) : undefined;
+      this.filterList = _.map(this.target.customFilters, (filter) => {
+        const valueSegment = filter.valueSegment
+          ? this.uiSegmentSrv.newSegment({ value: filter.valueSegment?.value })
+          : undefined;
+        const operatorSegment = filter.operatorSegment
+          ? this.uiSegmentSrv.newOperator(filter.operatorSegment?.value)
+          : undefined;
         return {
           keySegment: this.uiSegmentSrv.newSegment({ value: filter.keySegment?.value }),
           operatorSegment,
@@ -142,8 +145,11 @@ class KentikQueryCtrl extends QueryCtrl {
 
   deleteFilter(filterIdx: number): void {
     this.filterList.splice(filterIdx, 1);
-    // @ts-ignore
-    _.last(this.filterList)?.conjunctionOperator = undefined;
+    const filter = _.last(this.filterList);
+    if (!filter) {
+      return;
+    }
+    filter.conjunctionOperator = undefined;
     if (this.filterList.length <= 1) {
       this.conjunctionSegment = undefined;
     }
@@ -156,16 +162,16 @@ class KentikQueryCtrl extends QueryCtrl {
   }
 
   async getFilterOptionValues(filterIndex: number): Promise<MetricSegment[]> {
-    const variables = _.map(this.templateSrv.variables, variable => `$${variable.name}`);
-    const formattedVariables = _.map(variables, v => ({ text: v }));
+    const variables = _.map(this.templateSrv.variables, (variable) => `$${variable.name}`);
+    const formattedVariables = _.map(variables, (v) => ({ text: v }));
     const values = await this.datasource.getTagValues({ key: this.filterList[filterIndex].keySegment.value });
     const options = [...formattedVariables, ...values];
     return this.uiSegmentSrv.transformToSegments(false)(options);
   }
 
   async getFilterOptionKeys(): Promise<MetricSegment[]> {
-    const variables = _.map(this.templateSrv.variables, variable => `$${variable.name}`);
-    const formattedVariables = _.map(variables, v => ({ text: v }));
+    const variables = _.map(this.templateSrv.variables, (variable) => `$${variable.name}`);
+    const formattedVariables = _.map(variables, (v) => ({ text: v }));
     const keys = await this.datasource.getTagKeys();
     const options = [...formattedVariables, ...keys];
     return this.uiSegmentSrv.transformToSegments(false)(options);
@@ -174,17 +180,21 @@ class KentikQueryCtrl extends QueryCtrl {
   async getOperatorOptionValues(): Promise<MetricSegment[]> {
     const options = ['=', '!=', '<', '<=', '>', '>='];
 
-    return this.uiSegmentSrv.transformToSegments(false)(options.map(o => {
-      return { text: o };
-    }) as any[]);
+    return this.uiSegmentSrv.transformToSegments(false)(
+      options.map((o) => {
+        return { text: o };
+      }) as any[]
+    );
   }
 
   async getConditionsOptionValues(): Promise<MetricSegment[]> {
     const options = ['AND', 'OR'];
 
-    return this.uiSegmentSrv.transformToSegments(false)(options.map(o => {
-      return { text: o };
-    }) as any[]);
+    return this.uiSegmentSrv.transformToSegments(false)(
+      options.map((o) => {
+        return { text: o };
+      }) as any[]
+    );
   }
 
   async getHostnameLookupOptionValues(): Promise<MetricSegment[]> {
@@ -193,9 +203,11 @@ class KentikQueryCtrl extends QueryCtrl {
       choises = [HOSTNAME_LOOKUP_TEMPLATE_VAR, ...choises];
     }
 
-    return this.uiSegmentSrv.transformToSegments(false)(choises.map(c => {
-      return { text: c };
-    }) as any[]);
+    return this.uiSegmentSrv.transformToSegments(false)(
+      choises.map((c) => {
+        return { text: c };
+      }) as any[]
+    );
   }
 
   async onMetricChange(): Promise<void> {
@@ -247,7 +259,8 @@ class KentikQueryCtrl extends QueryCtrl {
   }
 
   async onFilterInputChange(
-    idx: number, field: 'keySegment' | 'operatorSegment' | 'valueSegment' | 'conjunctionSegment'
+    idx: number,
+    field: 'keySegment' | 'operatorSegment' | 'valueSegment' | 'conjunctionSegment'
   ): Promise<void> {
     if (field === 'keySegment' && this.filterList[idx].operatorSegment === undefined) {
       this.filterList[idx].operatorSegment = this.uiSegmentSrv.newOperator('=');
@@ -259,7 +272,7 @@ class KentikQueryCtrl extends QueryCtrl {
   }
 
   async onConjunctionSegmentChange(): Promise<void> {
-    this.filterList.forEach(filter => {
+    this.filterList.forEach((filter) => {
       if (filter.conjunctionOperator !== undefined) {
         filter.conjunctionOperator = this.conjunctionSegment?.value;
       }

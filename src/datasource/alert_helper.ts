@@ -2,7 +2,6 @@ import { appEvents } from 'grafana/app/core/core';
 
 import * as _ from 'lodash';
 
-
 function showAlert(error: any) {
   let message = '';
   message += error.status ? `(${error.status}) ` : '';

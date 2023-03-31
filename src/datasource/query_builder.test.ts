@@ -25,7 +25,7 @@ describe('Kentik Query Builder', () => {
   });
 
   describe('When building Kentik filter group', () => {
-    it('should build proper filters', done => {
+    it('should build proper filters', (done) => {
       const filters = [{ key: 'Source Country', operator: '=', value: 'US' }];
 
       const expectedGroup = [
@@ -54,7 +54,7 @@ describe('Kentik Query Builder', () => {
       };
     });
 
-    it('should build proper topXData query', done => {
+    it('should build proper topXData query', (done) => {
       const expectedQuery = {
         metric: 'bytes',
         dimension: ['src_geo_region'],
@@ -103,7 +103,7 @@ describe('Kentik Query Builder', () => {
       done();
     });
 
-    it('should build proper Bits/s query', done => {
+    it('should build proper Bits/s query', (done) => {
       ctx.query_options.unit = 'bytes';
 
       const expectedQuery = {
@@ -138,7 +138,7 @@ describe('Kentik Query Builder', () => {
       done();
     });
 
-    it('should build proper Packets/s query', done => {
+    it('should build proper Packets/s query', (done) => {
       ctx.query_options.unit = 'packets';
 
       const expectedQuery = {
@@ -173,7 +173,7 @@ describe('Kentik Query Builder', () => {
       done();
     });
 
-    it('should build proper Unique Src IPs query', done => {
+    it('should build proper Unique Src IPs query', (done) => {
       ctx.query_options.unit = 'unique_src_ip';
 
       const expectedQuery = {
@@ -223,7 +223,7 @@ describe('Kentik Query Builder', () => {
       done();
     });
 
-    it('should build proper Unique Dst IPs query', done => {
+    it('should build proper Unique Dst IPs query', (done) => {
       ctx.query_options.unit = 'unique_dst_ip';
 
       const expectedQuery = {

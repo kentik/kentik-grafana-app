@@ -40,14 +40,18 @@ class KentikDatasource {
     const allDevices = await this.kentik.getDevices();
 
     const promises = _.map(
-      _.filter(options.targets, target => !target.hide),
+      _.filter(options.targets, (target) => !target.hide),
       async (target, i) => {
         const site = this.templateSrv.replace(target.site, options.scopedVars);
-        let deviceNames = this.templateSrv.replace(target.device, options.scopedVars, this.interpolateDeviceField.bind(this));
+        let deviceNames = this.templateSrv.replace(
+          target.device,
+          options.scopedVars,
+          this.interpolateDeviceField.bind(this)
+        );
         // TODO: replace 'all' with null
         if (site && site !== 'all') {
-          const filteredDevices = _.filter(deviceNames.split(','), deviceName => {
-            const device = _.find(allDevices, d => d.device_name === deviceName);
+          const filteredDevices = _.filter(deviceNames.split(','), (deviceName) => {
+            const device = _.find(allDevices, (d) => d.device_name === deviceName);
             if (!device) {
               throw new Error(`Can't find device with name ${deviceName}`);
             }
@@ -56,7 +60,7 @@ class KentikDatasource {
           deviceNames = filteredDevices.join(',');
         }
 
-        const queryCustomFilters = _.map(target.customFilters, filter => {
+        const queryCustomFilters = _.map(target.customFilters, (filter) => {
           return {
             condition: this.templateSrv.replace(filter.conjunctionOperator, options.scopedVars),
             key: this.templateSrv.replace(filter.keySegment?.value, options.scopedVars),
@@ -64,8 +68,16 @@ class KentikDatasource {
             value: this.templateSrv.replace(filter.valueSegment?.value, options.scopedVars),
           };
         });
-        const kentikFilterGroups = queryBuilder.convertToKentikFilterGroup(kentikFilters, customDimensions, savedFiltersList);
-        const queryCustomFilterGroups = queryBuilder.convertToKentikFilterGroup(queryCustomFilters, customDimensions, savedFiltersList);
+        const kentikFilterGroups = queryBuilder.convertToKentikFilterGroup(
+          kentikFilters,
+          customDimensions,
+          savedFiltersList
+        );
+        const queryCustomFilterGroups = queryBuilder.convertToKentikFilterGroup(
+          queryCustomFilters,
+          customDimensions,
+          savedFiltersList
+        );
         const filters = [...kentikFilterGroups.kentikFilters, ...queryCustomFilterGroups.kentikFilters];
         const queryOptions = {
           deviceNames: deviceNames,
@@ -115,7 +127,6 @@ class KentikDatasource {
       throw new Error('Query error: Unit field is required');
     }
 
-
     if (mode === 'table') {
       return this.processTableData(bucketData, metricDef, unitDef);
     } else {
@@ -132,7 +143,7 @@ class KentikDatasource {
 
     for (let i = 0; i < endIndex; i++) {
       const series = bucketData[i];
-      const timeseries = _.find(series.timeSeries, serie => {
+      const timeseries = _.find(series.timeSeries, (serie) => {
         return serie.flow && serie.flow.length;
       });
 
@@ -142,7 +153,7 @@ class KentikDatasource {
       if (timeseries) {
         const grafanaSeries = {
           target: seriesName,
-          datapoints: _.map(timeseries.flow, point => {
+          datapoints: _.map(timeseries.flow, (point) => {
             return [point[1], point[0]];
           }),
         };
@@ -162,7 +173,7 @@ class KentikDatasource {
       table.columns.push({ text: col.text, unit: col.unit });
     }
 
-    _.forEach(bucketData, row => {
+    _.forEach(bucketData, (row) => {
       const seriesName = row.key;
 
       const values = [seriesName];
@@ -194,7 +205,7 @@ class KentikDatasource {
         const site = this.templateSrv.replace(target.site);
         let devices = await this.kentik.getDevices();
         if (target.site && target.site !== 'all') {
-          devices = _.filter(devices, device => device.site.site_name === site);
+          devices = _.filter(devices, (device) => device.site.site_name === site);
         }
         return devices.map((device: any) => {
           return { text: device.device_name, value: device.device_name };

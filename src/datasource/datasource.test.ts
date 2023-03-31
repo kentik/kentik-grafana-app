@@ -63,7 +63,7 @@ function createDatasourceInstance(ctx: any, data: any) {
         status: 200,
         ...data,
       });
-    }
+    },
   };
 
   ctx.kentikAPI = new KentikAPI(ctx.backendSrv);

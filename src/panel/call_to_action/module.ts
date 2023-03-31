@@ -6,7 +6,6 @@ import { BackendSrv } from 'grafana/app/core/services/backend_srv';
 
 import * as _ from 'lodash';
 
-
 loadPluginCss({
   dark: 'plugins/kentik-connect-app/styles/dark.css',
   light: 'plugins/kentik-connect-app/styles/light.css',

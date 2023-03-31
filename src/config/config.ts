@@ -1,5 +1,3 @@
-import configTemplate from './config.html';
-
 import { KentikAPI } from '../datasource/kentik_api';
 import { showCustomAlert } from '../datasource/alert_helper';
 
@@ -7,15 +5,14 @@ import { BackendSrv } from 'grafana/app/core/services/backend_srv';
 
 import * as _ from 'lodash';
 
-
 enum Region {
   DEFAULT = 'default',
   EU = 'eu',
-  CUSTOM = 'custom'
+  CUSTOM = 'custom',
 }
 
 class KentikConfigCtrl {
-  static template: any;
+  static templateUrl: any;
 
   apiValidated = false;
   apiError = false;
@@ -27,7 +24,7 @@ class KentikConfigCtrl {
   regionTypes = [
     { value: Region.DEFAULT, text: 'US (default)' },
     { value: Region.EU, text: 'EU' },
-    { value: Region.CUSTOM, text: 'Custom' }
+    { value: Region.CUSTOM, text: 'Custom' },
   ];
 
   /** @ngInject */
@@ -113,7 +110,7 @@ class KentikConfigCtrl {
     let foundKentikDS = false;
     let updateKentikDS = false;
     let dsID = NaN;
-    _.forEach(results, ds => {
+    _.forEach(results, (ds) => {
       // use the type
       if (ds.type === 'kentik-connect-datasource' || ds.type === 'kentik-ds') {
         foundKentikDS = true;
@@ -170,6 +167,6 @@ class KentikConfigCtrl {
   }
 }
 
-KentikConfigCtrl.template = configTemplate;
+KentikConfigCtrl.templateUrl = 'config/config.html';
 
 export { KentikConfigCtrl as ConfigCtrl };

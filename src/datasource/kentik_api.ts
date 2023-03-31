@@ -5,7 +5,6 @@ import { FetchError } from '@grafana/runtime';
 import * as _ from 'lodash';
 import angular from 'angular';
 
-
 export class KentikAPI {
   baseUrl: string;
   /** @ngInject */
@@ -95,7 +94,11 @@ export class KentikAPI {
 
   private async _get(url: string, requiresAdminLevel = false): Promise<any> {
     return retry(
-      this.backendSrv.request.bind(this.backendSrv, { method: 'GET', url: this.baseUrl + url, showErrorAlert: !requiresAdminLevel }),
+      this.backendSrv.request.bind(this.backendSrv, {
+        method: 'GET',
+        url: this.baseUrl + url,
+        showErrorAlert: !requiresAdminLevel,
+      }),
       (error: FetchError) => {
         // HTTP Error 429: Too Many Requests
         if (error.status === 429) {
@@ -107,15 +110,13 @@ export class KentikAPI {
           showAlert(error);
         }
         return false;
-      });
+      }
+    );
   }
 
   private async _post(url: string, data: any): Promise<any> {
     try {
-      const resp = await this.backendSrv.post(
-        this.baseUrl + url,
-        data,
-      );
+      const resp = await this.backendSrv.post(this.baseUrl + url, data);
 
       if (resp) {
         return resp;
@@ -134,10 +135,7 @@ export class KentikAPI {
 
   private async _put(url: string, data: any): Promise<any> {
     try {
-      const resp = await this.backendSrv.put(
-        this.baseUrl + url,
-        data,
-      );
+      const resp = await this.backendSrv.put(this.baseUrl + url, data);
 
       if (resp) {
         return resp;
@@ -155,30 +153,26 @@ export class KentikAPI {
   }
 }
 
-const retry = (
-  fn: Function,
-  shouldContinue: (error: FetchError) => boolean,
-  retriesLeft = 100,
-  interval = 1000
-) => new Promise((resolve, reject) => {
-  console.log(`Retries left: ${retriesLeft} - Next retry interval: ${interval}`);
-  fn()
-    .then(resolve)
-    .catch((error: FetchError) => {
-      if (!shouldContinue(error)) {
-        reject(error);
-        return;
-      }
-      if (retriesLeft === 0) {
-        // Maximum retries exceeded
-        reject(error);
-        return;
-      }
-      setTimeout(() => {
-        // Passing on "reject" is the important part
-        retry(fn, shouldContinue, retriesLeft - 1, interval + 1000).then(resolve, reject);
-      }, interval);
-    });
-});
+const retry = (fn: Function, shouldContinue: (error: FetchError) => boolean, retriesLeft = 100, interval = 1000) =>
+  new Promise((resolve, reject) => {
+    console.log(`Retries left: ${retriesLeft} - Next retry interval: ${interval}`);
+    fn()
+      .then(resolve)
+      .catch((error: FetchError) => {
+        if (!shouldContinue(error)) {
+          reject(error);
+          return;
+        }
+        if (retriesLeft === 0) {
+          // Maximum retries exceeded
+          reject(error);
+          return;
+        }
+        setTimeout(() => {
+          // Passing on "reject" is the important part
+          retry(fn, shouldContinue, retriesLeft - 1, interval + 1000).then(resolve, reject);
+        }, interval);
+      });
+  });
 
 angular.module('grafana.services').service('kentikAPISrv', KentikAPI);

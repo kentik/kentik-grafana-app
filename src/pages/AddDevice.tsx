@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { appEvents } from 'grafana/app/core/core';
 
 import { AppRootProps, AppEvents } from '@grafana/data';
@@ -5,7 +6,6 @@ import { getBackendSrv } from '@grafana/runtime';
 
 import React, { FC, FormEvent, useState } from 'react';
 import _ from 'lodash';
-
 
 const defaults = {
   device_name: '',
@@ -25,20 +25,20 @@ export const addDevice: FC<AppRootProps> = () => {
 
   const [state, setState] = useState({
     device: _.cloneDeep(defaults),
-    sendingIps: [{ ip: '' }]
+    sendingIps: [{ ip: '' }],
   });
 
   function addIP(): void {
     setState({
       ...state,
-      sendingIps: _.concat(state.sendingIps, { ip: '' })
+      sendingIps: _.concat(state.sendingIps, { ip: '' }),
     });
   }
 
   function removeIP(index: number): void {
     setState({
       ...state,
-      sendingIps: _.filter(state.sendingIps, (el, idx) => idx !== index)
+      sendingIps: _.filter(state.sendingIps, (el, idx) => idx !== index),
     });
   }
 
@@ -47,18 +47,21 @@ export const addDevice: FC<AppRootProps> = () => {
     ipsForUpdate[index] = { ip: event.target.value };
     setState({
       ...state,
-      sendingIps: ipsForUpdate
+      sendingIps: ipsForUpdate,
     });
   }
 
-  function onDeviceFieldChange(event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>, field: string): void {
+  function onDeviceFieldChange(
+    event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>,
+    field: string
+  ): void {
     console.log('state', state.device, field);
     const deviceForUpdate = state.device;
     // @ts-ignore
     deviceForUpdate[field] = event.target.value;
     setState({
       ...state,
-      device: deviceForUpdate
+      device: deviceForUpdate,
     });
   }
 
@@ -66,13 +69,13 @@ export const addDevice: FC<AppRootProps> = () => {
     event.preventDefault();
 
     const ips: string[] = [];
-    _.forEach(state.sendingIps, ip => {
+    _.forEach(state.sendingIps, (ip) => {
       ips.push(ip.ip);
     });
     const payload = {
       ...state.device,
       minimize_snmp: Boolean(state.device.minimize_snmp),
-      sending_ips: ips.join()
+      sending_ips: ips.join(),
     };
     const resp = await backendSrv.post(`/api/plugin-proxy/kentik-connect-app/api/v5/device`, payload);
     if ('err' in resp) {
@@ -90,35 +93,39 @@ export const addDevice: FC<AppRootProps> = () => {
   let typeSelector;
   switch (state.device.device_type) {
     case 'router':
-      typeSelector = <div className="gf-form">
-        <label className="gf-form-label width-11">Flow Type</label>
-        <div className="gf-form-select-wrapper">
-          <select
-            className="gf-form-input gf-size-auto"
-            value={state.device.device_flow_type}
-            onChange={(event) => onDeviceFieldChange(event, 'device_flow_type')}
-          >
-            <option value="sflow">sFlow</option>
-            <option value="netflow.v5">NetFlow v5</option>
-            <option value="netflow.v9">NetFlow v9</option>
-            <option value="ipfix">IPFIX</option>
-          </select>
+      typeSelector = (
+        <div className="gf-form">
+          <label className="gf-form-label width-11">Flow Type</label>
+          <div className="gf-form-select-wrapper">
+            <select
+              className="gf-form-input gf-size-auto"
+              value={state.device.device_flow_type}
+              onChange={(event) => onDeviceFieldChange(event, 'device_flow_type')}
+            >
+              <option value="sflow">sFlow</option>
+              <option value="netflow.v5">NetFlow v5</option>
+              <option value="netflow.v9">NetFlow v9</option>
+              <option value="ipfix">IPFIX</option>
+            </select>
+          </div>
         </div>
-      </div>;
+      );
       break;
     case 'host-nprobe-basic':
-      typeSelector = <div className="gf-form">
-        <label className="gf-form-label width-11">Flow Type</label>
-        <div className="gf-form-select-wrapper">
-          <select
-            className="gf-form-input gf-size-auto"
-            value={state.device.device_flow_type}
-            onChange={(event) => onDeviceFieldChange(event, 'device_flow_type')}
-          >
-            <option value="hiresflow">HiresFlow</option>
-          </select>
+      typeSelector = (
+        <div className="gf-form">
+          <label className="gf-form-label width-11">Flow Type</label>
+          <div className="gf-form-select-wrapper">
+            <select
+              className="gf-form-input gf-size-auto"
+              value={state.device.device_flow_type}
+              onChange={(event) => onDeviceFieldChange(event, 'device_flow_type')}
+            >
+              <option value="hiresflow">HiresFlow</option>
+            </select>
+          </div>
         </div>
-      </div>;
+      );
       break;
     default:
       typeSelector = <div></div>;
@@ -131,10 +138,12 @@ export const addDevice: FC<AppRootProps> = () => {
       </div>
       <div className="row">
         <div className="col-md-10">
-          <p>Devices in Kentik are sources of network flow data - commonly a network component such as a switch or router, or
-            a flow generation agent on a host/server. Once configured, Kentik will automatically begin tracking and returning
-            direct insights from that source viewpoint into exactly which applications and endpoints are actively driving
-            network traffic.</p>
+          <p>
+            Devices in Kentik are sources of network flow data - commonly a network component such as a switch or
+            router, or a flow generation agent on a host/server. Once configured, Kentik will automatically begin
+            tracking and returning direct insights from that source viewpoint into exactly which applications and
+            endpoints are actively driving network traffic.
+          </p>
         </div>
       </div>
       <div className="gf-form-group">
@@ -185,9 +194,9 @@ export const addDevice: FC<AppRootProps> = () => {
             onChange={(event) => onDeviceFieldChange(event, 'device_sample_rate')}
           />
         </div>
-        {
-          state.sendingIps.map((ip, index) => {
-            return <div className="gf-form">
+        {state.sendingIps.map((ip, index) => {
+          return (
+            <div className="gf-form">
               <label className="gf-form-label width-11">Source Address</label>
               <input
                 className="gf-form-input max-width-15"
@@ -196,16 +205,20 @@ export const addDevice: FC<AppRootProps> = () => {
                 onChange={(event) => handleIpChange(event, index)}
                 required
               />
-              {
-                index === 0 ?
-                <a className="btn btn-inverse btn-small" onClick={addIP}><i className="fa fa-plus"></i></a> :
-                <a className="btn btn-inverse btn-small" onClick={() => removeIP(index)}><i className="fa fa-minus"></i></a>
-              }
-            </div>;
-          })
-        }
+              {index === 0 ? (
+                <a className="btn btn-inverse btn-small" onClick={addIP}>
+                  <i className="fa fa-plus"></i>
+                </a>
+              ) : (
+                <a className="btn btn-inverse btn-small" onClick={() => removeIP(index)}>
+                  <i className="fa fa-minus"></i>
+                </a>
+              )}
+            </div>
+          );
+        })}
       </div>
-      { state.device.device_type === 'router' && (
+      {state.device.device_type === 'router' && (
         <div className="gf-form-group">
           <div className="gf-form">
             <label className="gf-form-label width-11">SNMP Polling</label>
@@ -251,7 +264,9 @@ export const addDevice: FC<AppRootProps> = () => {
         </div>
       </div>
       <button className="btn btn-success">Add Device</button>
-      <a className="btn btn-link" onClick={cancel}>Cancel</a>
+      <a className="btn btn-link" onClick={cancel}>
+        Cancel
+      </a>
     </form>
   );
 };

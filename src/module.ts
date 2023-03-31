@@ -15,5 +15,4 @@ loadPluginCss({
 
 export { ConfigCtrl };
 
-export const plugin = new AppPlugin<{}>()
-  .setRootPage((rootPage as unknown) as ComponentClass<AppRootProps>);
+export const plugin = new AppPlugin<{}>().setRootPage(rootPage as unknown as ComponentClass<AppRootProps>);

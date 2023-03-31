@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { pages } from './pages';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavModel } from './utils/hooks';
@@ -8,7 +9,6 @@ import { getBackendSrv } from '@grafana/runtime';
 
 import * as _ from 'lodash';
 
-
 export const rootPage = React.memo(function getRootPage(props: AppRootProps) {
   const {
     path,
@@ -18,7 +18,7 @@ export const rootPage = React.memo(function getRootPage(props: AppRootProps) {
   } = props;
 
   const [state, setState] = useState({
-    devices: null
+    devices: null,
   });
 
   const backendSrv = getBackendSrv();
@@ -32,7 +32,7 @@ export const rootPage = React.memo(function getRootPage(props: AppRootProps) {
 
     setState({
       ...state,
-      devices
+      devices,
     });
   }
   // Required to support grafana instances that use a custom `root_url`.
@@ -40,7 +40,10 @@ export const rootPage = React.memo(function getRootPage(props: AppRootProps) {
 
   // Update the navigation when the tab or path changes
   const navModel = useNavModel(
-    useMemo(() => ({ tab, pages: pages, path: pathWithoutLeadingSlash, meta }), [meta, pathWithoutLeadingSlash, tab, pages])
+    useMemo(
+      () => ({ tab, pages: pages, path: pathWithoutLeadingSlash, meta }),
+      [meta, pathWithoutLeadingSlash, tab, pages]
+    )
   );
 
   useEffect(() => {

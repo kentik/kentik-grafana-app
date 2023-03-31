@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { KentikAPI } from '../../datasource/kentik_api';
 import { showAlert } from '../../datasource/alert_helper';
 
@@ -6,7 +7,6 @@ import { loadPluginCss } from 'grafana/app/plugins/sdk';
 import { BackendSrv } from 'grafana/app/core/services/backend_srv';
 
 import * as _ from 'lodash';
-
 
 loadPluginCss({
   dark: 'plugins/kentik-connect-app/styles/dark.css',

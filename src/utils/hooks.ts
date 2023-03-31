@@ -21,7 +21,7 @@ export function useNavModel({ meta, pages, path, tab }: Args) {
           icon,
           id,
           url: `${path}?tab=${id}`,
-          active: true
+          active: true,
         });
       }
     });
@@ -29,7 +29,7 @@ export function useNavModel({ meta, pages, path, tab }: Args) {
     if (tabs.length === 0) {
       tabs.push({
         ...pages[0],
-        active: true
+        active: true,
       });
     }
 

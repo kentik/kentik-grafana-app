@@ -2,7 +2,6 @@ import { unitList, filterFieldList, Unit, FilterField } from './metric_def';
 
 import * as _ from 'lodash';
 
-
 const KENTIK_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 
 function formatMetricAggs(unitDef: any) {
@@ -178,7 +177,10 @@ function convertToKentikFilterGroup(filters: any[], customDimensions: any[], sav
 
     if (kentikFilters.length > 0) {
       let connector = 'All';
-      if (filters[0].condition && (filters[0].condition.toLowerCase() === 'or' || filters[0].condition.toLowerCase() === 'any')) {
+      if (
+        filters[0].condition &&
+        (filters[0].condition.toLowerCase() === 'or' || filters[0].condition.toLowerCase() === 'any')
+      ) {
         connector = 'Any';
       }
 
