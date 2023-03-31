@@ -71,7 +71,7 @@ jobs:
       - store_artifacts:
           path: dist
 
-  tslint:
+  eslint:
     <<: *defaults
     steps:
       - checkout
@@ -79,10 +79,10 @@ jobs:
           keys:
             - v1-npm-deps-{{ checksum "yarn.lock" }}
       - run:
-          name: TSLint
+          name: ESLint
           command: |
             yarn install
-            npm run tslint
+            npm run eslint
 
   test:
     <<: *defaults
@@ -102,11 +102,11 @@ workflows:
   version: 2
   build-master:
     jobs:
-      - tslint:
+      - eslint:
           filters: *filter-only-master
       - test:
           requires:
-            - tslint
+            - eslint
           filters: *filter-only-master
       - build:
           requires:
@@ -115,11 +115,11 @@ workflows:
 
   build-branches-and-prs:
     jobs:
-      - tslint:
+      - eslint:
           filters: *filter-not-release-or-master
       - test:
           requires:
-            - tslint
+            - eslint
           filters: *filter-not-release-or-master
       - build:
           requires:

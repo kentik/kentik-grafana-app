@@ -6,7 +6,8 @@
   "scripts": {
     "build": "grafana-toolkit plugin:build",
     "dev": "grafana-toolkit plugin:dev --watch",
-    "test": "grafana-toolkit plugin:test"
+    "test": "grafana-toolkit plugin:test",
+    "lint": "eslint --cache --ext .js,.jsx,.ts,.tsx --max-warnings=0 ./src"
   },
   "repository": {
     "type": "git",
