@@ -82,7 +82,7 @@ jobs:
           name: ESLint
           command: |
             yarn install
-            npm run eslint
+            npm run lint
 
   test:
     <<: *defaults
