@@ -153,9 +153,8 @@ export class KentikAPI {
   }
 }
 
-const retry = (fn: Function, shouldContinue: (error: FetchError) => boolean, retriesLeft = 100, interval = 1000) =>
+const retry = (fn: Function, shouldContinue: (error: FetchError) => boolean, retriesLeft = 5, interval = 2000) =>
   new Promise((resolve, reject) => {
-    console.log(`Retries left: ${retriesLeft} - Next retry interval: ${interval}`);
     fn()
       .then(resolve)
       .catch((error: FetchError) => {
@@ -164,13 +163,13 @@ const retry = (fn: Function, shouldContinue: (error: FetchError) => boolean, ret
           return;
         }
         if (retriesLeft === 0) {
-          // Maximum retries exceeded
+          showAlert('Maximum number of retries exceeded, please reload the page');
           reject(error);
           return;
         }
         setTimeout(() => {
           // Passing on "reject" is the important part
-          retry(fn, shouldContinue, retriesLeft - 1, interval + 1000).then(resolve, reject);
+          retry(fn, shouldContinue, retriesLeft - 1, interval * 2).then(resolve, reject);
         }, interval);
       });
   });
