@@ -14,7 +14,7 @@ function showAlert(error: any) {
     message += error;
   }
 
-  appEvents.emit('alert-error', ["Kentik API Error", message]);
+  appEvents.emit('alert-error', ['Kentik API Error', message]);
 }
 
 function showCustomAlert(message: string, exceptionData: any, exceptionType: any) {
