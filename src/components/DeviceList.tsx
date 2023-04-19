@@ -8,7 +8,7 @@ import React, { FC, useEffect, useState } from 'react';
 
 interface Props extends PanelProps<{}> {};
 
-const deviceListComponent: FC<any> = () => {
+const DeviceListComponent: FC<AppRootProps | Props> = () => {
   const [state, setState] = useState({
     showDeviceDesc: false,
     pageReady: false,
@@ -157,5 +157,5 @@ const deviceListComponent: FC<any> = () => {
   );
 };
 
-export const deviceListPage: FC<AppRootProps> = deviceListComponent;
-export const deviceListPanel: FC<Props> = deviceListComponent;
+export const DeviceListPage = DeviceListComponent as FC<AppRootProps>;
+export const DeviceListPanel = DeviceListComponent as FC<Props>;
