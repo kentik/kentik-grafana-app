@@ -2,10 +2,13 @@
 import { KentikAPI } from '../datasource/kentik_api';
 
 import { getBackendSrv } from '@grafana/runtime';
-import { AppRootProps } from '@grafana/data';
+import { PanelProps, AppRootProps } from '@grafana/data';
 import React, { FC, useEffect, useState } from 'react';
 
-export const deviceList: FC<AppRootProps> = ({ query, path, meta }) => {
+
+interface Props extends PanelProps<{}> {};
+
+const deviceListComponent: FC<any> = () => {
   const [state, setState] = useState({
     showDeviceDesc: false,
     pageReady: false,
@@ -153,3 +156,6 @@ export const deviceList: FC<AppRootProps> = ({ query, path, meta }) => {
     </div>
   );
 };
+
+export const deviceListPage: FC<AppRootProps> = deviceListComponent;
+export const deviceListPanel: FC<Props> = deviceListComponent;
