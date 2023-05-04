@@ -1,4 +1,4 @@
-import { deviceList } from './DeviceList';
+import { DeviceListPage } from '../components/DeviceList';
 import { deviceDetails } from './DeviceDetails';
 // import { AddDevice } from './AddDevice';
 
@@ -13,7 +13,7 @@ export type PageDefinition = {
 
 export const pages: PageDefinition[] = [
   {
-    component: deviceList,
+    component: DeviceListPage,
     icon: 'file-alt',
     id: 'device-list',
     text: 'Device List',
