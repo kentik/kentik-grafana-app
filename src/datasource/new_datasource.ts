@@ -1,5 +1,5 @@
-import { DataSourceInstanceSettings, DataQuery, DataSourceJsonData } from '@grafana/data';
-import { DataSourceWithBackend, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
+import { DataSourceApi, DataSourceInstanceSettings, DataQuery, DataSourceJsonData, DataQueryRequest, DataQueryResponse } from '@grafana/data';
+import { getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
 import queryBuilder from './query_builder';
 import { metricList, unitList, filterFieldList, Metric, Unit, FilterField } from './metric_def';
@@ -14,7 +14,7 @@ export interface KentikQuery extends DataQuery {
 
 export interface MyDataSourceOptions extends DataSourceJsonData {}
 
-export class KentikDataSource extends DataSourceWithBackend<KentikQuery, MyDataSourceOptions> {
+export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOptions> {
 	name: string;
   kentik: any;
 	templateSrv: TemplateSrv;
@@ -47,13 +47,14 @@ export class KentikDataSource extends DataSourceWithBackend<KentikQuery, MyDataS
 		return value.join(',');
 	}
 
-	async query(options: any) {
+	async query(options: DataQueryRequest<KentikQuery>): Promise<DataQueryResponse> {
 		if (!options.targets || options.targets.length === 0) {
 			return Promise.resolve({ data: [] });
 		}
 
 		const customDimensions = await this.kentik.getCustomDimensions();
 		const savedFiltersList = await this.kentik.getSavedFilters();
+		// TODO: getAdhocFilters -> getVariable + filter adhoc type; name?
 		const kentikFilters = this.templateSrv.getAdhocFilters(this.name);
 		const allDevices = await this.kentik.getDevices();
 
@@ -301,5 +302,9 @@ export class KentikDataSource extends DataSourceWithBackend<KentikQuery, MyDataS
 	private async _getExtendedDimensionsList(list: any[]) {
 		const customDimensions = await this.kentik.getCustomDimensions();
 		return _.concat(list, customDimensions);
+	}
+
+	async testDatasource() {
+		// TODO: test?
 	}
 }
