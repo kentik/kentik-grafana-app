@@ -1,7 +1,7 @@
 /* eslint-disable */
-import { pages } from './pages';
-import { useNavModel } from './utils/hooks';
-import { KentikAPI } from './datasource/kentik_api';
+import { pages } from '../pages';
+import { useNavModel } from '../utils/hooks';
+import { KentikAPI } from '../datasource/kentik_api';
 
 import { AppRootProps } from '@grafana/data';
 import { getBackendSrv } from '@grafana/runtime';
