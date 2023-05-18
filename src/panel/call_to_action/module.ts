@@ -2,7 +2,7 @@ import { KentikAPI } from '../../datasource/kentik_api';
 import { showAlert } from '../../datasource/alert_helper';
 
 import { PanelCtrl, loadPluginCss } from 'grafana/app/plugins/sdk';
-import { BackendSrv } from 'grafana/app/core/services/backend_srv';
+import { BackendSrv } from '@grafana/runtime';
 
 import * as _ from 'lodash';
 
@@ -33,7 +33,7 @@ class CallToActiontCtrl extends PanelCtrl {
     this.deviceStatus = '';
     this.allDone = false;
 
-    this.kentik = new KentikAPI(this.backendSrv, this.$http);
+    this.kentik = new KentikAPI(this.backendSrv);
     this.fetchTaskStatus();
   }
 

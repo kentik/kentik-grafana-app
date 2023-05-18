@@ -1,8 +1,9 @@
 import { DataSourceApi, DataSourceInstanceSettings, DataQuery, DataSourceJsonData, DataQueryRequest, DataQueryResponse } from '@grafana/data';
-import { getTemplateSrv, TemplateSrv } from '@grafana/runtime';
+import { getTemplateSrv, TemplateSrv, getBackendSrv } from '@grafana/runtime';
 
 import queryBuilder from './query_builder';
 import { metricList, unitList, filterFieldList, Metric, Unit, FilterField } from './metric_def';
+import { KentikAPI } from './kentik_api';
 
 import TableModel from 'grafana/app/core/table_model';
 
@@ -10,6 +11,12 @@ import * as _ from 'lodash';
 
 export interface KentikQuery extends DataQuery {
   device: string;
+	site: string;
+	metric: string;
+	unit: string;
+	hostnameLookup: string;
+	mode: string;
+	customFilters: any[];
 }
 
 export interface MyDataSourceOptions extends DataSourceJsonData {}
@@ -23,16 +30,10 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
     console.log('instanceSettings', instanceSettings);
     super(instanceSettings);
 		this.name = instanceSettings.name;
-    // this.kentik = kentikProxySrv;
+
+    this.kentik = new KentikAPI(getBackendSrv());
 		this.templateSrv = getTemplateSrv();
   }
-
-//   applyTemplateVariables(query: KentikQuery, scopedVars: ScopedVars): Record<string, any> {
-//     return {
-//       ...query,
-//       rawQuery: getTemplateSrv().replace(query.rawQuery, scopedVars),
-//     };
-//   }
 
 	interpolateDeviceField(value: any, variable: any) {
 		// if no multi or include all do not regexEscape
@@ -54,8 +55,8 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
 
 		const customDimensions = await this.kentik.getCustomDimensions();
 		const savedFiltersList = await this.kentik.getSavedFilters();
-		// TODO: getAdhocFilters -> getVariable + filter adhoc type; name?
-		const kentikFilters = this.templateSrv.getAdhocFilters(this.name);
+		// TODO: getAdhocFilters -> getVariable + filter adhoc type; name? this.templateSrv.getAdhocFilters(this.name);
+		const kentikFilters: any[] = [];
 		const allDevices = await this.kentik.getDevices();
 
 		const promises = _.map(
@@ -108,7 +109,7 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
 					unit: this.templateSrv.replace(target.unit),
 					kentikFilterGroups: filters,
 					kentikSavedFilters: kentikFilterGroups.savedFilters,
-					hostnameLookup: this.templateSrv.replace(target.hostnameLookup),
+					hostnameLookup: false, //TODO: replace not working with boolean
 				};
 				const query = queryBuilder.buildTopXdataQuery(queryOptions);
 

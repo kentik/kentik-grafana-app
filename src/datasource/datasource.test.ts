@@ -1,5 +1,5 @@
 import { KentikAPI } from './kentik_api';
-import { Datasource } from './module';
+import { KentikDatasource } from './datasource';
 import { KentikProxy } from './kentik_proxy';
 
 describe('KentikDatasource', () => {
@@ -70,5 +70,5 @@ function createDatasourceInstance(ctx: any, data: any) {
 
   ctx.kentikProxy = new KentikProxy(ctx.kentikAPI);
 
-  ctx.ds = new Datasource(ctx.instanceSettings, ctx.templateSrv, ctx.kentikProxy);
+  ctx.ds = new KentikDatasource(ctx.instanceSettings, ctx.templateSrv, ctx.kentikProxy);
 }

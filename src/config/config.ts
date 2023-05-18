@@ -1,7 +1,7 @@
 import { KentikAPI } from '../datasource/kentik_api';
 import { showCustomAlert } from '../datasource/alert_helper';
 
-import { BackendSrv } from 'grafana/app/core/services/backend_srv';
+import { BackendSrv } from '@grafana/runtime';
 
 import * as _ from 'lodash';
 
@@ -41,7 +41,7 @@ class KentikConfigCtrl {
     if (this.appModel.jsonData.region === undefined) {
       this.appModel.jsonData.region = Region.DEFAULT;
     }
-    this.kentik = new KentikAPI(this.backendSrv, $http);
+    this.kentik = new KentikAPI(this.backendSrv);
     if (this.appModel.enabled && this.appModel.jsonData.tokenSet) {
       this.validateApiConnection();
     }
