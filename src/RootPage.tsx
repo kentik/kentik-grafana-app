@@ -1,15 +1,16 @@
 /* eslint-disable */
 import { pages } from './pages';
-import React, { useEffect, useMemo, useState } from 'react';
 import { useNavModel } from './utils/hooks';
 import { KentikAPI } from './datasource/kentik_api';
 
 import { AppRootProps } from '@grafana/data';
 import { getBackendSrv } from '@grafana/runtime';
 
+import React, { useEffect, useMemo, useState } from 'react';
+
 import * as _ from 'lodash';
 
-export const rootPage = React.memo(function getRootPage(props: AppRootProps) {
+export const RootPage = React.memo(function getRootPage(props: AppRootProps) {
   const {
     path,
     onNavChanged,
