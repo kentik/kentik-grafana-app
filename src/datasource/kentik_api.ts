@@ -1,4 +1,4 @@
-import { showAlert } from '../datasource/alert_helper';
+import { showAlert } from '../utils/alert_helper';
 
 import { FetchError } from '@grafana/runtime';
 

@@ -1,4 +1,3 @@
-import { RootPage } from './components/RootPage';
 import { AppConfig } from './components/AppConfig';
 
 import './styles/dark.scss';
@@ -12,7 +11,7 @@ loadPluginCss({
   light: 'plugins/kentik-connect-app/styles/light.css',
 });
 
-export const plugin = new AppPlugin<{}>().setRootPage(RootPage).addConfigPage({
+export const plugin = new AppPlugin<{}>().addConfigPage({
   title: 'Configuration',
   icon: 'cog',
   body: AppConfig,

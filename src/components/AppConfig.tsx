@@ -1,9 +1,7 @@
-import { SecretInput } from './SecretInput';
-
-import { showCustomAlert } from '../datasource/alert_helper';
+import { showCustomAlert } from '../utils/alert_helper';
 import { KentikAPI } from '../datasource/kentik_api';
 
-import { Button, Field, Input, useStyles2, FieldSet, RadioButtonGroup } from '@grafana/ui';
+import { Button, Field, Input, useStyles2, FieldSet, RadioButtonGroup, SecretInput } from '@grafana/ui';
 import { PluginConfigPageProps, AppPluginMeta, PluginMeta, GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { getBackendSrv } from '@grafana/runtime';
 
@@ -364,7 +362,6 @@ const updatePlugin = async (pluginId: string, data: Partial<PluginMeta>): Promis
   await getBackendSrv().post(
     `/api/plugins/${pluginId}/settings`,
     data,
-    // @ts-expect-error
     { showSuccessAlert: false }
   );
 };
