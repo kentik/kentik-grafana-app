@@ -54,7 +54,7 @@ interface Props extends PluginConfigPageProps<AppPluginMeta<JsonData>> { }
 export const AppConfig = ({ plugin }: Props) => {
   const s = useStyles2(getStyles);
   const { jsonData, enabled } = plugin.meta;
-  console.log(plugin.meta)
+
   const [state, setState] = useState<State>({
     url: jsonData?.url || 'https://grafana-api.kentik.com/api/v5',
     email: jsonData?.email || '',
@@ -138,7 +138,6 @@ export const AppConfig = ({ plugin }: Props) => {
       await kentik.getSites();
     } catch (e) {
       _onApiError();
-
       return false;
     }
 
@@ -148,14 +147,13 @@ export const AppConfig = ({ plugin }: Props) => {
     } catch (e: any) {
       if (e.status !== 403) {
         _onApiError();
-
-        setState({
-          ...state,
-          apiMemberWarning: true,
-        });
-
         return false;
       }
+
+      setState({
+        ...state,
+        apiMemberWarning: true,
+      });
     }
 
     setState({
@@ -176,7 +174,6 @@ export const AppConfig = ({ plugin }: Props) => {
     try {
       await updatePlugin(pluginId, { ...data, enabled: true, pinned: true });
       await initDatasource(data);
-      console.log('updated')
       // Reloading the page as the changes made here wouldn't be propagated to the actual plugin otherwise.
       // This is not ideal, however unfortunately currently there is no supported way for updating the plugin state.
       window.location.reload();
@@ -299,17 +296,21 @@ export const AppConfig = ({ plugin }: Props) => {
         {(state.tokenSet && state.apiValidated) && (
           <div className="kentik-enabled-box">
             <i className="icon-gf icon-gf-check kentik-api-status-icon success"></i>
-            Successfully enabled.
-            <strong>Next up: </strong>
-            <a href="d/xScUGST71/kentik-home" className="external-link">Go to Kentik Home Dashboard</a>
+            <span className={s.marginLeft}>
+              Successfully enabled.
+              <strong> Next up: </strong>
+              <a href="d/xScUGST71/kentik-home" className="external-link">Go to Kentik Home Dashboard</a>
+            </span>
           </div>
         )}
 
         {(state.tokenSet && state.apiValidated && state.apiMemberWarning) && (
           <div className="kentik-enabled-box">
             <i className="fa fa-warning kentik-api-status-icon warning"></i>
-            The specified Kentik user seems to have Member access level (not Admin),
-            Custom Dimensions in the dashboard filters won't be available.
+            <span className={s.marginLeft}>
+              The specified Kentik user seems to have Member access level (not Admin),
+              Custom Dimensions in the dashboard filters won't be available.
+            </span>
           </div>
         )}
 
