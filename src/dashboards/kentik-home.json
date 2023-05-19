@@ -17,45 +17,10 @@
           {
             "editable": true,
             "error": false,
-            "id": 5,
-            "span": 7.5,
-            "height": "415px",
-            "title": "",
-            "type": "kentik-devicelist-panel"
-          },
-          {
-            "content": "",
-            "editable": true,
-            "error": false,
-            "id": 4,
-            "links": [],
-            "mode": "markdown",
-            "span": 0.5,
-            "style": {},
-            "title": "",
-            "transparent": true,
-            "type": "text"
-          },
-          {
-            "editable": true,
-            "error": false,
             "id": 1,
-            "span": 4,
+            "span": 6,
             "title": "",
             "type": "kentik-calltoaction-panel"
-          },
-          {
-            "content": "",
-            "editable": true,
-            "error": false,
-            "id": 6,
-            "links": [],
-            "mode": "markdown",
-            "span": 0.5,
-            "style": {},
-            "title": "",
-            "transparent": true,
-            "type": "text"
           },
           {
             "editable": true,
@@ -65,7 +30,7 @@
             "links": [],
             "mode": "search",
             "query": "",
-            "span": 4,
+            "span": 6,
             "tags": [
               "kentik"
             ],
