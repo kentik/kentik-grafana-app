@@ -67,6 +67,13 @@ export const AppConfig = ({ plugin }: Props) => {
     apiError: false,
   });
 
+  useEffect(() => {
+    if (enabled && isConfigured()) {
+      validateApiConnection();
+    }
+    // eslint-disable-next-line
+  }, []);
+
   const onResetToken = () =>
     setState({
       ...state,
@@ -225,12 +232,6 @@ export const AppConfig = ({ plugin }: Props) => {
     return promisesResults;
   }
 
-  useEffect(() => {
-    if(enabled && isConfigured()) {
-      validateApiConnection();
-    }
-  }, []);
-
   return (
     <div>
       {/* CUSTOM SETTINGS */}
@@ -309,7 +310,7 @@ export const AppConfig = ({ plugin }: Props) => {
             <i className="fa fa-warning kentik-api-status-icon warning"></i>
             <span className={s.marginLeft}>
               The specified Kentik user seems to have Member access level (not Admin),
-              Custom Dimensions in the dashboard filters won't be available.
+              Custom Dimensions in the dashboard filters won`t be available.
             </span>
           </div>
         )}
