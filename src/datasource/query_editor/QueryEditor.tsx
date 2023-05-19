@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
 import { KentikDataSource, KentikQuery } from '../new_datasource';
-import { VerticalGroup, HorizontalGroup, Label, Select } from '@grafana/ui';
+import { VerticalGroup, HorizontalGroup, Label, AsyncSelect } from '@grafana/ui';
 import _ from 'lodash';
 
 type MyDataSourceOptions = {}; 
@@ -14,60 +14,77 @@ export type QueryItem = {
 
 export const QueryEditor: React.FC<Props> = (props: Props) => {
   console.log('props', props);
-  const [state, setState] = useState({
+  const [state] = useState({
     devices: [] as QueryItem[],
     sites: [] as QueryItem[],
   });
 
-  useEffect(() => {
-    console.log('zalupa');
-    fetchDevices();
-    fetchSites();
-  }, []);
+  // useEffect(() => {
+  //   console.log('zalupa');
+  //   fetchDevices();
+  //   fetchSites();
+  // }, []);
 
   const convertToSelectableValues = (items: QueryItem[]): SelectableValue<string>[] => {
     return _.map(items, (item: QueryItem) => ({ value: item.value, label: item.text }));
   }
 
-  async function fetchDevices(): Promise<void> {
-    console.log('fetchDevices')
+  // const fetchDevices = async (): Promise<void> => {
+  //   console.log('fetchDevices', state)
+  //   const devices = await props.datasource.metricFindQuery('devices()', props.query);
+  //   console.log('devices', state, devices)
+  //   setState({
+  //     ...state,
+  //     devices,
+  //   });
+  // }
+
+  // const fetchSites = async (): Promise<void> => {
+  //   console.log('fetchSites', state)
+  //   const sites = await props.datasource.metricFindQuery('sites()', props.query);
+  //   console.log('sites', state, sites)
+  //   setState({
+  //     ...state,
+  //     sites,
+  //   });
+  // }
+
+  const getDevicesValues = async (): Promise<SelectableValue<string>[]> => {
+    console.log('fetchDevices', state)
     const devices = await props.datasource.metricFindQuery('devices()', props.query);
     console.log('devices', state, devices)
-    setState({
-      ...state,
-      devices,
-    });
+    return convertToSelectableValues(devices);
   }
 
-  async function fetchSites(): Promise<void> {
-    console.log('fetchSites')
+  const getSitesValues = async (): Promise<SelectableValue<string>[]> => {
+    console.log('get sites', state)
     const sites = await props.datasource.metricFindQuery('sites()', props.query);
     console.log('sites', state, sites)
-    setState({
-      ...state,
-      sites,
-    });
+    return convertToSelectableValues(sites);
   }
+
   console.log('render', state.sites, state.devices)
   return (
     <VerticalGroup>
       <HorizontalGroup>
         <Label>Device</Label>
-        <Select
+        <AsyncSelect
           value={({ value: props.query.device})}
-          options={convertToSelectableValues(state.devices)}
+          loadOptions={getDevicesValues}
+          defaultOptions={true}
           width={20}
           onChange={(e) => props.onChange({ ...props.query })}
         />
         <Label>Site</Label>
-        <Select
+        <AsyncSelect
           value={({ value: props.query.site})}
-          options={convertToSelectableValues(state.sites)}
+          loadOptions={getSitesValues}
+          defaultOptions={true}
           width={20}
           onChange={(e) => props.onChange({ ...props.query })}
         />
       </HorizontalGroup>
-      <HorizontalGroup>
+      {/* <HorizontalGroup>
         <Label>Metric</Label>
         <Select
           value={({ value: props.query.device})}
@@ -105,7 +122,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
           width={20}
           onChange={(e) => props.onChange({ ...props.query })}
         />
-      </HorizontalGroup>
+      </HorizontalGroup> */}
     </VerticalGroup>
   );
 };
