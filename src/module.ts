@@ -1,11 +1,9 @@
-import { ComponentClass } from 'react';
-import { AppPlugin, AppRootProps } from '@grafana/data';
-import { rootPage } from './RootPage';
+import { AppConfig } from './components/AppConfig';
 
 import './styles/dark.scss';
 import './styles/light.scss';
 
-import { ConfigCtrl } from './config/config';
+import { AppPlugin } from '@grafana/data';
 import { loadPluginCss } from 'grafana/app/plugins/sdk';
 
 loadPluginCss({
@@ -13,6 +11,9 @@ loadPluginCss({
   light: 'plugins/kentik-connect-app/styles/light.css',
 });
 
-export { ConfigCtrl };
-
-export const plugin = new AppPlugin<{}>().setRootPage(rootPage as unknown as ComponentClass<AppRootProps>);
+export const plugin = new AppPlugin<{}>().addConfigPage({
+  title: 'Configuration',
+  icon: 'cog',
+  body: AppConfig,
+  id: 'configuration',
+});;
