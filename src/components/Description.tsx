@@ -10,7 +10,7 @@ import { css } from '@emotion/css';
 
 interface Props extends PanelProps<{}> {};
 
-export const DesriptionPanel: FC<Props> = () => {
+export const DescriptionPanel: FC<Props> = () => {
   const styles = useStyles2(getStyles);
   const [state, setState] = useState({
     // TODO: Device type
@@ -21,6 +21,7 @@ export const DesriptionPanel: FC<Props> = () => {
 
   useEffect(() => {
     fetchDevices();
+    // eslint-disable-next-line
   }, []);
 
   async function fetchDevices(): Promise<void> {
