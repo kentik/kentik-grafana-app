@@ -16,6 +16,11 @@ export type QueryItem = {
   text: string;
 }
 
+const QUERY_MODES: QueryItem[] = [
+  { value: 'graph', text: 'Graph' },
+  { value: 'table', text: 'Table' },
+];
+
 export const QueryEditor: React.FC<Props> = (props: Props) => {
   const [state, setState] = useState({
     sites: [] as QueryItem[],
@@ -73,6 +78,15 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
   return (
     <VerticalGroup>
       <HorizontalGroup>
+        <Label>Data Mode</Label>
+        <Select
+          value={props.query.mode}
+          options={convertToSelectableValues(QUERY_MODES)}
+          width={20}
+          onChange={(e) => props.onChange({ ...props.query })}
+        />
+      </HorizontalGroup>
+      <HorizontalGroup>
         <Label>Site</Label>
         <Select
           isLoading={state.isLoading}
@@ -108,16 +122,6 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
           onChange={(e) => props.onChange({ ...props.query })}
         />
       </HorizontalGroup>
-      {/*
-        <Label>Data Mode</Label>
-        <Select
-          value={({ value: props.query.site})}
-          options={convertToSelectableValues(state.sites)}
-          width={20}
-          onChange={(e) => props.onChange({ ...props.query })}
-        />
-      </HorizontalGroup>
-      */}
     </VerticalGroup>
   );
 };
