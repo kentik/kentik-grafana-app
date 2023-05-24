@@ -1,4 +1,4 @@
-import { SecretInput } from './SecretInput';
+import { SecretInput } from './utils/SecretInput';
 import { showCustomAlert } from '../utils/alert_helper';
 import { KentikAPI } from '../datasource/kentik_api';
 
