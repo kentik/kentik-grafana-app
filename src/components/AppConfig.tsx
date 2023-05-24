@@ -12,7 +12,6 @@ import React, { useState, ChangeEvent, useEffect } from 'react';
 
 import * as _ from 'lodash';
 
-
 enum Region {
   DEFAULT = 'default',
   EU = 'eu',
@@ -50,7 +49,7 @@ type State = Required<JsonData> & {
   token: string;
 };
 
-interface Props extends PluginConfigPageProps<AppPluginMeta<JsonData>> { }
+interface Props extends PluginConfigPageProps<AppPluginMeta<JsonData>> {}
 
 export const AppConfig = ({ plugin }: Props) => {
   const s = useStyles2(getStyles);
@@ -122,7 +121,7 @@ export const AppConfig = ({ plugin }: Props) => {
       apiValidated: false,
       apiError: true,
     });
-  }
+  };
 
   const _getUrlByRegion = (region?: Region): string => {
     switch (region) {
@@ -135,7 +134,7 @@ export const AppConfig = ({ plugin }: Props) => {
       default:
         throw new Error(`Unknown region type: "${region}"`);
     }
-  }
+  };
 
   // make sure that we can hit the Kentik API.
   const validateApiConnection = async (): Promise<boolean> => {
@@ -170,13 +169,11 @@ export const AppConfig = ({ plugin }: Props) => {
     });
     showCustomAlert('API working!', '', 'success');
     return true;
-  }
+  };
 
   const isConfigured = (): boolean => {
-    return (state.tokenSet || !_.isEmpty(state.token)) &&
-      !_.isEmpty(state.region) &&
-      !_.isEmpty(state.email);
-  }
+    return (state.tokenSet || !_.isEmpty(state.token)) && !_.isEmpty(state.region) && !_.isEmpty(state.email);
+  };
 
   const updatePluginAndReload = async (pluginId: string, data: Partial<PluginMeta<JsonData>>) => {
     try {
@@ -190,7 +187,7 @@ export const AppConfig = ({ plugin }: Props) => {
     }
   };
 
-  const initDatasource = async (data: Partial<PluginMeta<JsonData>>): Promise <any[]> => {
+  const initDatasource = async (data: Partial<PluginMeta<JsonData>>): Promise<any[]> => {
     const backendSrv = getBackendSrv();
     //check for existing datasource.
     const results = await backendSrv.get('/api/datasources');
@@ -204,18 +201,14 @@ export const AppConfig = ({ plugin }: Props) => {
         dsID = ds.id;
         updateKentikDS = true;
 
-        if (
-          ds.type === 'kentik-ds' ||
-          ds.jsonData.region !== data.jsonData?.region ||
-          ds.jsonData !== data.jsonData
-        ) {
+        if (ds.type === 'kentik-ds' || ds.jsonData.region !== data.jsonData?.region || ds.jsonData !== data.jsonData) {
           updateKentikDS = true;
         }
         return;
       }
     });
     const promisesResults: any[] = [];
-    if(!foundKentikDS || updateKentikDS) {
+    if (!foundKentikDS || updateKentikDS) {
       // create datasource
       const datasourceSettings = {
         name: 'kentik',
@@ -231,13 +224,12 @@ export const AppConfig = ({ plugin }: Props) => {
       }
     }
     return promisesResults;
-  }
+  };
 
   return (
     <div>
       {/* CUSTOM SETTINGS */}
       <FieldSet label="Enter your Kentik Credentials" className={s.marginTop}>
-
         {/* Email */}
         <Field label="Email" description="">
           <Input
@@ -252,11 +244,7 @@ export const AppConfig = ({ plugin }: Props) => {
 
         {/* Region */}
         <Field label="Region" description="">
-          <RadioButtonGroup
-            value={state.region}
-            options={REGION_OPTIONS}
-            onChange={onChangeRegion}
-          />
+          <RadioButtonGroup value={state.region} options={REGION_OPTIONS} onChange={onChangeRegion} />
         </Field>
 
         {/* Custom URL */}
@@ -277,7 +265,6 @@ export const AppConfig = ({ plugin }: Props) => {
         <Field label="API Token">
           <SecretInput
             width={60}
-
             id="api-token"
             value={state.token}
             isConfigured={state.tokenSet}
@@ -290,28 +277,32 @@ export const AppConfig = ({ plugin }: Props) => {
         {isConfigured() && state.apiError && (
           <div className="gf-form" ng-if="ctrl.apiError && ctrl.appModel.enabled">
             <i className={`fa fa-exclamation-circle ${s.colorError}`}>
-              <span className={s.marginLeft}>Invalid API credentials. This app wont work until the credentials are updated.</span>
+              <span className={s.marginLeft}>
+                Invalid API credentials. This app wont work until the credentials are updated.
+              </span>
             </i>
           </div>
         )}
 
-        {(state.tokenSet && state.apiValidated) && (
+        {state.tokenSet && state.apiValidated && (
           <div className="kentik-enabled-box">
             <i className="icon-gf icon-gf-check kentik-api-status-icon success"></i>
             <span className={s.marginLeft}>
               Successfully enabled.
               <strong> Next up: </strong>
-              <a href="d/xScUGST71/kentik-home" className="external-link">Go to Kentik Home Dashboard</a>
+              <a href="d/xScUGST71/kentik-home" className="external-link">
+                Go to Kentik Home Dashboard
+              </a>
             </span>
           </div>
         )}
 
-        {(state.tokenSet && state.apiValidated && state.apiMemberWarning) && (
+        {state.tokenSet && state.apiValidated && state.apiMemberWarning && (
           <div className="kentik-enabled-box">
             <i className="fa fa-warning kentik-api-status-icon warning"></i>
             <span className={s.marginLeft}>
-              The specified Kentik user seems to have Member access level (not Admin),
-              Custom Dimensions in the dashboard filters won`t be available.
+              The specified Kentik user seems to have Member access level (not Admin), Custom Dimensions in the
+              dashboard filters won`t be available.
             </span>
           </div>
         )}
@@ -319,7 +310,6 @@ export const AppConfig = ({ plugin }: Props) => {
         <div className={s.marginTop}>
           <Button
             type="submit"
-
             onClick={() =>
               updatePluginAndReload(plugin.meta.id, {
                 jsonData: {
@@ -334,8 +324,8 @@ export const AppConfig = ({ plugin }: Props) => {
                 secureJsonData: state.tokenSet
                   ? undefined
                   : {
-                    token: state.token,
-                  },
+                      token: state.token,
+                    },
               })
             }
             disabled={!isConfigured()}
@@ -359,7 +349,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     margin-left: ${theme.spacing(1)};
   `,
 });
-
 
 const updatePlugin = async (pluginId: string, data: Partial<PluginMeta>): Promise<void> => {
   await getBackendSrv().post(

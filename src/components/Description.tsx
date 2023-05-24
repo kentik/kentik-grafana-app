@@ -7,8 +7,7 @@ import React, { FC, useEffect, useState } from 'react';
 
 import { css } from '@emotion/css';
 
-
-interface Props extends PanelProps<{}> {};
+interface Props extends PanelProps<{}> {}
 
 export const DescriptionPanel: FC<Props> = () => {
   const styles = useStyles2(getStyles);
@@ -35,20 +34,21 @@ export const DescriptionPanel: FC<Props> = () => {
   return (
     <div>
       <img className={styles.image} src="public/plugins/kentik-connect-app/img/kentik_logo.png" />
-      <p>Kentik Connect Pro for Grafana allows you to quickly and easily add network activity
-        visibility metrics to your Grafana dashboard. By leveraging the power of Kentik’s monitoring SaaS, you can enjoy
-        rich, actionable insights into consumers of network bandwidth and anomalies that can affect application or service
-        performance.</p>
+      <p>
+        Kentik Connect Pro for Grafana allows you to quickly and easily add network activity visibility metrics to your
+        Grafana dashboard. By leveraging the power of Kentik’s monitoring SaaS, you can enjoy rich, actionable insights
+        into consumers of network bandwidth and anomalies that can affect application or service performance.
+      </p>
       <div className={styles.actionsContainer}>
         <VerticalGroup>
           <div>Complete:</div>
           <HorizontalGroup>
-            <i className={styles.successIcon + " icon-gf icon-gf-check"}></i>
+            <i className={styles.successIcon + ' icon-gf icon-gf-check'}></i>
             <span className={styles.successLine}>Install Kentik Connect for Grafana.</span>
           </HorizontalGroup>
-          {(state.devices.length > 0) && (
+          {state.devices.length > 0 && (
             <HorizontalGroup>
-              <i className={styles.successIcon + " icon-gf icon-gf-check"}></i>
+              <i className={styles.successIcon + ' icon-gf icon-gf-check'}></i>
               <span className={styles.successLine}>Add your first device.</span>
             </HorizontalGroup>
           )}
@@ -73,7 +73,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     margin-bottom: 0px;
   `,
   successIcon: css`
-    color: #6CCF8E;
+    color: #6ccf8e;
     font-size: 24px;
   `,
   successLine: css`
