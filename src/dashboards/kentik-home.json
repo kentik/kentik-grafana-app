@@ -20,7 +20,7 @@
             "id": 1,
             "span": 6,
             "title": "",
-            "type": "kentik-calltoaction-panel"
+            "type": "kentik-description-panel"
           },
           {
             "editable": true,
