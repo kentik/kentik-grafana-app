@@ -18,19 +18,28 @@ export type QueryItem = {
 
 export const QueryEditor: React.FC<Props> = (props: Props) => {
   const [state, setState] = useState({
-    devices: [] as QueryItem[],
     sites: [] as QueryItem[],
+    devices: [] as QueryItem[],
+    metrics: [] as QueryItem[],
+    units: [] as QueryItem[],
     isLoading: true,
   });
 
   useEffect(() => {
     const init = async () => {
-      const [devices, sites] = await Promise.all([fetchDevices(), fetchSites()]);
+      const [sites, devices, metrics, units] = await Promise.all([
+        fetchSites(),
+        fetchDevices(),
+        fetchMetrics(),
+        fetchUnits(),
+      ]);
 
       setState({
         ...state,
-        devices,
         sites,
+        devices,
+        metrics,
+        units,
         isLoading: false,
       });
     };
@@ -51,9 +60,27 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     return sites;
   }
 
+  const fetchMetrics = async (): Promise<QueryItem[]> => {
+    const metrics = await props.datasource.metricFindQuery('metrics()', props.query);
+    return metrics;
+  }
+
+  const fetchUnits = async (): Promise<QueryItem[]> => {
+    const units = await props.datasource.metricFindQuery('units()', props.query);
+    return units;
+  }
+
   return (
     <VerticalGroup>
       <HorizontalGroup>
+        <Label>Site</Label>
+        <Select
+          isLoading={state.isLoading}
+          value={({ value: props.query.site })}
+          options={convertToSelectableValues(state.sites)}
+          width={20}
+          onChange={(e) => props.onChange({ ...props.query })}
+        />
         <Label>Device</Label>
         <Select
           isLoading={state.isLoading}
@@ -62,30 +89,26 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
           width={20}
           onChange={(e) => props.onChange({ ...props.query })}
         />
-        <Label>Site</Label>
-        <Select
-          isLoading={state.isLoading}
-          value={({ value: props.query.site})}
-          options={convertToSelectableValues(state.sites)}
-          width={20}
-          onChange={(e) => props.onChange({ ...props.query })}
-        />
       </HorizontalGroup>
-      {/* <HorizontalGroup>
+      <HorizontalGroup>
         <Label>Metric</Label>
         <Select
-          value={({ value: props.query.device})}
-          options={convertToSelectableValues(state.devices)}
+          isLoading={state.isLoading}
+          value={({ value: props.query.metric})}
+          options={convertToSelectableValues(state.metrics)}
           width={20}
           onChange={(e) => props.onChange({ ...props.query })}
         />
         <Label>Unit</Label>
         <Select
-          value={({ value: props.query.site})}
-          options={convertToSelectableValues(state.sites)}
+          isLoading={state.isLoading}
+          value={({ value: props.query.unit})}
+          options={convertToSelectableValues(state.units)}
           width={20}
           onChange={(e) => props.onChange({ ...props.query })}
         />
+      </HorizontalGroup>
+      {/*
         <Label>Data Mode</Label>
         <Select
           value={({ value: props.query.site})}
@@ -94,22 +117,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
           onChange={(e) => props.onChange({ ...props.query })}
         />
       </HorizontalGroup>
-      <HorizontalGroup>
-        <Label>Device</Label>
-        <Select
-          value={({ value: props.query.device})}
-          options={convertToSelectableValues(state.devices)}
-          width={20}
-          onChange={(e) => props.onChange({ ...props.query })}
-        />
-        <Label>Site</Label>
-        <Select
-          value={({ value: props.query.site})}
-          options={convertToSelectableValues(state.sites)}
-          width={20}
-          onChange={(e) => props.onChange({ ...props.query })}
-        />
-      </HorizontalGroup> */}
+      */}
     </VerticalGroup>
   );
 };
