@@ -1,5 +1,5 @@
 import { KentikAPI } from '../../datasource/kentik_api';
-import { showAlert } from '../../datasource/alert_helper';
+import { showAlert } from '../../utils/alert_helper';
 
 import { PanelCtrl, loadPluginCss } from 'grafana/app/plugins/sdk';
 import { BackendSrv } from '@grafana/runtime';

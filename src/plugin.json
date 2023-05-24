@@ -34,7 +34,6 @@
     "screenshots": [
       {"name": "Kentik Connect - Top Talkers", "path": "img/kentik-connect-top-talkers-2.png"},
       {"name": "Kentik Connect - Home Dashboard", "path": "img/kentik-connect-home.png"},
-      {"name": "Kentik Connect - Device Details", "path": "img/kentik-connect-device-details.png"},
       {"name": "Kentik Connect - Top Talkers 2", "path": "img/kentik-connect-top-talkers.png"}
     ],
     "version": "%VERSION%",
@@ -42,13 +41,6 @@
   },
 
   "includes": [
-    {
-      "type": "page",
-      "name": "Device List",
-      "role": "Editor",
-      "addToNav": true,
-      "path": "/a/kentik-connect-app"
-    },
     {
       "uid": "NS58GIo71",
       "type": "dashboard",
@@ -66,10 +58,6 @@
     {
       "type": "panel",
       "name": "Kentik Call To Action"
-    },
-    {
-      "type": "panel",
-      "name": "Kentik Device List"
     },
     {
       "type": "datasource",
