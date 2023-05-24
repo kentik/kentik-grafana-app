@@ -76,7 +76,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
         <Label>Site</Label>
         <Select
           isLoading={state.isLoading}
-          value={({ value: props.query.site })}
+          value={props.query.site}
           options={convertToSelectableValues(state.sites)}
           width={20}
           onChange={(e) => props.onChange({ ...props.query })}
@@ -84,7 +84,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
         <Label>Device</Label>
         <Select
           isLoading={state.isLoading}
-          value={({ value: props.query.device})}
+          value={props.query.device}
           options={convertToSelectableValues(state.devices)}
           width={20}
           onChange={(e) => props.onChange({ ...props.query })}
@@ -94,7 +94,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
         <Label>Metric</Label>
         <Select
           isLoading={state.isLoading}
-          value={({ value: props.query.metric})}
+          value={props.query.metric}
           options={convertToSelectableValues(state.metrics)}
           width={20}
           onChange={(e) => props.onChange({ ...props.query })}
@@ -102,7 +102,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
         <Label>Unit</Label>
         <Select
           isLoading={state.isLoading}
-          value={({ value: props.query.unit})}
+          value={props.query.unit}
           options={convertToSelectableValues(state.units)}
           width={20}
           onChange={(e) => props.onChange({ ...props.query })}
