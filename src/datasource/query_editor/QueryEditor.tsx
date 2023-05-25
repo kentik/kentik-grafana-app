@@ -21,6 +21,11 @@ const QUERY_MODES: QueryItem[] = [
   { value: 'table', text: 'Table' },
 ];
 
+const HOSTNAME_LOOKUP_CHOICES = [
+  { value: 'enabled', text: 'Enabled' },
+  { value: 'disabled', text: 'Disabled' },
+];
+
 export const QueryEditor: React.FC<Props> = (props: Props) => {
   const [state, setState] = useState({
     sites: [] as QueryItem[],
@@ -62,29 +67,33 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     return _.includes(variables, variableName);
   };
 
-  const getSelectableValues = async (query: string, variableName?: string): Promise<QueryItem[]> => {
+  const getOptions = async (query: string, variableName?: string): Promise<QueryItem[]> => {
     let metrics: QueryItem[] = await props.datasource.metricFindQuery(query, props.query);
-    if (variableName && variableExists(variableName)) {
-      metrics = [{ text: variableName, value: variableName }, ...metrics];
-    }
 
-    return metrics;
+    return appendVariableIfExists(metrics, variableName);
   };
 
+  const appendVariableIfExists = (options: QueryItem[], variableName?: string) => {
+    if (variableName && variableExists(variableName)) {
+      return [{ text: variableName, value: variableName }, ...options];
+    }
+    return options;
+  }
+
   const fetchSites = async (): Promise<QueryItem[]> => {
-    return getSelectableValues('sites()');
+    return getOptions('sites()');
   };
 
   const fetchDevices = async (): Promise<QueryItem[]> => {
-    return getSelectableValues('devices()', '$device');
+    return getOptions('devices()', '$device');
   };
 
   const fetchMetrics = async (): Promise<QueryItem[]> => {
-    return getSelectableValues('metrics()', '$metric');
+    return getOptions('metrics()', '$metric');
   };
 
   const fetchUnits = async (): Promise<QueryItem[]> => {
-    return getSelectableValues('units()', '$unit');
+    return getOptions('units()', '$unit');
   };
 
   return (
@@ -133,6 +142,16 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
           options={convertToSelectableValues(state.units)}
           width={20}
           onChange={(e) => props.onChange({ ...props.query, unit: e.value as string })}
+        />
+      </HorizontalGroup>
+      <HorizontalGroup>
+        <Label>DNS Lookup</Label>
+        <Select
+          isLoading={state.isLoading}
+          value={props.query.hostnameLookup}
+          options={convertToSelectableValues(appendVariableIfExists(HOSTNAME_LOOKUP_CHOICES, '$dns_lookup'))}
+          width={20}
+          onChange={(e) => props.onChange({ ...props.query, hostnameLookup: e.value as string })}
         />
       </HorizontalGroup>
     </VerticalGroup>
