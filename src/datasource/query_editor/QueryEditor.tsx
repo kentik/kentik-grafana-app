@@ -1,7 +1,7 @@
 import { KentikDataSource, KentikQuery } from '../new_datasource';
 
 import { QueryEditorProps, SelectableValue, VariableModel } from '@grafana/data';
-import { VerticalGroup, HorizontalGroup, Label, Select } from '@grafana/ui';
+import { VerticalGroup, HorizontalGroup, Label, Select, Input } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
 
 import React, { useEffect, useState } from 'react';
@@ -28,10 +28,10 @@ const HOSTNAME_LOOKUP_CHOICES = [
 
 export const QueryEditor: React.FC<Props> = (props: Props) => {
   const [state, setState] = useState({
-    sites: [] as QueryItem[],
-    devices: [] as QueryItem[],
-    metrics: [] as QueryItem[],
-    units: [] as QueryItem[],
+    sites: [] as SelectableValue<string>[],
+    devices: [] as SelectableValue<string>[],
+    metrics: [] as SelectableValue<string>[],
+    units: [] as SelectableValue<string>[],
     isLoading: true,
   });
 
@@ -57,7 +57,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     // eslint-disable-next-line
   }, []);
 
-  const convertToSelectableValues = (items: QueryItem[]): Array<SelectableValue<string>> => {
+  const convertToSelectableValues = (items: QueryItem[]): SelectableValue<string>[] => {
     return _.map(items, (item: QueryItem) => ({ value: item.value, label: item.text }));
   };
 
@@ -67,10 +67,12 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     return _.includes(variables, variableName);
   };
 
-  const getOptions = async (query: string, variableName?: string): Promise<QueryItem[]> => {
+  const getOptions = async (query: string, variableName?: string): Promise<SelectableValue<string>[]> => {
     let metrics: QueryItem[] = await props.datasource.metricFindQuery(query, props.query);
 
-    return appendVariableIfExists(metrics, variableName);
+    return convertToSelectableValues(
+      appendVariableIfExists(metrics, variableName)
+    );
   };
 
   const appendVariableIfExists = (options: QueryItem[], variableName?: string) => {
@@ -80,21 +82,26 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     return options;
   }
 
-  const fetchSites = async (): Promise<QueryItem[]> => {
+  const fetchSites = async (): Promise<SelectableValue<string>[]> => {
     return getOptions('sites()');
   };
 
-  const fetchDevices = async (): Promise<QueryItem[]> => {
+  const fetchDevices = async (): Promise<SelectableValue<string>[]> => {
     return getOptions('devices()', '$device');
   };
 
-  const fetchMetrics = async (): Promise<QueryItem[]> => {
+  const fetchMetrics = async (): Promise<SelectableValue<string>[]> => {
     return getOptions('metrics()', '$metric');
   };
 
-  const fetchUnits = async (): Promise<QueryItem[]> => {
+  const fetchUnits = async (): Promise<SelectableValue<string>[]> => {
     return getOptions('units()', '$unit');
   };
+
+  const onOptionSelect = (field: keyof KentikQuery, option: SelectableValue<string>) => {
+    props.onChange({ ...props.query, [field]: option.value });
+    props.onRunQuery();
+  }
 
   return (
     <VerticalGroup>
@@ -104,7 +111,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
           value={props.query.mode}
           options={convertToSelectableValues(QUERY_MODES)}
           width={20}
-          onChange={(e) => props.onChange({ ...props.query, mode: e.value as string })}
+          onChange={(option) => onOptionSelect('mode', option)}
         />
       </HorizontalGroup>
       <HorizontalGroup>
@@ -113,17 +120,17 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
           placeholder="all"
           isLoading={state.isLoading}
           value={props.query.site}
-          options={convertToSelectableValues(state.sites)}
+          options={state.sites}
           width={20}
-          onChange={(e) => props.onChange({ ...props.query, site: e.value as string })}
+          onChange={(option) => onOptionSelect('site', option)}
         />
         <Label>Device</Label>
         <Select
           isLoading={state.isLoading}
           value={props.query.device}
-          options={convertToSelectableValues(state.devices)}
+          options={state.devices}
           width={20}
-          onChange={(e) => props.onChange({ ...props.query, device: e.value as string })}
+          onChange={(option) => onOptionSelect('device', option)}
         />
       </HorizontalGroup>
       <HorizontalGroup>
@@ -131,27 +138,33 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
         <Select
           isLoading={state.isLoading}
           value={props.query.metric}
-          options={convertToSelectableValues(state.metrics)}
+          options={state.metrics}
           width={20}
-          onChange={(e) => props.onChange({ ...props.query, metric: e.value as string })}
+          onChange={(option) => onOptionSelect('metric', option)}
         />
         <Label>Unit</Label>
         <Select
           isLoading={state.isLoading}
           value={props.query.unit}
-          options={convertToSelectableValues(state.units)}
+          options={state.units}
           width={20}
-          onChange={(e) => props.onChange({ ...props.query, unit: e.value as string })}
+          onChange={(option) => onOptionSelect('unit', option)}
         />
       </HorizontalGroup>
       <HorizontalGroup>
         <Label>DNS Lookup</Label>
         <Select
-          isLoading={state.isLoading}
           value={props.query.hostnameLookup}
           options={convertToSelectableValues(appendVariableIfExists(HOSTNAME_LOOKUP_CHOICES, '$dns_lookup'))}
           width={20}
-          onChange={(e) => props.onChange({ ...props.query, hostnameLookup: e.value as string })}
+          onChange={(option) => onOptionSelect('hostnameLookup', option)}
+        />
+        <Label>Prefix</Label>
+        <Input
+          type="text"
+          value={props.query.prefix ?? ''}
+          onChange={(e) => props.onChange({ ...props.query, prefix: e.currentTarget.value })}
+          onBlur={props.onRunQuery}
         />
       </HorizontalGroup>
     </VerticalGroup>

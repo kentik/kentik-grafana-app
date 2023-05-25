@@ -23,6 +23,7 @@ export interface KentikQuery extends DataQuery {
   unit: string;
   hostnameLookup: string;
   mode: string;
+  prefix: string;
   customFilters: any[];
 }
 
