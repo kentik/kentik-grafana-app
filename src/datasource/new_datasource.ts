@@ -17,15 +17,27 @@ import { getTemplateSrv, TemplateSrv, getBackendSrv } from '@grafana/runtime';
 import * as _ from 'lodash';
 
 export interface KentikQuery extends DataQuery {
-  device: string;
+  mode: 'graph' | 'table';
   site: string;
+  device: string;
   metric: string;
   unit: string;
   hostnameLookup: string;
-  mode: string;
   prefix: string;
+  // TODO: Filter type
   customFilters: any[];
 }
+
+export const DEFAULT_QUERY = {
+  mode: 'graph',
+  site: null,
+  device: null,
+  metric: null,
+  unit: null,
+  hostnameLookup: null,
+  prefix: '',
+  customFilters: [],
+};
 
 export interface MyDataSourceOptions extends DataSourceJsonData {}
 
@@ -69,6 +81,7 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
     const promises = _.map(
       _.filter(options.targets, (target) => !target.hide),
       async (target, i) => {
+        _.defaults(target, DEFAULT_QUERY);
         const site = this.templateSrv.replace(target.site, options.scopedVars);
         let deviceNames = this.templateSrv.replace(
           target.device,
