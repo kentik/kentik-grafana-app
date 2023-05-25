@@ -1,3 +1,9 @@
+import queryBuilder from './query_builder';
+import { metricList, unitList, filterFieldList, Metric, Unit, FilterField } from './metric_def';
+import { KentikAPI } from './kentik_api';
+
+import TableModel from 'grafana/app/core/table_model';
+
 import {
   DataSourceApi,
   DataSourceInstanceSettings,
@@ -7,12 +13,6 @@ import {
   DataQueryResponse,
 } from '@grafana/data';
 import { getTemplateSrv, TemplateSrv, getBackendSrv } from '@grafana/runtime';
-
-import queryBuilder from './query_builder';
-import { metricList, unitList, filterFieldList, Metric, Unit, FilterField } from './metric_def';
-import { KentikAPI } from './kentik_api';
-
-import TableModel from 'grafana/app/core/table_model';
 
 import * as _ from 'lodash';
 
