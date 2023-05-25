@@ -1,7 +1,8 @@
 import { KentikDataSource, KentikQuery } from '../new_datasource';
 
-import { QueryEditorProps, SelectableValue } from '@grafana/data';
+import { QueryEditorProps, SelectableValue, VariableModel } from '@grafana/data';
 import { VerticalGroup, HorizontalGroup, Label, Select } from '@grafana/ui';
+import { getTemplateSrv } from '@grafana/runtime';
 
 import React, { useEffect, useState } from 'react';
 
@@ -55,24 +56,35 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     return _.map(items, (item: QueryItem) => ({ value: item.value, label: item.text }));
   };
 
-  const fetchDevices = async (): Promise<QueryItem[]> => {
-    const devices = await props.datasource.metricFindQuery('devices()', props.query);
-    return devices;
+  const variableExists = (variableName: string): boolean => {
+    const templateSrv = getTemplateSrv();
+    const variables = templateSrv.getVariables().map((variable: VariableModel) => `$${variable.name}`);
+    return _.includes(variables, variableName);
   };
 
-  const fetchSites = async (): Promise<QueryItem[]> => {
-    const sites = await props.datasource.metricFindQuery('sites()', props.query);
-    return sites;
-  };
+  const getSelectableValues = async (query: string, variableName?: string): Promise<QueryItem[]> => {
+    let metrics: QueryItem[] = await props.datasource.metricFindQuery(query, props.query);
+    if (variableName && variableExists(variableName)) {
+      metrics = [{ text: variableName, value: variableName }, ...metrics];
+    }
 
-  const fetchMetrics = async (): Promise<QueryItem[]> => {
-    const metrics = await props.datasource.metricFindQuery('metrics()', props.query);
     return metrics;
   };
 
+  const fetchSites = async (): Promise<QueryItem[]> => {
+    return getSelectableValues('sites()');
+  };
+
+  const fetchDevices = async (): Promise<QueryItem[]> => {
+    return getSelectableValues('devices()', '$device');
+  };
+
+  const fetchMetrics = async (): Promise<QueryItem[]> => {
+    return getSelectableValues('metrics()', '$metric');
+  };
+
   const fetchUnits = async (): Promise<QueryItem[]> => {
-    const units = await props.datasource.metricFindQuery('units()', props.query);
-    return units;
+    return getSelectableValues('units()', '$unit');
   };
 
   return (
@@ -83,17 +95,18 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
           value={props.query.mode}
           options={convertToSelectableValues(QUERY_MODES)}
           width={20}
-          onChange={(e) => props.onChange({ ...props.query })}
+          onChange={(e) => props.onChange({ ...props.query, mode: e.value as string })}
         />
       </HorizontalGroup>
       <HorizontalGroup>
         <Label>Site</Label>
         <Select
+          placeholder="all"
           isLoading={state.isLoading}
           value={props.query.site}
           options={convertToSelectableValues(state.sites)}
           width={20}
-          onChange={(e) => props.onChange({ ...props.query })}
+          onChange={(e) => props.onChange({ ...props.query, site: e.value as string })}
         />
         <Label>Device</Label>
         <Select
@@ -101,7 +114,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
           value={props.query.device}
           options={convertToSelectableValues(state.devices)}
           width={20}
-          onChange={(e) => props.onChange({ ...props.query })}
+          onChange={(e) => props.onChange({ ...props.query, device: e.value as string })}
         />
       </HorizontalGroup>
       <HorizontalGroup>
@@ -111,7 +124,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
           value={props.query.metric}
           options={convertToSelectableValues(state.metrics)}
           width={20}
-          onChange={(e) => props.onChange({ ...props.query })}
+          onChange={(e) => props.onChange({ ...props.query, metric: e.value as string })}
         />
         <Label>Unit</Label>
         <Select
@@ -119,7 +132,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
           value={props.query.unit}
           options={convertToSelectableValues(state.units)}
           width={20}
-          onChange={(e) => props.onChange({ ...props.query })}
+          onChange={(e) => props.onChange({ ...props.query, unit: e.value as string })}
         />
       </HorizontalGroup>
     </VerticalGroup>

@@ -34,7 +34,6 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
   templateSrv: TemplateSrv;
 
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
-    console.log('instanceSettings', instanceSettings);
     super(instanceSettings);
     this.name = instanceSettings.name;
 
@@ -243,8 +242,7 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
         const res = sites.map((site: any) => {
           return { text: site.site_name, value: site.site_name };
         });
-        res.splice(0, 0, { text: 'all', value: null });
-        return res;
+        return [{ text: 'all', value: null }, ...res];
       }
       default:
         throw new Error(`Unknown query type: ${query}`);
