@@ -1,6 +1,7 @@
 import queryBuilder from './query_builder';
 import { metricList, unitList, filterFieldList, Metric, Unit, FilterField } from './metric_def';
 import { KentikAPI } from './kentik_api';
+import { KentikProxy } from './kentik_proxy';
 
 import TableModel from 'grafana/app/core/table_model';
 
@@ -16,6 +17,13 @@ import { getTemplateSrv, TemplateSrv, getBackendSrv } from '@grafana/runtime';
 
 import * as _ from 'lodash';
 
+export type CustomFilter = {
+  keySegment: string | null,
+  operatorSegment: string,
+  valueSegment: string | null,
+  conjunctionOperator: string,
+}
+
 export interface KentikQuery extends DataQuery {
   mode: 'graph' | 'table';
   site: string;
@@ -24,8 +32,7 @@ export interface KentikQuery extends DataQuery {
   unit: string;
   hostnameLookup: string;
   prefix: string;
-  // TODO: Filter type
-  customFilters: any[];
+  customFilters: CustomFilter[];
 }
 
 export const DEFAULT_QUERY = {
@@ -50,7 +57,8 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
     super(instanceSettings);
     this.name = instanceSettings.name;
 
-    this.kentik = new KentikAPI(getBackendSrv());
+    const kentikApi = new KentikAPI(getBackendSrv());
+    this.kentik = new KentikProxy(kentikApi);
     this.templateSrv = getTemplateSrv();
   }
 
@@ -103,9 +111,9 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
         const queryCustomFilters = _.map(target.customFilters, (filter) => {
           return {
             condition: this.templateSrv.replace(filter.conjunctionOperator, options.scopedVars),
-            key: this.templateSrv.replace(filter.keySegment?.value, options.scopedVars),
-            operator: this.templateSrv.replace(filter.operatorSegment?.value, options.scopedVars),
-            value: this.templateSrv.replace(filter.valueSegment?.value, options.scopedVars),
+            key: this.templateSrv.replace(filter.keySegment || undefined, options.scopedVars),
+            operator: this.templateSrv.replace(filter.operatorSegment, options.scopedVars),
+            value: this.templateSrv.replace(filter.valueSegment || undefined, options.scopedVars),
           };
         });
         const kentikFilterGroups = queryBuilder.convertToKentikFilterGroup(
@@ -296,7 +304,6 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
   async getTagValues(options: any) {
     if (options) {
       let filter = _.find<FilterField>(filterFieldList, { text: options.key });
-
       if (filter === undefined) {
         const savedFilters = await this.kentik.getSavedFilters();
         filter = _.find(savedFilters, { text: options.key });
