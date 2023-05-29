@@ -38,7 +38,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     const operators = ['=', '!=', '<', '<=', '>', '>='];
     const operatorItems = operators.map((o: string) => ({ value: o, text: o }));
     return convertToSelectableValues(operatorItems);
-  }
+  };
 
   const [state, setState] = useState({
     sites: [] as Array<SelectableValue<string>>,
@@ -85,9 +85,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
   const getOptions = async (query: string, variableName?: string): Promise<Array<SelectableValue<string>>> => {
     let metrics: QueryItem[] = await props.datasource.metricFindQuery(query, props.query);
 
-    return convertToSelectableValues(
-      appendVariableIfExists(metrics, variableName)
-    );
+    return convertToSelectableValues(appendVariableIfExists(metrics, variableName));
   };
 
   const appendVariableIfExists = (options: QueryItem[], variableName?: string) => {
@@ -95,7 +93,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
       return [{ text: variableName, value: variableName }, ...options];
     }
     return options;
-  }
+  };
 
   const fetchSites = async (): Promise<Array<SelectableValue<string>>> => {
     return getOptions('sites()');
@@ -117,21 +115,19 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     const templateSrv = getTemplateSrv();
     const variables = _.map(templateSrv.getVariables(), (variable) => `$${variable.name}`);
     return _.map(variables, (variableName: string) => ({ value: variableName, text: variableName }));
-  }
+  };
 
   const fetchTagKeys = async (): Promise<Array<SelectableValue<string>>> => {
-    const keys: Array<{ text: string, field: string }> = await props.datasource.getTagKeys();
-    const items: QueryItem[] = keys.map(key => ({ value: key.text, text: key.text }))
+    const keys: Array<{ text: string; field: string }> = await props.datasource.getTagKeys();
+    const items: QueryItem[] = keys.map((key) => ({ value: key.text, text: key.text }));
 
     const formattedVariables = getFormattedVariables();
     return convertToSelectableValues(_.concat(formattedVariables, items));
   };
 
   const fetchTagValues = async (keySegment: string) => {
-    const values: QueryItem[] = await props.datasource.getTagValues(
-      { key: keySegment }
-    );
-    const items: QueryItem[] = values.map(value => ({ value: value.text, text: value.text }));
+    const values: QueryItem[] = await props.datasource.getTagValues({ key: keySegment });
+    const items: QueryItem[] = values.map((value) => ({ value: value.text, text: value.text }));
 
     const formattedVariables = getFormattedVariables();
     return convertToSelectableValues(_.concat(formattedVariables, items));
@@ -140,15 +136,19 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
   const onOptionSelect = (field: keyof KentikQuery, option: SelectableValue<string>) => {
     props.onChange({ ...props.query, [field]: option.value });
     props.onRunQuery();
-  }
+  };
 
-  const onFilterOptionSelect = async (field: keyof CustomFilter, option: SelectableValue<string | null>, filterIdx: number) => {
-    if(_.isNil(option.value)) {
+  const onFilterOptionSelect = async (
+    field: keyof CustomFilter,
+    option: SelectableValue<string | null>,
+    filterIdx: number
+  ) => {
+    if (_.isNil(option.value)) {
       return;
     }
     const customFilters = _.cloneDeep(props.query.customFilters);
     customFilters[filterIdx][field] = option.value;
-    if(field === 'keySegment') {
+    if (field === 'keySegment') {
       customFilters[filterIdx].valueSegment = null;
       const stateValues = _.cloneDeep(state.tagValues);
       stateValues[filterIdx] = undefined as any;
@@ -158,7 +158,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
       });
     }
     props.onChange({ ...props.query, customFilters });
-    if(field === 'keySegment') {
+    if (field === 'keySegment') {
       const tagValues = await fetchTagValues(customFilters[filterIdx].keySegment as string);
       const stateValues = _.cloneDeep(state.tagValues);
       stateValues[filterIdx] = tagValues;
@@ -169,21 +169,25 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     } else {
       props.onRunQuery();
     }
-  }
+  };
 
   const onAddFilterButtonClick = () => {
     const defaultFilter: CustomFilter = {
-      keySegment: null, operatorSegment: '=', valueSegment: null, conjunctionOperator: 'AND'
+      keySegment: null,
+      operatorSegment: '=',
+      valueSegment: null,
+      conjunctionOperator: 'AND',
     };
-    props.onChange({ ...props.query, customFilters: [...props.query.customFilters, defaultFilter]});
-  }
+    props.onChange({ ...props.query, customFilters: [...props.query.customFilters, defaultFilter] });
+  };
 
   const onDeleteFilterButtonClick = (filterIdx: number) => {
     props.onChange({
-      ...props.query, customFilters: props.query.customFilters.filter((filter: any, idx: number) => idx !== filterIdx)
-    })
+      ...props.query,
+      customFilters: props.query.customFilters.filter((filter: any, idx: number) => idx !== filterIdx),
+    });
     props.onRunQuery();
-  }
+  };
 
   return (
     <VerticalGroup>
@@ -262,7 +266,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
           <Button size="sm" icon="plus" variant="secondary" onClick={onAddFilterButtonClick}></Button>
         </Field>
       </HorizontalGroup>
-      {props.query.customFilters.map((filter: CustomFilter, filterIdx: number) =>
+      {props.query.customFilters.map((filter: CustomFilter, filterIdx: number) => (
         <HorizontalGroup key={`custom-filter-row-${filterIdx}`}>
           <Select
             value={filter.keySegment}
@@ -288,9 +292,14 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
               />
             </HorizontalGroup>
           )}
-          <Button size="sm" icon="trash-alt" variant="secondary" onClick={() => onDeleteFilterButtonClick(filterIdx)}></Button>
+          <Button
+            size="sm"
+            icon="trash-alt"
+            variant="secondary"
+            onClick={() => onDeleteFilterButtonClick(filterIdx)}
+          ></Button>
         </HorizontalGroup>
-      )}
+      ))}
     </VerticalGroup>
   );
 };
