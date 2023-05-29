@@ -13,7 +13,7 @@ import {
   DataQueryRequest,
   DataQueryResponse,
 } from '@grafana/data';
-import { getTemplateSrv, TemplateSrv, getBackendSrv } from '@grafana/runtime';
+import { getTemplateSrv, TemplateSrv, getBackendSrv, BackendSrv } from '@grafana/runtime';
 
 import * as _ from 'lodash';
 
@@ -66,11 +66,11 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
   kentik: any;
   templateSrv: TemplateSrv;
 
-  constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
+  constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>, backendSrv?: BackendSrv) {
     super(instanceSettings);
     this.name = instanceSettings.name;
 
-    const kentikApi = new KentikAPI(getBackendSrv());
+    const kentikApi = new KentikAPI(backendSrv || getBackendSrv());
     this.kentik = new KentikProxy(kentikApi);
     this.templateSrv = getTemplateSrv();
   }

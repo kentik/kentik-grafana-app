@@ -38,7 +38,6 @@ describe('KentikDataSource', () => {
 
 function createDatasourceInstance(ctx: any, data: any) {
   ctx.instanceSettings = {};
-  ctx.templateSrv = {};
   ctx.backendSrv = {
     get: () => {
       return Promise.resolve([
@@ -64,5 +63,5 @@ function createDatasourceInstance(ctx: any, data: any) {
     },
   };
 
-  ctx.ds = new KentikDataSource(ctx.instanceSettings);
+  ctx.ds = new KentikDataSource(ctx.instanceSettings, ctx.backendSrv);
 }
