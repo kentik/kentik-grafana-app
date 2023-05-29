@@ -1,4 +1,4 @@
-import { DEFAULT_QUERY, KentikDataSource, KentikQuery, CustomFilter, DataMode, ConjunctionOperator } from '../new_datasource';
+import { DEFAULT_QUERY, KentikDataSource, KentikQuery, CustomFilter, DataMode, ConjunctionOperator } from '../datasource';
 
 import { QueryEditorProps, SelectableValue, VariableModel } from '@grafana/data';
 import { VerticalGroup, HorizontalGroup, Select, Input, Button, Field, Label } from '@grafana/ui';

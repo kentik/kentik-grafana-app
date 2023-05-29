@@ -1,8 +1,6 @@
-import { KentikAPI } from './kentik_api';
-import { KentikDatasource } from './datasource';
-import { KentikProxy } from './kentik_proxy';
+import { KentikDataSource } from './datasource';
 
-describe('KentikDatasource', () => {
+describe('KentikDataSource', () => {
   const ctx: any = {};
 
   const data = {
@@ -66,9 +64,5 @@ function createDatasourceInstance(ctx: any, data: any) {
     },
   };
 
-  ctx.kentikAPI = new KentikAPI(ctx.backendSrv);
-
-  ctx.kentikProxy = new KentikProxy(ctx.kentikAPI);
-
-  ctx.ds = new KentikDatasource(ctx.instanceSettings, ctx.templateSrv, ctx.kentikProxy);
+  ctx.ds = new KentikDataSource(ctx.instanceSettings);
 }

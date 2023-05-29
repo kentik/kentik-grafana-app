@@ -1,4 +1,4 @@
-import { KentikDataSource, KentikQuery } from './new_datasource';
+import { KentikDataSource, KentikQuery } from './datasource';
 import { QueryEditor } from './query_editor/QueryEditor';
 
 import { DataSourcePlugin } from '@grafana/data';
