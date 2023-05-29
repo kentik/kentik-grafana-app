@@ -150,10 +150,6 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
         ...state,
         tagValues: stateValues,
       });
-    } else {
-      if(customFilters[filterIdx].valueSegment !== null) {
-        props.onRunQuery();
-      }
     }
   }
 

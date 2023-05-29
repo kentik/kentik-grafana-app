@@ -18,10 +18,10 @@ import { getTemplateSrv, TemplateSrv, getBackendSrv } from '@grafana/runtime';
 import * as _ from 'lodash';
 
 export type CustomFilter = {
-  keySegment: string | null,
   operatorSegment: string,
-  valueSegment: string | null,
   conjunctionOperator: string,
+  keySegment: string | null,
+  valueSegment: string | null,
 }
 
 export interface KentikQuery extends DataQuery {
@@ -108,14 +108,17 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
           deviceNames = filteredDevices.join(',');
         }
 
-        const queryCustomFilters = _.map(target.customFilters, (filter) => {
-          return {
-            condition: this.templateSrv.replace(filter.conjunctionOperator, options.scopedVars),
-            key: this.templateSrv.replace(filter.keySegment || undefined, options.scopedVars),
-            operator: this.templateSrv.replace(filter.operatorSegment, options.scopedVars),
-            value: this.templateSrv.replace(filter.valueSegment || undefined, options.scopedVars),
-          };
-        });
+        const queryCustomFilters = _.map(
+          _.filter(target.customFilters, (filter: CustomFilter) => filter.keySegment !== null && filter.valueSegment !== null), 
+          (filter: CustomFilter) => {
+            return {
+              condition: this.templateSrv.replace(filter.conjunctionOperator, options.scopedVars),
+              key: this.templateSrv.replace(filter.keySegment || undefined, options.scopedVars),
+              operator: this.templateSrv.replace(filter.operatorSegment, options.scopedVars),
+              value: this.templateSrv.replace(filter.valueSegment || undefined, options.scopedVars),
+            };
+          }
+        );
         const kentikFilterGroups = queryBuilder.convertToKentikFilterGroup(
           kentikFilters,
           customDimensions,
