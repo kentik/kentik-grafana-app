@@ -54,7 +54,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     tagValues: [] as Array<Array<SelectableValue<string>>>,
     operators: getOperators(),
     isLoading: true,
-    isTagKeysLoading: true,
+    isDevicesLoading: true,
   });
 
   useEffect(() => {
@@ -75,6 +75,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
         units,
         tagKeys,
         isLoading: false,
+        isDevicesLoading: false,
       });
     };
     init();
@@ -87,8 +88,8 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     return _.includes(variables, variableName);
   };
 
-  const getOptions = async (query: string, variableName?: string): Promise<Array<SelectableValue<string>>> => {
-    let metrics: QueryItem[] = await props.datasource.metricFindQuery(query, props.query);
+  const getOptions = async (query: string, variableName?: string, target?: any): Promise<Array<SelectableValue<string>>> => {
+    let metrics: QueryItem[] = await props.datasource.metricFindQuery(query, target || props.query);
 
     return convertToSelectableValues(appendVariableIfExists(metrics, variableName));
   };
@@ -104,8 +105,8 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     return getOptions('sites()');
   };
 
-  const fetchDevices = async (): Promise<Array<SelectableValue<string>>> => {
-    return getOptions('devices()', '$device');
+  const fetchDevices = async (target?: any): Promise<Array<SelectableValue<string>>> => {
+    return getOptions('devices()', '$device', target);
   };
 
   const fetchMetrics = async (): Promise<Array<SelectableValue<string>>> => {
@@ -138,9 +139,25 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     return convertToSelectableValues(_.concat(formattedVariables, items));
   };
 
-  const onOptionSelect = (field: keyof KentikQuery, option: SelectableValue<string>) => {
+  const onOptionSelect = async (field: keyof KentikQuery, option: SelectableValue<string>) => {
     props.onChange({ ...props.query, [field]: option.value });
-    props.onRunQuery();
+    if (field === 'site') {
+      setState({
+        ...state,
+        isDevicesLoading: true,
+        devices: [],
+      });
+
+      const devices = await fetchDevices({ ...props.query, [field]: option.value });
+
+      setState({
+        ...state,
+        isDevicesLoading: false,
+        devices,
+      });
+    } else {
+      props.onRunQuery();
+    }
   };
 
   const onConjuctionOperatorSelect = (option: SelectableValue<string>) => {
@@ -231,7 +248,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
         </Field>
         <Field label="Device">
           <Select
-            isLoading={state.isLoading}
+            isLoading={state.isDevicesLoading}
             value={props.query.device}
             options={state.devices}
             width={20}
