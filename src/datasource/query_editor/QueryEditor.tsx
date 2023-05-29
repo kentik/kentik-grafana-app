@@ -140,15 +140,24 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
   };
 
   const onOptionSelect = async (field: keyof KentikQuery, option: SelectableValue<string>) => {
-    props.onChange({ ...props.query, [field]: option.value });
+    if (option.value === undefined) {
+      return;
+    }
+    const query: KentikQuery = _.cloneDeep(props.query);
+    // @ts-ignore
+    query[field] = option.value;
+    props.onChange(query);
     if (field === 'site') {
+      query.device = null;
+      props.onChange(query);
+
       setState({
         ...state,
         isDevicesLoading: true,
         devices: [],
       });
 
-      const devices = await fetchDevices({ ...props.query, [field]: option.value });
+      const devices = await fetchDevices(query);
 
       setState({
         ...state,

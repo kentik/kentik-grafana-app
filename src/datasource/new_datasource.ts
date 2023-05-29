@@ -37,7 +37,7 @@ export enum ConjunctionOperator {
 export interface KentikQuery extends DataQuery {
   mode: DataMode;
   site: string;
-  device: string;
+  device: string | null;
   metric: string;
   unit: string;
   hostnameLookup: string;
@@ -105,7 +105,7 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
         _.defaults(target, DEFAULT_QUERY);
         const site = this.templateSrv.replace(target.site, options.scopedVars);
         let deviceNames = this.templateSrv.replace(
-          target.device,
+          target.device || undefined,
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
         );
