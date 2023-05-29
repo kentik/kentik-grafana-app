@@ -1,4 +1,11 @@
-import { DEFAULT_QUERY, KentikDataSource, KentikQuery, CustomFilter, DataMode, ConjunctionOperator } from '../datasource';
+import {
+  DEFAULT_QUERY,
+  KentikDataSource,
+  KentikQuery,
+  CustomFilter,
+  DataMode,
+  ConjunctionOperator,
+} from '../datasource';
 
 import { QueryEditorProps, SelectableValue, VariableModel } from '@grafana/data';
 import { VerticalGroup, HorizontalGroup, Select, Input, Button, Field, Label } from '@grafana/ui';
@@ -88,7 +95,11 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     return _.includes(variables, variableName);
   };
 
-  const getOptions = async (query: string, variableName?: string, target?: any): Promise<Array<SelectableValue<string>>> => {
+  const getOptions = async (
+    query: string,
+    variableName?: string,
+    target?: any
+  ): Promise<Array<SelectableValue<string>>> => {
     let metrics: QueryItem[] = await props.datasource.metricFindQuery(query, target || props.query);
 
     return convertToSelectableValues(appendVariableIfExists(metrics, variableName));
@@ -309,7 +320,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
           <Button size="sm" icon="plus" variant="secondary" onClick={onAddFilterButtonClick}></Button>
         </Field>
         {props.query.customFilters.length > 1 && (
-          <Field label=''>
+          <Field label="">
             <Select
               value={props.query.conjunctionOperator}
               options={convertToSelectableValues(CONJUNCTION_OPERATORS)}
@@ -351,9 +362,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
             variant="secondary"
             onClick={() => onDeleteFilterButtonClick(filterIdx)}
           ></Button>
-          {props.query.customFilters.length > 1 && (
-            <Label>{props.query.conjunctionOperator}</Label>
-          )}
+          {props.query.customFilters.length > 1 && <Label>{props.query.conjunctionOperator}</Label>}
         </HorizontalGroup>
       ))}
     </VerticalGroup>
