@@ -113,18 +113,28 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     return getOptions('units()', '$unit');
   };
 
+  const getFormattedVariables = (): QueryItem[] => {
+    const templateSrv = getTemplateSrv();
+    const variables = _.map(templateSrv.getVariables(), (variable) => `$${variable.name}`);
+    return _.map(variables, (variableName: string) => ({ value: variableName, text: variableName })); 
+  }
+
   const fetchTagKeys = async (): Promise<Array<SelectableValue<string>>> => {
     const keys: Array<{ text: string, field: string }> = await props.datasource.getTagKeys();
     const items: QueryItem[] = keys.map(key => ({ value: key.text, text: key.text }))
-    return convertToSelectableValues(items);
+
+    const formattedVariables = getFormattedVariables();
+    return convertToSelectableValues(_.concat(formattedVariables, items));
   };
 
   const fetchTagValues = async (keySegment: string) => {
     const values: QueryItem[] = await props.datasource.getTagValues(
       { key: keySegment }
     );
-    const items: QueryItem[] = values.map(value => ({ value: value.text, text: value.text }))
-    return convertToSelectableValues(items);
+    const items: QueryItem[] = values.map(value => ({ value: value.text, text: value.text }));
+
+    const formattedVariables = getFormattedVariables();
+    return convertToSelectableValues(_.concat(formattedVariables, items));
   };
 
   const onOptionSelect = (field: keyof KentikQuery, option: SelectableValue<string>) => {
@@ -233,7 +243,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
         </Field>
         <Field label="Prefix">
           <Input
-            type="text" 
+            type="text"
             width={20}
             value={props.query.prefix}
             onChange={(e) => props.onChange({ ...props.query, prefix: e.currentTarget.value })}
