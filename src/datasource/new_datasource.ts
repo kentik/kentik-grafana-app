@@ -18,14 +18,19 @@ import { getTemplateSrv, TemplateSrv, getBackendSrv } from '@grafana/runtime';
 import * as _ from 'lodash';
 
 export type CustomFilter = {
-  operatorSegment: string,
   conjunctionOperator: string,
+  operatorSegment: string,
   keySegment: string | null,
   valueSegment: string | null,
 }
 
+export enum DataMode {
+  GRAPH = 'graph',
+  TABLE = 'table',
+}
+
 export interface KentikQuery extends DataQuery {
-  mode: 'graph' | 'table';
+  mode: DataMode;
   site: string;
   device: string;
   metric: string;
@@ -36,7 +41,7 @@ export interface KentikQuery extends DataQuery {
 }
 
 export const DEFAULT_QUERY = {
-  mode: 'graph',
+  mode: DataMode.GRAPH,
   site: null,
   device: null,
   metric: null,
@@ -109,7 +114,7 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
         }
 
         const queryCustomFilters = _.map(
-          _.filter(target.customFilters, (filter: CustomFilter) => filter.keySegment !== null && filter.valueSegment !== null), 
+          _.filter(target.customFilters, (filter: CustomFilter) => filter.keySegment !== null && filter.valueSegment !== null),
           (filter: CustomFilter) => {
             return {
               condition: this.templateSrv.replace(filter.conjunctionOperator, options.scopedVars),

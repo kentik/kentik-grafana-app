@@ -1,4 +1,4 @@
-import { DEFAULT_QUERY, KentikDataSource, KentikQuery, CustomFilter } from '../new_datasource';
+import { DEFAULT_QUERY, KentikDataSource, KentikQuery, CustomFilter, DataMode } from '../new_datasource';
 
 import { QueryEditorProps, SelectableValue, VariableModel } from '@grafana/data';
 import { VerticalGroup, HorizontalGroup, Select, Input, Button, Field } from '@grafana/ui';
@@ -17,8 +17,8 @@ export type QueryItem = {
 };
 
 const QUERY_MODES: QueryItem[] = [
-  { value: 'graph', text: 'Graph' },
-  { value: 'table', text: 'Table' },
+  { value: DataMode.GRAPH, text: 'Graph' },
+  { value: DataMode.TABLE, text: 'Table' },
 ];
 
 const HOSTNAME_LOOKUP_CHOICES = [
@@ -116,7 +116,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
   const getFormattedVariables = (): QueryItem[] => {
     const templateSrv = getTemplateSrv();
     const variables = _.map(templateSrv.getVariables(), (variable) => `$${variable.name}`);
-    return _.map(variables, (variableName: string) => ({ value: variableName, text: variableName })); 
+    return _.map(variables, (variableName: string) => ({ value: variableName, text: variableName }));
   }
 
   const fetchTagKeys = async (): Promise<Array<SelectableValue<string>>> => {
@@ -150,6 +150,12 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     customFilters[filterIdx][field] = option.value;
     if(field === 'keySegment') {
       customFilters[filterIdx].valueSegment = null;
+      const stateValues = _.cloneDeep(state.tagValues);
+      stateValues[filterIdx] = undefined as any;
+      setState({
+        ...state,
+        tagValues: stateValues,
+      });
     }
     props.onChange({ ...props.query, customFilters });
     if(field === 'keySegment') {
@@ -274,9 +280,9 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
               />
 
               <Select
+                isLoading={state.tagValues[filterIdx] === undefined}
                 value={filter.valueSegment}
                 options={state.tagValues[filterIdx]}
-                // TODO: add isLoading
                 width={20}
                 onChange={(option) => onFilterOptionSelect('valueSegment', option, filterIdx)}
               />
