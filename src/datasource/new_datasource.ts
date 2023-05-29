@@ -29,6 +29,11 @@ export enum DataMode {
   TABLE = 'table',
 }
 
+export enum ConjunctionOperator {
+  AND = 'AND',
+  OR = 'OR',
+}
+
 export interface KentikQuery extends DataQuery {
   mode: DataMode;
   site: string;
@@ -38,6 +43,8 @@ export interface KentikQuery extends DataQuery {
   hostnameLookup: string;
   prefix: string;
   customFilters: CustomFilter[];
+  // TODO: enum
+  conjunctionOperator: ConjunctionOperator;
 }
 
 export const DEFAULT_QUERY = {
@@ -49,6 +56,7 @@ export const DEFAULT_QUERY = {
   hostnameLookup: null,
   prefix: '',
   customFilters: [],
+  conjunctionOperator: ConjunctionOperator.AND,
 };
 
 export interface MyDataSourceOptions extends DataSourceJsonData {}

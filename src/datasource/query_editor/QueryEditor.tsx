@@ -1,7 +1,7 @@
-import { DEFAULT_QUERY, KentikDataSource, KentikQuery, CustomFilter, DataMode } from '../new_datasource';
+import { DEFAULT_QUERY, KentikDataSource, KentikQuery, CustomFilter, DataMode, ConjunctionOperator } from '../new_datasource';
 
 import { QueryEditorProps, SelectableValue, VariableModel } from '@grafana/data';
-import { VerticalGroup, HorizontalGroup, Select, Input, Button, Field } from '@grafana/ui';
+import { VerticalGroup, HorizontalGroup, Select, Input, Button, Field, Label } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
 
 import React, { useEffect, useState } from 'react';
@@ -15,6 +15,11 @@ export type QueryItem = {
   value: string;
   text: string;
 };
+
+const CONJUNCTION_OPERATORS: QueryItem[] = [
+  { value: 'AND', text: 'AND' },
+  { value: 'OR', text: 'OR' },
+];
 
 const QUERY_MODES: QueryItem[] = [
   { value: DataMode.GRAPH, text: 'Graph' },
@@ -135,6 +140,18 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
 
   const onOptionSelect = (field: keyof KentikQuery, option: SelectableValue<string>) => {
     props.onChange({ ...props.query, [field]: option.value });
+    props.onRunQuery();
+  };
+
+  const onConjuctionOperatorSelect = (option: SelectableValue<string>) => {
+    if (_.isNil(option.value)) {
+      return;
+    }
+    const customFilters = _.cloneDeep(props.query.customFilters);
+    for (let filter of customFilters) {
+      filter.conjunctionOperator = option.value;
+    }
+    props.onChange({ ...props.query, conjunctionOperator: option.value as ConjunctionOperator, customFilters });
     props.onRunQuery();
   };
 
@@ -265,6 +282,16 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
         <Field label="Filters">
           <Button size="sm" icon="plus" variant="secondary" onClick={onAddFilterButtonClick}></Button>
         </Field>
+        {props.query.customFilters.length > 1 && (
+          <Field label=''>
+            <Select
+              value={props.query.conjunctionOperator}
+              options={convertToSelectableValues(CONJUNCTION_OPERATORS)}
+              width={20}
+              onChange={(option) => onConjuctionOperatorSelect(option)}
+            />
+          </Field>
+        )}
       </HorizontalGroup>
       {props.query.customFilters.map((filter: CustomFilter, filterIdx: number) => (
         <HorizontalGroup key={`custom-filter-row-${filterIdx}`}>
@@ -298,6 +325,9 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
             variant="secondary"
             onClick={() => onDeleteFilterButtonClick(filterIdx)}
           ></Button>
+          {props.query.customFilters.length > 1 && (
+            <Label>{props.query.conjunctionOperator}</Label>
+          )}
         </HorizontalGroup>
       ))}
     </VerticalGroup>
