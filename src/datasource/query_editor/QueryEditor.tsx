@@ -150,6 +150,8 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
         ...state,
         tagValues: stateValues,
       });
+    } else {
+      props.onRunQuery();
     }
   }
 
