@@ -235,7 +235,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
           <Input
             type="text" 
             width={20}
-            value={props.query.prefix ?? ''}
+            value={props.query.prefix}
             onChange={(e) => props.onChange({ ...props.query, prefix: e.currentTarget.value })}
             onBlur={props.onRunQuery}
           />
