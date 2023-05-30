@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0]
+
+**Please note, the release contains breaking changes.**
+After the update, it's necessary to:
+- **restart Grafana**
+- go to Plugins -> Kentik Connect Pro, **click Disable button, then click Enable**
+
+#### Changed
+
+- Migrate the plugin from Angular to React [#76](https://github.com/kentik/kentik-grafana-app/pull/76)
+
 ## [1.6.2] - 2023-03-31
 
 #### Fixed
