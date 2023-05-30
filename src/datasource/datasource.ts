@@ -66,7 +66,7 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
   kentik: any;
   templateSrv: TemplateSrv;
 
-  // `backendSrv` argument is only used by `datasource.test.ts` 
+  // `backendSrv` argument is only used by `datasource.test.ts`
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>, backendSrv?: BackendSrv) {
     super(instanceSettings);
     this.name = instanceSettings.name;
@@ -157,7 +157,7 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
           unit: this.templateSrv.replace(target.unit),
           kentikFilterGroups: filters,
           kentikSavedFilters: kentikFilterGroups.savedFilters,
-          hostnameLookup: false, //TODO: replace not working with boolean
+          hostnameLookup: this.templateSrv.replace(target.hostnameLookup),
         };
         const query = queryBuilder.buildTopXdataQuery(queryOptions);
 
