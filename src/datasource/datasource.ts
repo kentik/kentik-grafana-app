@@ -99,18 +99,17 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
     const savedFiltersList = await this.kentik.getSavedFilters();
 
     const templateSrv = getTemplateSrv();
-    const kentikFilters: any[] =
-      _.flatten(
-        _.map(
-          _.filter(
-            templateSrv.getVariables(),
-            // @ts-expect-error
-            (variable: VariableModel) => variable.type === 'adhoc' && variable.datasource.type === this.datasourceType,
-          ),
+    const kentikFilters: any[] = _.flatten(
+      _.map(
+        _.filter(
+          templateSrv.getVariables(),
           // @ts-expect-error
-          (variable: VariableModel) => variable.filters,
-        )
-      );
+          (variable: VariableModel) => variable.type === 'adhoc' && variable.datasource.type === this.datasourceType
+        ),
+        // @ts-expect-error
+        (variable: VariableModel) => variable.filters
+      )
+    );
 
     const allDevices = await this.kentik.getDevices();
 
