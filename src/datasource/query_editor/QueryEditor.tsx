@@ -38,7 +38,6 @@ const HOSTNAME_LOOKUP_CHOICES = [
   { value: 'disabled', text: 'Disabled' },
 ];
 
-
 export const QueryEditor: React.FC<Props> = (props: Props) => {
   _.defaults(props.query, DEFAULT_QUERY);
 
