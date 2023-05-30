@@ -12,6 +12,7 @@ import {
   DataSourceJsonData,
   DataQueryRequest,
   DataQueryResponse,
+  VariableModel,
 } from '@grafana/data';
 import { getTemplateSrv, TemplateSrv, getBackendSrv, BackendSrv } from '@grafana/runtime';
 
@@ -62,14 +63,14 @@ export const DEFAULT_QUERY = {
 export interface MyDataSourceOptions extends DataSourceJsonData {}
 
 export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOptions> {
-  name: string;
+  datasourceType: string;
   kentik: any;
   templateSrv: TemplateSrv;
 
   // `backendSrv` argument is only used by `datasource.test.ts`
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>, backendSrv?: BackendSrv) {
     super(instanceSettings);
-    this.name = instanceSettings.name;
+    this.datasourceType = instanceSettings.type;
 
     const kentikApi = new KentikAPI(backendSrv || getBackendSrv());
     this.kentik = new KentikProxy(kentikApi);
@@ -96,8 +97,21 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
 
     const customDimensions = await this.kentik.getCustomDimensions();
     const savedFiltersList = await this.kentik.getSavedFilters();
-    // TODO: getAdhocFilters -> getVariable + filter adhoc type; name? this.templateSrv.getAdhocFilters(this.name);
-    const kentikFilters: any[] = [];
+
+    const templateSrv = getTemplateSrv();
+    const kentikFilters: any[] =
+      _.flatten(
+        _.map(
+          _.filter(
+            templateSrv.getVariables(),
+            // @ts-expect-error
+            (variable: VariableModel) => variable.type === 'adhoc' && variable.datasource.type === this.datasourceType,
+          ),
+          // @ts-expect-error
+          (variable: VariableModel) => variable.filters,
+        )
+      );
+
     const allDevices = await this.kentik.getDevices();
 
     const promises = _.map(
