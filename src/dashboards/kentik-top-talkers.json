@@ -8,152 +8,194 @@
   "editable": true,
   "hideControls": false,
   "sharedCrosshair": false,
-  "rows": [
+  "panels": [
     {
-      "collapse": false,
-      "editable": true,
-      "height": 534.4375,
-      "panels": [
+      "datasource": "kentik",
+      "id": 1,
+      "links": [],
+      "targets": [
         {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "kentik",
-          "editable": true,
-          "error": false,
-          "fill": 1,
-          "grid": {
-            "threshold1": null,
-            "threshold1Color": "rgba(216, 200, 27, 0.27)",
-            "threshold2": null,
-            "threshold2Color": "rgba(234, 112, 112, 0.22)"
-          },
-          "id": 1,
-          "isNew": true,
-          "legend": {
-            "alignAsTable": true,
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "sort": "avg",
-            "sortDesc": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 2,
-          "links": [],
-          "nullPointMode": "connected",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 12,
-          "stack": true,
-          "steppedLine": false,
-          "targets": [
-            {
-              "device": "$device",
-              "metric": "$metric",
-              "mode": "graph",
-              "refId": "A",
-              "target": "",
-              "unit": "$unit",
-              "hostnameLookup": "$dns_lookup"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Kentik Network Flow Data",
-          "tooltip": {
-            "msResolution": false,
-            "shared": true,
-            "value_type": "cumulative"
-          },
-          "type": "graph",
-          "xaxis": {
-            "show": true
-          },
-          "yaxes": [
-            {
-              "format": "bps",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
+          "device": "$device",
+          "hostnameLookup": "$dns_lookup",
+          "metric": "$metric",
+          "mode": "graph",
+          "refId": "A",
+          "target": "",
+          "unit": "$unit",
+          "datasource": "kentik"
         }
       ],
-      "title": "Row"
+      "title": "Kentik Network Flow Data",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 11
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": []
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": true,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "axisCenteredZero": false,
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "pluginVersion": "10.1.0-118674pre",
+      "timeFrom": null,
+      "timeShift": null
     },
     {
-      "collapse": false,
-      "editable": true,
-      "height": 495.015625,
-      "panels": [
+      "datasource": "kentik",
+      "id": 2,
+      "links": [],
+      "targets": [
         {
-          "columns": [],
-          "datasource": "kentik",
-          "editable": true,
-          "error": false,
-          "fontSize": "100%",
-          "id": 2,
-          "isNew": true,
-          "links": [],
-          "pageSize": null,
-          "scroll": true,
-          "showHeader": true,
-          "sort": {
-            "col": 1,
-            "desc": true
-          },
-          "span": 12,
-          "styles": [
-            {
-              "colorMode": null,
-              "colors": [
-                "rgba(245, 54, 54, 0.9)",
-                "rgba(237, 129, 40, 0.89)",
-                "rgba(50, 172, 45, 0.97)"
-              ],
-              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-              "decimals": 2,
-              "pattern": "/^(Max|95th|p95th|Avg|Average)/",
-              "thresholds": [],
-              "type": "number",
-              "unit": "short"
-            }
-          ],
-          "targets": [
-            {
-              "device": "$device",
-              "metric": "$metric",
-              "mode": "table",
-              "refId": "A",
-              "target": "",
-              "unit": "$unit",
-              "hostnameLookup": "$dns_lookup"
-            }
-          ],
-          "title": "",
-          "transform": "table",
-          "type": "table"
+          "device": "$device",
+          "hostnameLookup": "$dns_lookup",
+          "metric": "$metric",
+          "mode": "table",
+          "refId": "A",
+          "target": "",
+          "unit": "$unit",
+          "datasource": "kentik"
         }
       ],
-      "title": "New row"
+      "type": "table",
+      "gridPos": {
+        "x": 0,
+        "y": 11,
+        "w": 24,
+        "h": 9
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/^(Max|95th|p95th|Avg|Average)/"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false,
+          "fields": ""
+        }
+      },
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {
+            "reducers": []
+          }
+        }
+      ],
+      "pluginVersion": "10.1.0-118674pre"
     }
   ],
   "time": {

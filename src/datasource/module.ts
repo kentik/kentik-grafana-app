@@ -1,8 +1,9 @@
-// KentikAPI is imported to be injected by Angular
-import './kentik_api';
+import { ConfigEditor } from './ConfigEditor';
+import { KentikDataSource, KentikQuery } from './datasource';
+import { QueryEditor } from './QueryEditor';
 
-import { KentikDatasource } from './datasource';
-import { ConfigCtrl } from './config';
-import { KentikQueryCtrl } from './query_editor';
+import { DataSourcePlugin } from '@grafana/data';
 
-export { KentikDatasource as Datasource, ConfigCtrl, KentikQueryCtrl as QueryCtrl };
+export const plugin = new DataSourcePlugin<KentikDataSource, KentikQuery, {}>(KentikDataSource)
+  .setConfigEditor(ConfigEditor)
+  .setQueryEditor(QueryEditor);

@@ -1,15 +1,16 @@
 import { showAlert } from '../utils/alert_helper';
 
-import { FetchError } from '@grafana/runtime';
+import { FetchError, BackendSrv } from '@grafana/runtime';
 
 import * as _ from 'lodash';
-import angular from 'angular';
 
 export class KentikAPI {
   baseUrl: string;
-  /** @ngInject */
-  constructor(public backendSrv: any, public $http?: ng.IHttpService) {
+  backendSrv: BackendSrv;
+
+  constructor(backendSrv: BackendSrv) {
     this.baseUrl = '/api/plugin-proxy/kentik-connect-app';
+    this.backendSrv = backendSrv;
   }
 
   async getDeviceById(deviceId: string): Promise<any> {
@@ -173,5 +174,3 @@ const retry = (fn: Function, shouldContinue: (error: FetchError) => boolean, ret
         }, interval);
       });
   });
-
-angular.module('grafana.services').service('kentikAPISrv', KentikAPI);

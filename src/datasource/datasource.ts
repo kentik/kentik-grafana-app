@@ -1,19 +1,80 @@
-import './kentik_proxy';
-import { metricList, unitList, filterFieldList, Metric, Unit, FilterField } from './metric_def';
 import queryBuilder from './query_builder';
+import { metricList, unitList, filterFieldList, Metric, Unit, FilterField } from './metric_def';
+import { KentikAPI } from './kentik_api';
+import { KentikProxy } from './kentik_proxy';
 
 import TableModel from 'grafana/app/core/table_model';
 
+import {
+  DataSourceApi,
+  DataSourceInstanceSettings,
+  DataQuery,
+  DataSourceJsonData,
+  DataQueryRequest,
+  DataQueryResponse,
+  VariableModel,
+} from '@grafana/data';
+import { getTemplateSrv, TemplateSrv, getBackendSrv } from '@grafana/runtime';
+
 import * as _ from 'lodash';
 
-class KentikDatasource {
-  name: string;
-  kentik: any;
+export type CustomFilter = {
+  conjunctionOperator: string;
+  operatorSegment: string;
+  keySegment: string | null;
+  valueSegment: string | null;
+};
 
-  /** @ngInject */
-  constructor(public instanceSettings: any, public templateSrv: any, kentikProxySrv: any) {
-    this.name = instanceSettings.name;
-    this.kentik = kentikProxySrv;
+export enum DataMode {
+  GRAPH = 'graph',
+  TABLE = 'table',
+}
+
+export enum ConjunctionOperator {
+  AND = 'AND',
+  OR = 'OR',
+}
+
+export interface KentikQuery extends DataQuery {
+  mode: DataMode;
+  site: string;
+  device: string | null;
+  metric: string;
+  unit: string;
+  hostnameLookup: string;
+  prefix: string;
+  customFilters: CustomFilter[];
+  // TODO: enum
+  conjunctionOperator: ConjunctionOperator;
+}
+
+export const DEFAULT_QUERY = {
+  mode: DataMode.GRAPH,
+  site: null,
+  device: null,
+  metric: null,
+  unit: null,
+  hostnameLookup: null,
+  prefix: '',
+  customFilters: [],
+  conjunctionOperator: ConjunctionOperator.AND,
+};
+
+export interface MyDataSourceOptions extends DataSourceJsonData {}
+
+export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOptions> {
+  datasourceType: string;
+  kentik: any;
+  templateSrv: TemplateSrv;
+
+  constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
+    super(instanceSettings);
+    this.datasourceType = instanceSettings.type;
+
+    // `arguments[1]` is a hack used by `datasource.test.ts`
+    const kentikApi = new KentikAPI(arguments[1] || getBackendSrv());
+    this.kentik = new KentikProxy(kentikApi);
+    this.templateSrv = getTemplateSrv();
   }
 
   interpolateDeviceField(value: any, variable: any) {
@@ -29,22 +90,36 @@ class KentikDatasource {
     return value.join(',');
   }
 
-  async query(options: any) {
+  async query(options: DataQueryRequest<KentikQuery>): Promise<DataQueryResponse> {
     if (!options.targets || options.targets.length === 0) {
       return Promise.resolve({ data: [] });
     }
 
     const customDimensions = await this.kentik.getCustomDimensions();
     const savedFiltersList = await this.kentik.getSavedFilters();
-    const kentikFilters = this.templateSrv.getAdhocFilters(this.name);
+
+    const templateSrv = getTemplateSrv();
+    const kentikFilters: any[] = _.flatten(
+      _.map(
+        _.filter(
+          templateSrv.getVariables(),
+          // @ts-expect-error
+          (variable: VariableModel) => variable.type === 'adhoc' && variable.datasource.type === this.datasourceType
+        ),
+        // @ts-expect-error
+        (variable: VariableModel) => variable.filters
+      )
+    );
+
     const allDevices = await this.kentik.getDevices();
 
     const promises = _.map(
       _.filter(options.targets, (target) => !target.hide),
       async (target, i) => {
+        _.defaults(target, DEFAULT_QUERY);
         const site = this.templateSrv.replace(target.site, options.scopedVars);
         let deviceNames = this.templateSrv.replace(
-          target.device,
+          target.device || undefined,
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
         );
@@ -60,14 +135,20 @@ class KentikDatasource {
           deviceNames = filteredDevices.join(',');
         }
 
-        const queryCustomFilters = _.map(target.customFilters, (filter) => {
-          return {
-            condition: this.templateSrv.replace(filter.conjunctionOperator, options.scopedVars),
-            key: this.templateSrv.replace(filter.keySegment?.value, options.scopedVars),
-            operator: this.templateSrv.replace(filter.operatorSegment?.value, options.scopedVars),
-            value: this.templateSrv.replace(filter.valueSegment?.value, options.scopedVars),
-          };
-        });
+        const queryCustomFilters = _.map(
+          _.filter(
+            target.customFilters,
+            (filter: CustomFilter) => filter.keySegment !== null && filter.valueSegment !== null
+          ),
+          (filter: CustomFilter) => {
+            return {
+              condition: this.templateSrv.replace(filter.conjunctionOperator, options.scopedVars),
+              key: this.templateSrv.replace(filter.keySegment || undefined, options.scopedVars),
+              operator: this.templateSrv.replace(filter.operatorSegment, options.scopedVars),
+              value: this.templateSrv.replace(filter.valueSegment || undefined, options.scopedVars),
+            };
+          }
+        );
         const kentikFilterGroups = queryBuilder.convertToKentikFilterGroup(
           kentikFilters,
           customDimensions,
@@ -216,8 +297,7 @@ class KentikDatasource {
         const res = sites.map((site: any) => {
           return { text: site.site_name, value: site.site_name };
         });
-        res.splice(0, 0, { text: 'all', value: null });
-        return res;
+        return [{ text: 'all', value: null }, ...res];
       }
       default:
         throw new Error(`Unknown query type: ${query}`);
@@ -257,7 +337,6 @@ class KentikDatasource {
   async getTagValues(options: any) {
     if (options) {
       let filter = _.find<FilterField>(filterFieldList, { text: options.key });
-
       if (filter === undefined) {
         const savedFilters = await this.kentik.getSavedFilters();
         filter = _.find(savedFilters, { text: options.key });
@@ -284,6 +363,9 @@ class KentikDatasource {
     const customDimensions = await this.kentik.getCustomDimensions();
     return _.concat(list, customDimensions);
   }
-}
 
-export { KentikDatasource };
+  async testDatasource() {
+    // TODO: implement testing
+    return true;
+  }
+}

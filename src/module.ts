@@ -16,4 +16,4 @@ export const plugin = new AppPlugin<{}>().addConfigPage({
   icon: 'cog',
   body: AppConfig,
   id: 'configuration',
-});;
+});
