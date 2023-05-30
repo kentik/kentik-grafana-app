@@ -22,10 +22,7 @@
           "refId": "A",
           "target": "",
           "unit": "$unit",
-          "datasource": {
-            "uid": "c3cb3cdd-7ba9-4fb8-8886-7e406cf8adf3",
-            "type": "kentik-connect-datasource"
-          }
+          "datasource": "kentik"
         }
       ],
       "title": "Kentik Network Flow Data",
@@ -118,10 +115,7 @@
           "refId": "A",
           "target": "",
           "unit": "$unit",
-          "datasource": {
-            "uid": "c3cb3cdd-7ba9-4fb8-8886-7e406cf8adf3",
-            "type": "kentik-connect-datasource"
-          }
+          "datasource": "kentik"
         }
       ],
       "type": "table",
