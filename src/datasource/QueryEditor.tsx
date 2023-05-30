@@ -5,7 +5,7 @@ import {
   CustomFilter,
   DataMode,
   ConjunctionOperator,
-} from '../datasource';
+} from './datasource';
 
 import { QueryEditorProps, SelectableValue, VariableModel } from '@grafana/data';
 import { VerticalGroup, HorizontalGroup, Select, Input, Button, Field, Label } from '@grafana/ui';

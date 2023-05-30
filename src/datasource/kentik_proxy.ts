@@ -1,7 +1,6 @@
 /* eslint-disable */
 import { KentikAPI } from './kentik_api';
 
-import angular from 'angular';
 import * as _ from 'lodash';
 import * as moment from 'moment';
 
@@ -35,7 +34,6 @@ export class KentikProxy {
   cacheUpdateInterval: number;
   requestCachingIntervals: { '1d': number };
 
-  /** @ngInject */
   constructor(private kentikAPISrv: KentikAPI) {
     this.cache = {};
     this.cacheUpdateInterval = 5 * 60 * 1000; // 5 min by default
@@ -169,5 +167,3 @@ export class KentikProxy {
     return choice === 'enabled' ? true : false;
   }
 }
-
-angular.module('grafana.services').service('kentikProxySrv', KentikProxy);

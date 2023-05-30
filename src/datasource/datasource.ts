@@ -14,7 +14,7 @@ import {
   DataQueryResponse,
   VariableModel,
 } from '@grafana/data';
-import { getTemplateSrv, TemplateSrv, getBackendSrv, BackendSrv } from '@grafana/runtime';
+import { getTemplateSrv, TemplateSrv, getBackendSrv } from '@grafana/runtime';
 
 import * as _ from 'lodash';
 
@@ -67,12 +67,12 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
   kentik: any;
   templateSrv: TemplateSrv;
 
-  // `backendSrv` argument is only used by `datasource.test.ts`
-  constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>, backendSrv?: BackendSrv) {
+  constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
     super(instanceSettings);
     this.datasourceType = instanceSettings.type;
 
-    const kentikApi = new KentikAPI(backendSrv || getBackendSrv());
+    // `arguments[1]` is a hack used by `datasource.test.ts`
+    const kentikApi = new KentikAPI(arguments[1] || getBackendSrv());
     this.kentik = new KentikProxy(kentikApi);
     this.templateSrv = getTemplateSrv();
   }
@@ -365,6 +365,7 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
   }
 
   async testDatasource() {
-    // TODO: test?
+    // TODO: implement testing
+    return true;
   }
 }
