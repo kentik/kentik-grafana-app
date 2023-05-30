@@ -66,6 +66,7 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
   kentik: any;
   templateSrv: TemplateSrv;
 
+  // `backendSrv` argument is only used by `datasource.test.ts` 
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>, backendSrv?: BackendSrv) {
     super(instanceSettings);
     this.name = instanceSettings.name;
