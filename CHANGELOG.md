@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.7.0]
+## [1.7.0] - 2023-06-27
 
 **Please note, the release contains breaking changes.**
 After the update, it's necessary to:
