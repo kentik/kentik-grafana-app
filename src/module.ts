@@ -4,7 +4,7 @@ import './styles/dark.scss';
 import './styles/light.scss';
 
 import { AppPlugin } from '@grafana/data';
-import { loadPluginCss } from 'grafana/app/plugins/sdk';
+import { loadPluginCss } from '@grafana/runtime';
 
 loadPluginCss({
   dark: 'plugins/kentik-connect-app/styles/dark.css',
