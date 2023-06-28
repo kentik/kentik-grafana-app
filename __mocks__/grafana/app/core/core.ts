@@ -1,1 +1,1 @@
-export default {};
+export const appEvents = jest.fn();

@@ -36,6 +36,7 @@ jobs:
           command: |
             yarn install
             npm run build
+            sudo apt-get update
             sudo apt-get install jq
             VERSION=`cat dist/plugin.json|jq '.info.version'| sed s/\"//g`
             # create zip file
