@@ -275,7 +275,7 @@ export const AppConfig = ({ plugin }: Props) => {
         </Field>
 
         {isConfigured() && state.apiError && (
-          <div className="gf-form" ng-if="ctrl.apiError && ctrl.appModel.enabled">
+          <div className="gf-form">
             <i className={`fa fa-exclamation-circle ${s.colorError}`}>
               <span className={s.marginLeft}>
                 Invalid API credentials. This app won`t work until the credentials are updated.
