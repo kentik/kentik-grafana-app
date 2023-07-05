@@ -19,7 +19,7 @@ aliases:
 defaults: &defaults
   working_directory: ~/kentik-connect-app
   docker:
-    - image: cimg/16.20.1-browsers
+    - image: cimg/node:16.20.1-browsers
   environment:
     PLUGIN_NAME: kentik-connect-app
 
