@@ -19,7 +19,7 @@ aliases:
 defaults: &defaults
   working_directory: ~/kentik-connect-app
   docker:
-    - image: circleci/node:14-stretch-browsers
+    - image: cimg/16.20.1-browsers
   environment:
     PLUGIN_NAME: kentik-connect-app
 
