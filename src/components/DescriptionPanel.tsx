@@ -44,7 +44,9 @@ export const DescriptionPanel: FC<Props> = () => {
         into consumers of network bandwidth and anomalies that can affect application or service performance.
       </p>
       <div className={styles.actionsContainer}>
-        <Button variant={'primary'} fill={'text'} onClick={handleTopTalkersClick}>Kentik Top Talkers</Button>
+        <Button variant={'primary'} fill={'text'} onClick={handleTopTalkersClick}>
+          Kentik Top Talkers
+        </Button>
       </div>
     </div>
   );
