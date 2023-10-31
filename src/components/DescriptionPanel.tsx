@@ -1,8 +1,8 @@
 import { KentikAPI } from '../datasource/kentik_api';
 
-import { getBackendSrv } from '@grafana/runtime';
+import { getBackendSrv, locationService } from '@grafana/runtime';
 import { PanelProps, GrafanaTheme2 } from '@grafana/data';
-import { HorizontalGroup, VerticalGroup, useStyles2 } from '@grafana/ui';
+import { Button, useStyles2 } from '@grafana/ui';
 import React, { FC, useEffect, useState } from 'react';
 
 import { css } from '@emotion/css';
@@ -31,28 +31,20 @@ export const DescriptionPanel: FC<Props> = () => {
     });
   }
 
+  const handleTopTalkersClick = () => {
+    locationService.push('/d/NS58GIo71/kentik-top-talkers');
+  };
+
   return (
-    <div>
+    <div className={styles.container}>
       <img className={styles.image} src="public/plugins/kentik-connect-app/img/kentik_logo.png" />
-      <p>
+      <p className={styles.descriptionText}>
         Kentik Connect Pro for Grafana allows you to quickly and easily add network activity visibility metrics to your
         Grafana dashboard. By leveraging the power of Kentik’s monitoring SaaS, you can enjoy rich, actionable insights
         into consumers of network bandwidth and anomalies that can affect application or service performance.
       </p>
       <div className={styles.actionsContainer}>
-        <VerticalGroup>
-          <div>Complete:</div>
-          <HorizontalGroup>
-            <i className={styles.successIcon + ' icon-gf icon-gf-check'}></i>
-            <span className={styles.successLine}>Install Kentik Connect for Grafana.</span>
-          </HorizontalGroup>
-          {state.devices.length > 0 && (
-            <HorizontalGroup>
-              <i className={styles.successIcon + ' icon-gf icon-gf-check'}></i>
-              <span className={styles.successLine}>Add your first device.</span>
-            </HorizontalGroup>
-          )}
-        </VerticalGroup>
+        <Button variant={'primary'} fill={'text'} onClick={handleTopTalkersClick}>Kentik Top Talkers</Button>
       </div>
     </div>
   );
@@ -66,6 +58,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
     width: 150px;
     margin-bottom: 10px;
   `,
+  container: css`
+    padding: 16px;
+  `,
   actionsContainer: css`
     margin-left: 16px;
   `,
@@ -78,5 +73,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   successLine: css`
     text-decoration: line-through;
+  `,
+  descriptionText: css`
+    max-width: 600px;
   `,
 });

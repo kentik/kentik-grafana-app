@@ -1,3 +1,4 @@
+import { DescriptionPanel } from 'components/DescriptionPanel';
 import { AppConfig } from './components/AppConfig';
 
 import './styles/dark.scss';
@@ -11,9 +12,12 @@ loadPluginCss({
   light: 'plugins/kentik-connect-app/styles/light.css',
 });
 
-export const plugin = new AppPlugin<{}>().addConfigPage({
-  title: 'Configuration',
-  icon: 'cog',
-  body: AppConfig,
-  id: 'configuration',
-});
+export const plugin = new AppPlugin<{}>()
+  // @ts-ignore
+  .setRootPage(DescriptionPanel)
+  .addConfigPage({
+    title: 'Configuration',
+    icon: 'cog',
+    body: AppConfig,
+    id: 'configuration',
+  });
