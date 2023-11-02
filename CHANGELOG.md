@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.1] - 2023-11-02
+
+#### Fixed
+
+- "No root app page component found" error [#82](https://github.com/kentik/kentik-grafana-app/pull/82)
+
 ## [1.7.0] - 2023-06-27
 
 **Please note, the release contains breaking changes.**
