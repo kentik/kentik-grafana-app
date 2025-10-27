@@ -1,7 +1,7 @@
 services:
   grafana:
     user: root
-    container_name: 'kentik-kentikconnectpro-datasource'
+    container_name: 'kentikconnectpro-datasource'
 
     build:
       context: .
@@ -13,13 +13,13 @@ services:
     ports:
       - 3000:3000/tcp
     volumes:
-      - ../dist:/var/lib/grafana/plugins/kentik-kentikconnectpro-datasource
+      - ../dist:/var/lib/grafana/plugins/kentikconnectpro-datasource
       - ../provisioning:/etc/grafana/provisioning
-      - ..:/root/kentik-kentikconnectpro-datasource
+      - ..:/root/kentikconnectpro-datasource
 
     environment:
       NODE_ENV: development
-      GF_LOG_FILTERS: plugin.kentik-kentikconnectpro-datasource:debug
+      GF_LOG_FILTERS: plugin.kentikconnectpro-datasource:debug
       GF_LOG_LEVEL: debug
       GF_DATAPROXY_LOGGING: 1
-      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: kentik-kentikconnectpro-datasource
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: kentikconnectpro-datasource

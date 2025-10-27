@@ -2,7 +2,7 @@ apiVersion: 1
 
 datasources:
   - name: 'Kentik Connect Pro'
-    type: 'kentik-kentikconnectpro-datasource'
+    type: 'kentikconnectpro-datasource'
     access: proxy
     isDefault: false
     orgId: 1
