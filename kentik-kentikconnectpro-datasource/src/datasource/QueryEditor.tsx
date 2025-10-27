@@ -1,22 +1,55 @@
-import {
-  DEFAULT_QUERY,
-  KentikDataSource,
-  KentikQuery,
-  CustomFilter,
-  DataMode,
-  ConjunctionOperator,
-} from './datasource';
-
+import { DataSource } from './DataSource';
 import { QueryEditorProps, SelectableValue, VariableModel } from '@grafana/data';
 import { VerticalGroup, HorizontalGroup, Select, Input, Button, Field, Label } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
-
+import { DataQuery } from '@grafana/schema';
 import React, { useEffect, useState } from 'react';
-
 import _ from 'lodash';
 
+export interface Query extends DataQuery {
+  mode: DataMode;
+  site: string;
+  device: string | null;
+  metric: string;
+  unit: string;
+  hostnameLookup: string;
+  prefix: string;
+  customFilters: CustomFilter[];
+  // TODO: enum
+  conjunctionOperator: ConjunctionOperator;
+}
+
 type Options = {};
-type Props = QueryEditorProps<KentikDataSource, KentikQuery, Options>;
+type Props = QueryEditorProps<DataSource, Query, Options>;
+
+export type CustomFilter = {
+  conjunctionOperator: string;
+  operatorSegment: string;
+  keySegment: string | null;
+  valueSegment: string | null;
+};
+
+export enum DataMode {
+  GRAPH = 'graph',
+  TABLE = 'table',
+}
+
+export enum ConjunctionOperator {
+  AND = 'AND',
+  OR = 'OR',
+}
+
+export const DEFAULT_QUERY = {
+  mode: DataMode.GRAPH,
+  site: null,
+  device: null,
+  metric: null,
+  unit: null,
+  hostnameLookup: null,
+  prefix: '',
+  customFilters: [],
+  conjunctionOperator: ConjunctionOperator.AND,
+};
 
 export type QueryItem = {
   value: string;
@@ -149,11 +182,11 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     return convertToSelectableValues(_.concat(formattedVariables, items));
   };
 
-  const onOptionSelect = async (field: keyof KentikQuery, option: SelectableValue<string>) => {
+  const onOptionSelect = async (field: keyof Query, option: SelectableValue<string>) => {
     if (option.value === undefined) {
       return;
     }
-    const query: KentikQuery = _.cloneDeep(props.query);
+    const query: Query = _.cloneDeep(props.query);
     // @ts-ignore
     query[field] = option.value;
     props.onChange(query);

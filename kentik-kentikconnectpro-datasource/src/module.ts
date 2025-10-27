@@ -1,9 +1,9 @@
 import { DataSourcePlugin } from '@grafana/data';
-import { KentikDataSource, KentikQuery } from './datasource/datasource';
-import { ConfigEditor } from './components/ConfigEditor';
+import { DataSource } from './datasource/DataSource';
+import { ConfigEditor } from './ConfigEditor';
 import { MyDataSourceOptions } from './types';
-import { QueryEditor } from 'datasource/QueryEditor';
+import { QueryEditor, Query } from 'datasource/QueryEditor';
 
-export const plugin = new DataSourcePlugin<KentikDataSource, KentikQuery, MyDataSourceOptions>(KentikDataSource)
+export const plugin = new DataSourcePlugin<DataSource, Query, MyDataSourceOptions>(DataSource)
   .setConfigEditor(ConfigEditor)
   .setQueryEditor(QueryEditor);

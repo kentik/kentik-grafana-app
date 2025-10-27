@@ -9,57 +9,14 @@ import {
   DataSourceJsonData,
   VariableModel,
 } from '@grafana/data';
-import { DataQuery } from '@grafana/schema';
 import { getTemplateSrv, TemplateSrv, getBackendSrv } from '@grafana/runtime';
 
 import * as _ from 'lodash';
-
-export type CustomFilter = {
-  conjunctionOperator: string;
-  operatorSegment: string;
-  keySegment: string | null;
-  valueSegment: string | null;
-};
-
-export enum DataMode {
-  GRAPH = 'graph',
-  TABLE = 'table',
-}
-
-export enum ConjunctionOperator {
-  AND = 'AND',
-  OR = 'OR',
-}
-
-export interface KentikQuery extends DataQuery {
-  mode: DataMode;
-  site: string;
-  device: string | null;
-  metric: string;
-  unit: string;
-  hostnameLookup: string;
-  prefix: string;
-  customFilters: CustomFilter[];
-  // TODO: enum
-  conjunctionOperator: ConjunctionOperator;
-}
-
-export const DEFAULT_QUERY = {
-  mode: DataMode.GRAPH,
-  site: null,
-  device: null,
-  metric: null,
-  unit: null,
-  hostnameLookup: null,
-  prefix: '',
-  customFilters: [],
-  conjunctionOperator: ConjunctionOperator.AND,
-  constant: 6.5,
-};
+import { CustomFilter, DEFAULT_QUERY, Query } from './QueryEditor';
 
 export interface MyDataSourceOptions extends DataSourceJsonData { }
 
-export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOptions> {
+export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   datasourceType: string;
   kentik: any;
   templateSrv: TemplateSrv;
@@ -87,7 +44,7 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
     return value.join(',');
   }
 
-  async query(options: DataQueryRequest<KentikQuery>): Promise<DataQueryResponse> {
+  async query(options: DataQueryRequest<Query>): Promise<DataQueryResponse> {
     if (!options.targets || options.targets.length === 0) {
       return Promise.resolve({ data: [] });
     }
