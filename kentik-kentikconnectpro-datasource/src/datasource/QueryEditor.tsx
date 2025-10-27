@@ -1,6 +1,6 @@
 import { DataSource } from './DataSource';
-import { QueryEditorProps, VariableModel } from '@grafana/data';
-import { VerticalGroup, HorizontalGroup, Input, Button, Field, Label, Combobox, ComboboxOption } from '@grafana/ui';
+import { QueryEditorProps } from '@grafana/data';
+import { Stack, Input, Button, Field, Label, Combobox, ComboboxOption } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
 import { DataQuery } from '@grafana/schema';
 import React, { useEffect, useState } from 'react';
@@ -123,7 +123,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
 
   const variableExists = (variableName: string): boolean => {
     const templateSrv = getTemplateSrv();
-    const variables = templateSrv.getVariables().map((variable: VariableModel) => `$${variable.name}`);
+    const variables = templateSrv.getVariables().map((variable) => `$${variable.name}`);
     return _.includes(variables, variableName);
   };
 
@@ -276,8 +276,8 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
   };
 
   return (
-    <VerticalGroup>
-      <HorizontalGroup>
+    <Stack direction="column">
+      <Stack direction="row">
         <Field label="Data Mode">
           <Combobox
             options={convertToComboboxOptions(QUERY_MODES)}
@@ -289,8 +289,8 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
             }}
           />
         </Field>
-      </HorizontalGroup>
-      <HorizontalGroup>
+      </Stack>
+      <Stack direction="row">
         <Field label="Site">
           <Combobox
             placeholder={state.isLoading ? 'Loading...' : 'all'}
@@ -311,8 +311,8 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
             onChange={(option) => onOptionSelect('device', option)}
           />
         </Field>
-      </HorizontalGroup>
-      <HorizontalGroup>
+      </Stack>
+      <Stack direction="row">
         <Field label="Metric">
           <Combobox
             placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
@@ -333,8 +333,8 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
             onChange={(option) => onOptionSelect('unit', option)}
           />
         </Field>
-      </HorizontalGroup>
-      <HorizontalGroup>
+      </Stack>
+      <Stack direction="row">
         <Field label="DNS Lookup">
           <Combobox
             value={props.query.hostnameLookup}
@@ -354,8 +354,8 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
             placeholder='Type...'
           />
         </Field>
-      </HorizontalGroup>
-      <HorizontalGroup>
+      </Stack>
+      <Stack direction="row">
         <Field label="Filters">
           <Button size="sm" icon="plus" variant="secondary" onClick={onAddFilterButtonClick} aria-label="filters-button"></Button>
         </Field>
@@ -370,9 +370,9 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
             />
           </Field>
         )}
-      </HorizontalGroup>
+      </Stack>
       {props.query.customFilters.map((filter: CustomFilter, filterIdx: number) => (
-        <HorizontalGroup key={`custom-filter-row-${filterIdx}`}>
+        <Stack direction="row" key={`custom-filter-row-${filterIdx}`}>
           <Combobox
             value={filter.keySegment}
             options={state.tagKeys}
@@ -381,7 +381,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
             onChange={(option) => onFilterOptionSelect('keySegment', option, filterIdx)}
           />
           {!_.isNil(filter.keySegment) && (
-            <HorizontalGroup>
+            <Stack direction="row">
               <Combobox
                 value={filter.operatorSegment}
                 options={state.operators}
@@ -398,7 +398,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
                 width={20}
                 onChange={(option) => onFilterOptionSelect('valueSegment', option, filterIdx)}
               />
-            </HorizontalGroup>
+            </Stack>
           )}
           <Button
             size="sm"
@@ -408,8 +408,8 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
             aria-label="trash-button"
           ></Button>
           {props.query.customFilters.length > 1 && <Label>{props.query.conjunctionOperator}</Label>}
-        </HorizontalGroup>
+        </Stack>
       ))}
-    </VerticalGroup>
+    </Stack>
   );
 };
