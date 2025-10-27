@@ -1,0 +1,42 @@
+// ==========================================================================
+// worldPing APP CONFIG Tab
+// ==========================================================================
+
+.wp-app-advanced-box {
+  height: 0px;
+  overflow: hidden;
+  transition: height 0.2s;
+  -o-transition: height 0.2s;
+  -moz-transition: height 0.2s;
+  -webkit-transition: height 0.2s;
+
+  &.wp-app-advanced-open {
+    height: 100px;
+  }
+}
+
+.wp-app-advanced-link {
+  margin: 1rem 0;
+}
+
+.kentik-enabled-box {
+  margin: $spacer 0;
+}
+
+.kentik-inline-field-margin--right {
+  margin-right: $spacer;
+}
+
+.kentik-api-status-icon {
+  font-size: 24px;
+  text-decoration: none;
+  vertical-align: sub;
+
+  &.success {
+    color: $online;
+  }
+
+  &.warning {
+    color: yellow;
+  }
+}

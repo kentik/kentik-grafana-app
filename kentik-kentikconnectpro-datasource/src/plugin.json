@@ -11,8 +11,8 @@
     },
     "keywords": ["datasource"],
     "logos": {
-      "small": "img/logo.svg",
-      "large": "img/logo.svg"
+      "small": "img/logo_small.png",
+      "large": "img/logo_large.png"
     },
     "links": [],
     "screenshots": [],

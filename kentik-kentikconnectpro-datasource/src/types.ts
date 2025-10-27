@@ -22,7 +22,21 @@ export interface DataSourceResponse {
 /**
  * These are options configured for each DataSource instance
  */
-export interface MyDataSourceOptions extends DataSourceJsonData {
+export enum Region {
+  DEFAULT = 'default',
+  EU = 'eu',
+  CUSTOM = 'custom',
+}
+
+export type JsonData = {
+  url?: string;
+  email?: string;
+  region?: Region;
+  dynamicUrl?: string;
+  tokenSet?: boolean;
+};
+
+export interface MyDataSourceOptions extends JsonData, DataSourceJsonData {
   path?: string;
 }
 
