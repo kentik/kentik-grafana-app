@@ -1,6 +1,6 @@
 import { DataSource } from './DataSource';
-import { QueryEditorProps, SelectableValue, VariableModel } from '@grafana/data';
-import { VerticalGroup, HorizontalGroup, Select, Input, Button, Field, Label } from '@grafana/ui';
+import { QueryEditorProps, VariableModel } from '@grafana/data';
+import { VerticalGroup, HorizontalGroup, Input, Button, Field, Label, Combobox, ComboboxOption } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
 import { DataQuery } from '@grafana/schema';
 import React, { useEffect, useState } from 'react';
@@ -74,23 +74,23 @@ const HOSTNAME_LOOKUP_CHOICES = [
 export const QueryEditor: React.FC<Props> = (props: Props) => {
   _.defaults(props.query, DEFAULT_QUERY);
 
-  const convertToSelectableValues = (items: QueryItem[]): Array<SelectableValue<string>> => {
+  const convertToComboboxOptions = (items: QueryItem[]): Array<ComboboxOption<string>> => {
     return _.map(items, (item: QueryItem) => ({ value: item.value, label: item.text }));
   };
 
-  const getOperators = (): Array<SelectableValue<string>> => {
+  const getOperators = (): Array<ComboboxOption<string>> => {
     const operators = ['=', '!=', '<', '<=', '>', '>='];
     const operatorItems = operators.map((o: string) => ({ value: o, text: o }));
-    return convertToSelectableValues(operatorItems);
+    return convertToComboboxOptions(operatorItems);
   };
 
   const [state, setState] = useState({
-    sites: [] as Array<SelectableValue<string>>,
-    devices: [] as Array<SelectableValue<string>>,
-    metrics: [] as Array<SelectableValue<string>>,
-    units: [] as Array<SelectableValue<string>>,
-    tagKeys: [] as Array<SelectableValue<string>>,
-    tagValues: [] as Array<Array<SelectableValue<string>>>,
+    sites: [] as Array<ComboboxOption<string>>,
+    devices: [] as Array<ComboboxOption<string>>,
+    metrics: [] as Array<ComboboxOption<string>>,
+    units: [] as Array<ComboboxOption<string>>,
+    tagKeys: [] as Array<ComboboxOption<string>>,
+    tagValues: [] as Array<Array<ComboboxOption<string>>>,
     operators: getOperators(),
     isLoading: true,
     isDevicesLoading: true,
@@ -131,10 +131,10 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     query: string,
     variableName?: string,
     target?: any
-  ): Promise<Array<SelectableValue<string>>> => {
+  ): Promise<Array<ComboboxOption<string>>> => {
     let metrics: QueryItem[] = await props.datasource.metricFindQuery(query, target || props.query);
 
-    return convertToSelectableValues(appendVariableIfExists(metrics, variableName));
+    return convertToComboboxOptions(appendVariableIfExists(metrics, variableName));
   };
 
   const appendVariableIfExists = (options: QueryItem[], variableName?: string) => {
@@ -144,19 +144,19 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     return options;
   };
 
-  const fetchSites = async (): Promise<Array<SelectableValue<string>>> => {
+  const fetchSites = async (): Promise<Array<ComboboxOption<string>>> => {
     return getOptions('sites()');
   };
 
-  const fetchDevices = async (target?: any): Promise<Array<SelectableValue<string>>> => {
+  const fetchDevices = async (target?: any): Promise<Array<ComboboxOption<string>>> => {
     return getOptions('devices()', '$device', target);
   };
 
-  const fetchMetrics = async (): Promise<Array<SelectableValue<string>>> => {
+  const fetchMetrics = async (): Promise<Array<ComboboxOption<string>>> => {
     return getOptions('metrics()', '$metric');
   };
 
-  const fetchUnits = async (): Promise<Array<SelectableValue<string>>> => {
+  const fetchUnits = async (): Promise<Array<ComboboxOption<string>>> => {
     return getOptions('units()', '$unit');
   };
 
@@ -166,12 +166,12 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     return _.map(variables, (variableName: string) => ({ value: variableName, text: variableName }));
   };
 
-  const fetchTagKeys = async (): Promise<Array<SelectableValue<string>>> => {
+  const fetchTagKeys = async (): Promise<Array<ComboboxOption<string>>> => {
     const keys: Array<{ text: string; field: string }> = await props.datasource.getTagKeys();
     const items: QueryItem[] = keys.map((key) => ({ value: key.text, text: key.text }));
 
     const formattedVariables = getFormattedVariables();
-    return convertToSelectableValues(_.concat(formattedVariables, items));
+    return convertToComboboxOptions(_.concat(formattedVariables, items));
   };
 
   const fetchTagValues = async (keySegment: string) => {
@@ -179,10 +179,10 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     const items: QueryItem[] = values.map((value) => ({ value: value.text, text: value.text }));
 
     const formattedVariables = getFormattedVariables();
-    return convertToSelectableValues(_.concat(formattedVariables, items));
+    return convertToComboboxOptions(_.concat(formattedVariables, items));
   };
 
-  const onOptionSelect = async (field: keyof Query, option: SelectableValue<string>) => {
+  const onOptionSelect = async (field: keyof Query, option: ComboboxOption<string>) => {
     if (option.value === undefined) {
       return;
     }
@@ -212,7 +212,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     }
   };
 
-  const onConjuctionOperatorSelect = (option: SelectableValue<string>) => {
+  const onConjuctionOperatorSelect = (option: ComboboxOption<string>) => {
     if (_.isNil(option.value)) {
       return;
     }
@@ -226,7 +226,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
 
   const onFilterOptionSelect = async (
     field: keyof CustomFilter,
-    option: SelectableValue<string | null>,
+    option: ComboboxOption<string>,
     filterIdx: number
   ) => {
     if (_.isNil(option.value)) {
@@ -279,28 +279,32 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     <VerticalGroup>
       <HorizontalGroup>
         <Field label="Data Mode">
-          <Select
+          <Combobox
+            options={convertToComboboxOptions(QUERY_MODES)}
+            placeholder='Select...'
             value={props.query.mode}
-            options={convertToSelectableValues(QUERY_MODES)}
             width={20}
-            onChange={(option) => onOptionSelect('mode', option)}
+            onChange={(selected: ComboboxOption<string>) => {
+              onOptionSelect('mode', selected);
+            }}
           />
         </Field>
       </HorizontalGroup>
       <HorizontalGroup>
         <Field label="Site">
-          <Select
-            placeholder="all"
-            isLoading={state.isLoading}
+          <Combobox
+            placeholder={state.isLoading ? 'Loading...' : 'all'}
             value={props.query.site}
-            options={state.sites}
+            disabled={state.isLoading}
+            options={state.isLoading ? [] : state.sites}
             width={20}
             onChange={(option) => onOptionSelect('site', option)}
           />
         </Field>
         <Field label="Device">
-          <Select
-            isLoading={state.isDevicesLoading}
+          <Combobox
+            placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
+            disabled={state.isLoading}
             value={props.query.device}
             options={state.devices}
             width={20}
@@ -310,8 +314,9 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
       </HorizontalGroup>
       <HorizontalGroup>
         <Field label="Metric">
-          <Select
-            isLoading={state.isLoading}
+          <Combobox
+            placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
+            disabled={state.isLoading}
             value={props.query.metric}
             options={state.metrics}
             width={20}
@@ -319,8 +324,9 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
           />
         </Field>
         <Field label="Unit">
-          <Select
-            isLoading={state.isLoading}
+          <Combobox
+            placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
+            disabled={state.isLoading}
             value={props.query.unit}
             options={state.units}
             width={20}
@@ -330,10 +336,11 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
       </HorizontalGroup>
       <HorizontalGroup>
         <Field label="DNS Lookup">
-          <Select
+          <Combobox
             value={props.query.hostnameLookup}
-            options={convertToSelectableValues(appendVariableIfExists(HOSTNAME_LOOKUP_CHOICES, '$dns_lookup'))}
+            options={convertToComboboxOptions(appendVariableIfExists(HOSTNAME_LOOKUP_CHOICES, '$dns_lookup'))}
             width={20}
+            placeholder='Select...'
             onChange={(option) => onOptionSelect('hostnameLookup', option)}
           />
         </Field>
@@ -344,6 +351,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
             value={props.query.prefix}
             onChange={(e) => props.onChange({ ...props.query, prefix: e.currentTarget.value })}
             onBlur={props.onRunQuery}
+            placeholder='Type...'
           />
         </Field>
       </HorizontalGroup>
@@ -353,34 +361,38 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
         </Field>
         {props.query.customFilters.length > 1 && (
           <Field label="">
-            <Select
+            <Combobox
               value={props.query.conjunctionOperator}
-              options={convertToSelectableValues(CONJUNCTION_OPERATORS)}
+              options={convertToComboboxOptions(CONJUNCTION_OPERATORS)}
               width={20}
               onChange={(option) => onConjuctionOperatorSelect(option)}
+              placeholder='Select...'
             />
           </Field>
         )}
       </HorizontalGroup>
       {props.query.customFilters.map((filter: CustomFilter, filterIdx: number) => (
         <HorizontalGroup key={`custom-filter-row-${filterIdx}`}>
-          <Select
+          <Combobox
             value={filter.keySegment}
             options={state.tagKeys}
             width={20}
+            placeholder='Select...'
             onChange={(option) => onFilterOptionSelect('keySegment', option, filterIdx)}
           />
           {!_.isNil(filter.keySegment) && (
             <HorizontalGroup>
-              <Select
+              <Combobox
                 value={filter.operatorSegment}
                 options={state.operators}
                 width={20}
+                placeholder='Select...'
                 onChange={(option) => onFilterOptionSelect('operatorSegment', option, filterIdx)}
               />
 
-              <Select
-                isLoading={state.tagValues[filterIdx] === undefined}
+              <Combobox
+                placeholder={state.tagValues[filterIdx] === undefined ? 'Loading...' : 'Select...'}
+                disabled={state.tagValues[filterIdx] === undefined}
                 value={filter.valueSegment}
                 options={state.tagValues[filterIdx]}
                 width={20}
