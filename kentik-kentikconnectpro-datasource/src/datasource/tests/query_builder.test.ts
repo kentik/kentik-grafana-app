@@ -1,4 +1,4 @@
-import queryBuilder from './query_builder';
+import queryBuilder from '../query_builder';
 
 class Moment {
   time: string;

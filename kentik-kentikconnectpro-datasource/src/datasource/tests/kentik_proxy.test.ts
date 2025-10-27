@@ -1,5 +1,5 @@
-import { KentikAPI } from './kentik_api';
-import { KentikProxy } from './kentik_proxy';
+import { KentikAPI } from '../kentik_api';
+import { KentikProxy } from '../kentik_proxy';
 
 describe('KentikProxy', () => {
   const ctx: any = {};

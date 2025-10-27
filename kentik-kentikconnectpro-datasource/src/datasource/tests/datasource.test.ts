@@ -1,6 +1,5 @@
-import { KentikDataSource } from './datasource';
 
-describe('KentikDataSource', () => {
+describe('DataSource', () => {
   const ctx: any = {};
 
   const data = {
@@ -64,5 +63,5 @@ function createDatasourceInstance(ctx: any, data: any) {
   };
 
   // @ts-ignore
-  ctx.ds = new KentikDataSource(ctx.instanceSettings, ctx.backendSrv);
+  ctx.ds = new DataSource(ctx.instanceSettings, ctx.backendSrv);
 }
