@@ -9,6 +9,4 @@ datasources:
     version: 1
     editable: true
     jsonData:
-      path: '/resources'
-    secureJsonData:
-      apiKey: 'api-key'
+      url: "https://api.kentik.com"

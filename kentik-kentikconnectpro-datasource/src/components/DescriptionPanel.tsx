@@ -33,7 +33,7 @@ export const DescriptionPanel: FC<Props> = () => {
 
   return (
     <div>
-      <img className={styles.image} src="public/plugins/kentik-connect-app/img/kentik_logo.png" />
+      <img className={styles.image} src="public/plugins/kentikconnectapp-datasource/img/kentik_logo.png" />
       <p>
         Kentik Connect Pro for Grafana allows you to quickly and easily add network activity visibility metrics to your
         Grafana dashboard. By leveraging the power of Kentik’s monitoring SaaS, you can enjoy rich, actionable insights

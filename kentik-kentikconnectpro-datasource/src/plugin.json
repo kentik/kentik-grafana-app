@@ -4,6 +4,7 @@
   "name": "Kentik Connect Pro",
   "id": "kentikconnectpro-datasource",
   "metrics": true,
+  "backend": true, 
   "info": {
     "description": "",
     "author": {
@@ -19,6 +20,23 @@
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
+  "routes": [
+    {
+      "path": "api/v5/*",
+      "method": "*",
+      "url": "{{ .jsonData.url }}/api/v5/",
+      "headers": [
+        {
+          "name": "X-CH-Auth-API-Token",
+          "content": "{{ .secureJsonData.token }}"
+        },
+        {
+          "name": "X-CH-Auth-Email",
+          "content": "{{ .jsonData.email }}"
+        }
+      ]
+    }
+  ],
   "dependencies": {
     "grafanaDependency": ">=10.4.0",
     "plugins": []

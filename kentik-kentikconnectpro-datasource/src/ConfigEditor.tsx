@@ -23,13 +23,13 @@ type State = Required<JsonData> & {
 interface Props extends DataSourcePluginOptionsEditorProps<MyDataSourceOptions, MySecureJsonData> { }
 
 export function ConfigEditor(props: Props) {
-  const { options } = props;
+  const { options, onOptionsChange } = props;
 
   const s = useStyles2(getStyles);
   const { jsonData, secureJsonFields, id } = options;
 
   const [state, setState] = useState<State>({
-    url: jsonData?.url || 'https://grafana-api.kentik.com/api/v5',
+    url: jsonData?.url || 'https://grafana-api.kentik.com',
     email: jsonData?.email || '',
     region: jsonData?.region || Region.DEFAULT,
     dynamicUrl: jsonData?.dynamicUrl || '',
@@ -39,6 +39,7 @@ export function ConfigEditor(props: Props) {
     apiMemberWarning: false,
     apiError: false,
   });
+
 
   useEffect(() => {
     if (isConfigured()) {
@@ -54,9 +55,9 @@ export function ConfigEditor(props: Props) {
   const _getUrlByRegion = (region?: Region): string => {
     switch (region) {
       case Region.DEFAULT:
-        return 'https://grafana-api.kentik.com/api/v5';
+        return 'https://grafana-api.kentik.com';
       case Region.EU:
-        return 'https://api.kentik.eu/api/v5';
+        return 'https://api.kentik.eu';
       case Region.CUSTOM:
         return state.dynamicUrl;
       default:
@@ -99,16 +100,70 @@ export function ConfigEditor(props: Props) {
     return true;
   };
 
-  const updatePluginAndReload = async (pluginId: string, data: Partial<PluginMeta<JsonData>>) => {
+  // const updatePluginAndReload = async (pluginId: string, data: Partial<PluginMeta<JsonData>>) => {
+  //   console.log(data);
+  //   try {
+  //     await getBackendSrv().put(`/api/datasources/${id}`, {
+  //       ...options,
+  //       jsonData: data.jsonData,
+  //       secureJsonData: data.secureJsonData,
+  //     });
+  //     // window.location.reload();
+  //   } catch (e) {
+  //     console.error('Error while updating plugin', e);
+  //   }
+  // };
+
+  console.log(options);
+  console.log('token', state.token)
+
+  const saveSettings = async () => {
+    const dsSettings = {
+      name: options.name,
+      type: options.type,
+      access: options.access,
+      isDefault: options.isDefault,
+      jsonData: {
+        ...options.jsonData,
+        url: state.url,
+        email: state.email,
+        region: state.region,
+        dynamicUrl: state.dynamicUrl,
+        tokenSet: true,
+      },
+      secureJsonData: state.tokenSet
+        ? undefined
+        : {
+            token: state.token,
+          },
+    };
+  
     try {
-      await getBackendSrv().fetch({
-        url: `/api/plugins/${pluginId}/settings`,
-        method: 'POST',
-        data,
+      await getBackendSrv().put(`/api/datasources/${id}`, dsSettings);
+  
+      showCustomAlert('Settings saved!', '', 'success');
+
+      await onOptionsChange({
+        ...options,
+        jsonData: {
+          ...options.jsonData,
+          email: state.email,
+          region: state.region,
+          url: state.url,
+        },
+        secureJsonData: {
+          token: state.token,  // <-- wymuszone zapisanie wartości
+        },
+        secureJsonFields: {
+          token: false,        // odblokuj pole w backendzie
+        }
       });
-      window.location.reload();
-    } catch (e) {
-      console.error('Error while updating plugin', e);
+  
+      // WAŻNE: robimy reload dopiero po sukcesie
+      setTimeout(() => window.location.reload(), 800);
+    } catch (err) {
+      console.error('Failed to save datasource config:', err);
+      showCustomAlert('Error saving settings', '', 'error');
     }
   };
 
@@ -127,7 +182,7 @@ export function ConfigEditor(props: Props) {
 
         {state.region === Region.CUSTOM && (
           <Field label="Custom URL">
-            <Input value={state.dynamicUrl} placeholder="https://grafana-api.kentik.com/api/v5" onChange={onChangeCustomUrl} width={60} />
+            <Input value={state.dynamicUrl} placeholder="https://grafana-api.kentik.com" onChange={onChangeCustomUrl} width={60} />
           </Field>
         )}
 
@@ -144,7 +199,7 @@ export function ConfigEditor(props: Props) {
         )}
 
         <div className={s.marginTop}>
-          <Button
+          {/* <Button
             type="submit"
             disabled={isSubmitDisabled}
             onClick={() =>
@@ -159,7 +214,15 @@ export function ConfigEditor(props: Props) {
             }
           >
             Save API settings
-          </Button>
+          </Button> */}
+
+<Button
+  type="submit"
+  disabled={isSubmitDisabled}
+  onClick={saveSettings}
+>
+  Save API settings
+</Button>
         </div>
       </FieldSet>
     </div>

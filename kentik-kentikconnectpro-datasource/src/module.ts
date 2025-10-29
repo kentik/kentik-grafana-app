@@ -7,3 +7,4 @@ import { QueryEditor, Query } from 'datasource/QueryEditor';
 export const plugin = new DataSourcePlugin<DataSource, Query, MyDataSourceOptions>(DataSource)
   .setConfigEditor(ConfigEditor)
   .setQueryEditor(QueryEditor);
+

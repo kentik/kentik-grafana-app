@@ -9,7 +9,7 @@ export class KentikAPI {
   backendSrv: BackendSrv;
 
   constructor(backendSrv: BackendSrv) {
-    this.baseUrl = '/api/plugin-proxy/kentik-connect-app';
+    this.baseUrl = '/api/plugin-proxy/kentikconnectpro-datasource';
     this.backendSrv = backendSrv;
   }
 
