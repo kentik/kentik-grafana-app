@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: "Kentik Dashboards"
+    orgId: 1
+    folder: "Kentik"
+    type: file
+    disableDeletion: false
+    editable: true
+    updateIntervalSeconds: 600
+    options:
+      path: /root/kentikconnectpro-datasource/dashboards
