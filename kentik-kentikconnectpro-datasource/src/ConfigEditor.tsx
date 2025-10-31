@@ -28,7 +28,6 @@ export function ConfigEditor(props: Props) {
   const s = useStyles2(getStyles);
   const { jsonData, secureJsonFields, id } = options;
 
-  console.log(options);
   const [state, setState] = useState<State>({
     url: jsonData?.url || 'https://grpc.api.kentik.com',
     email: jsonData?.email || '',
@@ -99,10 +98,8 @@ export function ConfigEditor(props: Props) {
   };
 
   const saveSettings = async () => {
-    const dsSettings = {
+    const optionsFormValues = {
       name: options.name,
-      type: options.type,
-      access: options.access,
       isDefault: options.isDefault,
       jsonData: {
         ...options.jsonData,
@@ -110,32 +107,16 @@ export function ConfigEditor(props: Props) {
         email: state.email,
         region: state.region,
         dynamicUrl: state.dynamicUrl,
-        tokenSet: true,
+        tokenSet: !!state.token,
       },
-      secureJsonData: state.tokenSet
-        ? undefined
-        : {
-          token: state.token,
-        },
-    };
-
-    await onOptionsChange({
-      ...options,
-      jsonData: {
-        ...options.jsonData,
-        email: state.email,
-        region: state.region,
-        url: state.url,
-      },
-      secureJsonData: state.tokenSet || !state.token
-        ? undefined
-        : {
-          token: state.token,
-        },
-    });
+      secureJsonData: state.tokenSet ? undefined : { token: state.token }
+    }
 
     try {
-      await getBackendSrv().put(`/api/datasources/${id}`, dsSettings);
+      onOptionsChange({
+        ...options,
+        ...optionsFormValues
+      });
       showCustomAlert('Settings saved!', '', 'success');
       setTimeout(() => window.location.reload(), 800);
     } catch (err) {

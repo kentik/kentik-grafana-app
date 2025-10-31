@@ -24,7 +24,6 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
     super(instanceSettings);
     this.datasourceType = instanceSettings.type;
-    console.log(instanceSettings);
 
     // `arguments[1]` is a hack used by `datasource.test.ts`
     const kentikApi = new KentikAPI(arguments[1] || getBackendSrv(), instanceSettings.uid);
