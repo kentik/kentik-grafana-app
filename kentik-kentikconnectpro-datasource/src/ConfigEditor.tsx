@@ -30,7 +30,7 @@ export function ConfigEditor(props: Props) {
 
   console.log(options);
   const [state, setState] = useState<State>({
-    url: jsonData?.url || 'https://api.kentik.com',
+    url: jsonData?.url || 'https://grpc.api.kentik.com',
     email: jsonData?.email || '',
     region: jsonData?.region || Region.DEFAULT,
     dynamicUrl: jsonData?.dynamicUrl || '',
@@ -40,7 +40,6 @@ export function ConfigEditor(props: Props) {
     apiMemberWarning: false,
     apiError: false,
   });
-
 
   useEffect(() => {
     if (isConfigured()) {
@@ -56,9 +55,9 @@ export function ConfigEditor(props: Props) {
   const _getUrlByRegion = (region?: Region): string => {
     switch (region) {
       case Region.DEFAULT:
-        return 'https://api.kentik.com';
+        return 'https://grpc.api.kentik.com';
       case Region.EU:
-        return 'https://api.kentik.eu';
+        return 'https://grpc.api.kentik.eu';
       case Region.CUSTOM:
         return state.dynamicUrl;
       default:
@@ -85,7 +84,6 @@ export function ConfigEditor(props: Props) {
       _onApiError();
       return false;
     }
-
     try {
       await kentik.getUsers();
     } catch (e: any) {
@@ -95,30 +93,10 @@ export function ConfigEditor(props: Props) {
       }
       setState({ ...state, apiMemberWarning: true });
     }
-
     setState({ ...state, apiValidated: true });
     showCustomAlert('API working!', '', 'success');
     return true;
   };
-
-  console.log(options);
-
-  // const updatePluginAndReload = async (pluginId: string, data: Partial<PluginMeta<JsonData>>) => {
-  //   console.log(data);
-  //   try {
-  //     await getBackendSrv().put(`/api/datasources/${id}`, {
-  //       ...options,
-  //       jsonData: data.jsonData,
-  //       secureJsonData: data.secureJsonData,
-  //     });
-  //     // window.location.reload();
-  //   } catch (e) {
-  //     console.error('Error while updating plugin', e);
-  //   }
-  // };
-
-  console.log(options);
-  console.log('token', state.token)
 
   const saveSettings = async () => {
     const dsSettings = {
@@ -137,32 +115,28 @@ export function ConfigEditor(props: Props) {
       secureJsonData: state.tokenSet
         ? undefined
         : {
-            token: state.token,
-          },
+          token: state.token,
+        },
     };
+
+    await onOptionsChange({
+      ...options,
+      jsonData: {
+        ...options.jsonData,
+        email: state.email,
+        region: state.region,
+        url: state.url,
+      },
+      secureJsonData: state.tokenSet || !state.token
+        ? undefined
+        : {
+          token: state.token,
+        },
+    });
 
     try {
       await getBackendSrv().put(`/api/datasources/${id}`, dsSettings);
-
       showCustomAlert('Settings saved!', '', 'success');
-
-      await onOptionsChange({
-        ...options,
-        jsonData: {
-          ...options.jsonData,
-          email: state.email,
-          region: state.region,
-          url: state.url,
-        },
-        secureJsonData: {
-          token: state.token,  // <-- wymuszone zapisanie wartości
-        },
-        secureJsonFields: {
-          token: false,        // odblokuj pole w backendzie
-        }
-      });
-
-      // WAŻNE: robimy reload dopiero po sukcesie
       setTimeout(() => window.location.reload(), 800);
     } catch (err) {
       console.error('Failed to save datasource config:', err);
@@ -185,7 +159,7 @@ export function ConfigEditor(props: Props) {
 
         {state.region === Region.CUSTOM && (
           <Field label="Custom URL">
-            <Input value={state.dynamicUrl} placeholder="https://api.kentik.com" onChange={onChangeCustomUrl} width={60} />
+            <Input value={state.dynamicUrl} placeholder="https://grpc.api.kentik.com" onChange={onChangeCustomUrl} width={60} />
           </Field>
         )}
 
@@ -196,36 +170,44 @@ export function ConfigEditor(props: Props) {
         {isConfigured() && state.apiError && (
           <div className="gf-form">
             <i className={`fa fa-exclamation-circle ${s.colorError}`}>
-              <span className={s.marginLeft}>Invalid API credentials. This app won’t work until updated.</span>
+              <span className={s.marginLeft}>
+                Invalid API credentials. This app won`t work until the credentials are updated.
+              </span>
             </i>
           </div>
         )}
 
+        {state.tokenSet && state.apiValidated && (
+          <div className="kentik-enabled-box">
+            <i className="icon-gf icon-gf-check kentik-api-status-icon success"></i>
+            <span className={s.marginLeft}>
+              Successfully enabled.
+              <strong> Next up: </strong>
+              <a href="d/xScUGST71/kentik-home" className="external-link">
+                Go to Kentik Home Dashboard
+              </a>
+            </span>
+          </div>
+        )}
+
+        {state.tokenSet && state.apiValidated && state.apiMemberWarning && (
+          <div className="kentik-enabled-box">
+            <i className="fa fa-warning kentik-api-status-icon warning"></i>
+            <span className={s.marginLeft}>
+              The specified Kentik user seems to have Member access level (not Admin), Custom Dimensions in the
+              dashboard filters won`t be available.
+            </span>
+          </div>
+        )}
+
         <div className={s.marginTop}>
-          {/* <Button
+          <Button
             type="submit"
             disabled={isSubmitDisabled}
-            onClick={() =>
-              updatePluginAndReload(id.toString(), {
-                jsonData: { tokenSet: true, url: state.url, email: state.email, region: state.region, dynamicUrl: state.dynamicUrl },
-                secureJsonData: state.tokenSet
-                  ? undefined
-                  : {
-                    token: state.token,
-                  },
-              })
-            }
+            onClick={saveSettings}
           >
             Save API settings
-          </Button> */}
-
-<Button
-  type="submit"
-  disabled={isSubmitDisabled}
-  onClick={saveSettings}
->
-  Save API settings
-</Button>
+          </Button>
         </div>
       </FieldSet>
     </div>

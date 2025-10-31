@@ -9,4 +9,4 @@ datasources:
     version: 1
     editable: true
     jsonData:
-      url: 'https://api.kentik.com'
+      url: 'https://grpc.api.kentik.com'

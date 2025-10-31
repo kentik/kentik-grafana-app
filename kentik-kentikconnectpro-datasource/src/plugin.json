@@ -23,9 +23,19 @@
   },
   "routes": [
     {
-      "path": "api/v6",
+      "path": "site",
       "method": "*",
-      "url": "{{ .jsonData.url }}/api/v6",
+      "url": "{{.JsonData.url}}/site",
+      "headers": [
+        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
+        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
+        {"name": "Accept", "content": "application/json"}        
+      ]
+    },
+    {
+      "path": "user",
+      "method": "*",
+      "url": "{{.JsonData.url}}/user",
       "headers": [
         {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
         {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},

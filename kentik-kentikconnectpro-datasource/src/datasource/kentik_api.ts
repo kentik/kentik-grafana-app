@@ -41,7 +41,7 @@ export class KentikAPI {
   }
 
   async getSites(): Promise<any> {
-    const resp = await this._get('/api/v6/sites');
+    const resp = await this._get('/site/v202211/sites');
     if (resp && resp.sites) {
       return resp.sites;
     } else {
@@ -51,7 +51,7 @@ export class KentikAPI {
 
   async getUsers(): Promise<any> {
     const requiresAdminLevel = true;
-    return this._get('/api/v6/users', requiresAdminLevel);
+    return this._get('/user/v202211/users', requiresAdminLevel);
   }
 
   async getFieldValues(field: string): Promise<any> {
@@ -94,19 +94,16 @@ export class KentikAPI {
   }
 
   private async _get(url: string, requiresAdminLevel = false): Promise<any> {
+   
     return retry(
       this.backendSrv.request.bind(this.backendSrv, {
         method: 'GET',
         url: this.baseUrl + url,
         showErrorAlert: !requiresAdminLevel,
-        // headers: {
-        //   "X-CH-Auth-API-Token": "bebab349a981616b0709483d4c9181eb",
-        //   "X-Auth-Email": "joanna.stawiarska@codilime.com",
-        //   "Accept": "application/json"
-        // }
       }),
       (error: FetchError) => {
         // HTTP Error 429: Too Many Requests
+        console.log(error);
         if (error.status === 429) {
           showAlert(error);
           return true;
