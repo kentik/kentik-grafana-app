@@ -8,13 +8,13 @@ export class KentikAPI {
   baseUrl: string;
   backendSrv: BackendSrv;
 
-  constructor(backendSrv: BackendSrv) {
-    this.baseUrl = '/api/plugin-proxy/kentikconnectpro-datasource';
+  constructor(backendSrv: BackendSrv, uid: string) {
+    this.baseUrl = `/api/datasources/proxy/uid/${uid}`;
     this.backendSrv = backendSrv;
   }
 
   async getDeviceById(deviceId: string): Promise<any> {
-    const resp = await this._get(`/api/v5/device/${deviceId}?noCustomColumns=True`);
+    const resp = await this._get(`/api/v6/device/${deviceId}?noCustomColumns=True`);
     if (resp && resp.device) {
       return resp.device;
     } else {
@@ -23,7 +23,7 @@ export class KentikAPI {
   }
 
   async updateDevice(deviceId: string, data: any): Promise<any> {
-    const resp = await this._put(`/api/v5/device/${deviceId}`, data);
+    const resp = await this._put(`/api/v6/device/${deviceId}`, data);
     if (resp && resp.device) {
       return resp.device;
     } else {
@@ -32,7 +32,7 @@ export class KentikAPI {
   }
 
   async getDevices(): Promise<any> {
-    const resp = await this._get('/api/v5/devices?noCustomColumns=True');
+    const resp = await this._get('/api/v6/devices?noCustomColumns=True');
     if (resp && resp.devices) {
       return resp.devices;
     } else {
@@ -41,7 +41,7 @@ export class KentikAPI {
   }
 
   async getSites(): Promise<any> {
-    const resp = await this._get('/api/v5/sites');
+    const resp = await this._get('/api/v6/sites');
     if (resp && resp.sites) {
       return resp.sites;
     } else {
@@ -51,7 +51,7 @@ export class KentikAPI {
 
   async getUsers(): Promise<any> {
     const requiresAdminLevel = true;
-    return this._get('/api/v5/users', requiresAdminLevel);
+    return this._get('/api/v6/users', requiresAdminLevel);
   }
 
   async getFieldValues(field: string): Promise<any> {
@@ -62,7 +62,7 @@ export class KentikAPI {
   async getCustomDimensions(): Promise<any[]> {
     try {
       const requiresAdminLevel = true;
-      const resp = await this._get('/api/v5/customdimensions', requiresAdminLevel);
+      const resp = await this._get('/api/v6/customdimensions', requiresAdminLevel);
       return resp.customDimensions;
     } catch (e: any) {
       if (e.status === 403) {
@@ -73,7 +73,7 @@ export class KentikAPI {
   }
 
   async getSavedFilters(): Promise<any> {
-    const data = await this._get('/api/v5/saved-filters');
+    const data = await this._get('/api/v6/saved-filters');
     return data;
   }
 
@@ -82,7 +82,7 @@ export class KentikAPI {
       queries: [{ query: query, bucketIndex: 0 }],
     };
 
-    return this._post('/api/v5/query/topXdata', kentikV5Query);
+    return this._post('/api/v6/query/topXdata', kentikV5Query);
   }
 
   async invokeSQLQuery(query: any): Promise<any> {
@@ -90,7 +90,7 @@ export class KentikAPI {
       query: query,
     };
 
-    return this._post('/api/v5/query/sql', data);
+    return this._post('/api/v6/query/sql', data);
   }
 
   private async _get(url: string, requiresAdminLevel = false): Promise<any> {
@@ -99,6 +99,11 @@ export class KentikAPI {
         method: 'GET',
         url: this.baseUrl + url,
         showErrorAlert: !requiresAdminLevel,
+        // headers: {
+        //   "X-CH-Auth-API-Token": "bebab349a981616b0709483d4c9181eb",
+        //   "X-Auth-Email": "joanna.stawiarska@codilime.com",
+        //   "Accept": "application/json"
+        // }
       }),
       (error: FetchError) => {
         // HTTP Error 429: Too Many Requests

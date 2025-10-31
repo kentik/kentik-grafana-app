@@ -21,15 +21,13 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   kentik: any;
   templateSrv: TemplateSrv;
 
-
-
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
     super(instanceSettings);
     this.datasourceType = instanceSettings.type;
-    console.log('settings', instanceSettings)
+    console.log(instanceSettings);
 
     // `arguments[1]` is a hack used by `datasource.test.ts`
-    const kentikApi = new KentikAPI(arguments[1] || getBackendSrv());
+    const kentikApi = new KentikAPI(arguments[1] || getBackendSrv(), instanceSettings.uid);
     this.kentik = new KentikProxy(kentikApi);
     this.templateSrv = getTemplateSrv();
   }

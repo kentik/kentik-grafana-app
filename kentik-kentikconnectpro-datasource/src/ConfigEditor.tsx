@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useState, useEffect } from 'react';
 import { JsonData, MyDataSourceOptions, MySecureJsonData, Region } from './types';
 import { css } from '@emotion/css';
-import { GrafanaTheme2, PluginMeta, SelectableValue, DataSourcePluginOptionsEditorProps } from '@grafana/data';
+import { GrafanaTheme2, SelectableValue, DataSourcePluginOptionsEditorProps } from '@grafana/data';
 import { getBackendSrv } from '@grafana/runtime';
 import { Input, SecretInput, Button, Field, FieldSet, RadioButtonGroup, useStyles2 } from '@grafana/ui';
 import { showCustomAlert } from './utils/alert_helper';
@@ -28,8 +28,9 @@ export function ConfigEditor(props: Props) {
   const s = useStyles2(getStyles);
   const { jsonData, secureJsonFields, id } = options;
 
+  console.log(options);
   const [state, setState] = useState<State>({
-    url: jsonData?.url || 'https://grafana-api.kentik.com',
+    url: jsonData?.url || 'https://api.kentik.com',
     email: jsonData?.email || '',
     region: jsonData?.region || Region.DEFAULT,
     dynamicUrl: jsonData?.dynamicUrl || '',
@@ -55,7 +56,7 @@ export function ConfigEditor(props: Props) {
   const _getUrlByRegion = (region?: Region): string => {
     switch (region) {
       case Region.DEFAULT:
-        return 'https://grafana-api.kentik.com';
+        return 'https://api.kentik.com';
       case Region.EU:
         return 'https://api.kentik.eu';
       case Region.CUSTOM:
@@ -77,7 +78,7 @@ export function ConfigEditor(props: Props) {
 
   const validateApiConnection = async (): Promise<boolean> => {
     const backendSrv = getBackendSrv();
-    const kentik = new KentikAPI(backendSrv);
+    const kentik = new KentikAPI(backendSrv, options.uid);
     try {
       await kentik.getSites();
     } catch {
@@ -99,6 +100,8 @@ export function ConfigEditor(props: Props) {
     showCustomAlert('API working!', '', 'success');
     return true;
   };
+
+  console.log(options);
 
   // const updatePluginAndReload = async (pluginId: string, data: Partial<PluginMeta<JsonData>>) => {
   //   console.log(data);
@@ -137,10 +140,10 @@ export function ConfigEditor(props: Props) {
             token: state.token,
           },
     };
-  
+
     try {
       await getBackendSrv().put(`/api/datasources/${id}`, dsSettings);
-  
+
       showCustomAlert('Settings saved!', '', 'success');
 
       await onOptionsChange({
@@ -158,7 +161,7 @@ export function ConfigEditor(props: Props) {
           token: false,        // odblokuj pole w backendzie
         }
       });
-  
+
       // WAŻNE: robimy reload dopiero po sukcesie
       setTimeout(() => window.location.reload(), 800);
     } catch (err) {
@@ -182,7 +185,7 @@ export function ConfigEditor(props: Props) {
 
         {state.region === Region.CUSTOM && (
           <Field label="Custom URL">
-            <Input value={state.dynamicUrl} placeholder="https://grafana-api.kentik.com" onChange={onChangeCustomUrl} width={60} />
+            <Input value={state.dynamicUrl} placeholder="https://api.kentik.com" onChange={onChangeCustomUrl} width={60} />
           </Field>
         )}
 

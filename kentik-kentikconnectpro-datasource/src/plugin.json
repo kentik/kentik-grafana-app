@@ -4,13 +4,14 @@
   "name": "Kentik Connect Pro",
   "id": "kentikconnectpro-datasource",
   "metrics": true,
-  "backend": true, 
   "info": {
     "description": "",
     "author": {
       "name": "Kentik"
     },
-    "keywords": ["datasource"],
+    "keywords": [
+      "datasource"
+    ],
     "logos": {
       "small": "img/logo_small.png",
       "large": "img/logo_large.png"
@@ -22,18 +23,13 @@
   },
   "routes": [
     {
-      "path": "api/v5/*",
+      "path": "api/v6",
       "method": "*",
-      "url": "{{ .jsonData.url }}/api/v5/",
+      "url": "{{ .jsonData.url }}/api/v6",
       "headers": [
-        {
-          "name": "X-CH-Auth-API-Token",
-          "content": "{{ .secureJsonData.token }}"
-        },
-        {
-          "name": "X-CH-Auth-Email",
-          "content": "{{ .jsonData.email }}"
-        }
+        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
+        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
+        {"name": "Accept", "content": "application/json"}        
       ]
     }
   ],

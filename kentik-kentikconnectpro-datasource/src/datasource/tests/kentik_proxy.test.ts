@@ -60,6 +60,6 @@ function getKentikProxyInstance(ctx: any, data: any) {
     },
   };
 
-  ctx.kentikAPI = new KentikAPI(ctx.backendSrv);
+  ctx.kentikAPI = new KentikAPI(ctx.backendSrv, 'uid');
   ctx.kentikProxy = new KentikProxy(ctx.kentikAPI);
 }
