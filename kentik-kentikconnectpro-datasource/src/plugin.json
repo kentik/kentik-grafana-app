@@ -51,6 +51,26 @@
         {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
         {"name": "Accept", "content": "application/json"}        
       ]
+    },
+    {
+      "path": "custom_dimensions",
+      "method": "*",
+      "url": "{{.JsonData.url}}/custom_dimensions",
+      "headers": [
+        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
+        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
+        {"name": "Accept", "content": "application/json"}        
+      ]
+    },
+    {
+      "path": "saved-filters",
+      "method": "*",
+      "url": "{{.JsonData.url}}/saved-filters",
+      "headers": [
+        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
+        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
+        {"name": "Accept", "content": "application/json"}        
+      ]
     }
   ],
   "dependencies": {

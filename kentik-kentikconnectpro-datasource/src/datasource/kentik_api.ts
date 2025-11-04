@@ -14,7 +14,7 @@ export class KentikAPI {
   }
 
   async getDeviceById(deviceId: string): Promise<any> {
-    const resp = await this._get(`/api/v6/device/${deviceId}?noCustomColumns=True`);
+    const resp = await this._get(`/device/v202308beta1/device/${deviceId}`);
     if (resp && resp.device) {
       return resp.device;
     } else {
@@ -23,7 +23,7 @@ export class KentikAPI {
   }
 
   async updateDevice(deviceId: string, data: any): Promise<any> {
-    const resp = await this._put(`/api/v6/device/${deviceId}`, data);
+    const resp = await this._put(`/device/v202308beta1/device/${deviceId}`, data);
     if (resp && resp.device) {
       return resp.device;
     } else {
@@ -61,9 +61,10 @@ export class KentikAPI {
 
   async getCustomDimensions(): Promise<any[]> {
     try {
-      const requiresAdminLevel = true;
-      const resp = await this._get('/api/v6/customdimensions', requiresAdminLevel);
-      return resp.customDimensions;
+      // const requiresAdminLevel = true;
+      // const resp = await this._get('/custom_dimensions/v202411alpha1');
+      return [];
+      // return resp.customDimensions;
     } catch (e: any) {
       if (e.status === 403) {
         return [];
@@ -73,7 +74,7 @@ export class KentikAPI {
   }
 
   async getSavedFilters(): Promise<any> {
-    const data = await this._get('/api/v6/saved-filters');
+    const data = await this._get('/saved-filters/v202501alpha1');
     return data;
   }
 
@@ -82,7 +83,7 @@ export class KentikAPI {
       queries: [{ query: query, bucketIndex: 0 }],
     };
 
-    return this._post('/api/v6/query/topXdata', kentikV5Query);
+    return this._post('/api/v5/query/topXdata', kentikV5Query);
   }
 
   async invokeSQLQuery(query: any): Promise<any> {
@@ -90,7 +91,7 @@ export class KentikAPI {
       query: query,
     };
 
-    return this._post('/api/v6/query/sql', data);
+    return this._post('/api/v5/query/sql', data);
   }
 
   private async _get(url: string, requiresAdminLevel = false): Promise<any> {

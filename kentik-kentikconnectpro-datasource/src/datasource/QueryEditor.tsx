@@ -101,20 +101,18 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
       const [sites, devices, metrics, units, tagKeys] = await Promise.all([
         fetchSites(),
         fetchDevices(),
-        // fetchMetrics(),
-        // fetchUnits(),
-        // fetchTagKeys(),
+        fetchMetrics(),
+        fetchUnits(),
+        fetchTagKeys(),
       ]);
-
-      console.log(devices);
 
       setState({
         ...state,
         sites,
         devices,
-        // metrics,
-        // units,
-        // tagKeys,
+        metrics,
+        units,
+        tagKeys,
         isLoading: false,
         isDevicesLoading: false,
       });

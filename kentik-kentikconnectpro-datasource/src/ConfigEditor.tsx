@@ -26,7 +26,7 @@ export function ConfigEditor(props: Props) {
   const { options, onOptionsChange } = props;
 
   const s = useStyles2(getStyles);
-  const { jsonData, secureJsonFields, id } = options;
+  const { jsonData, secureJsonFields } = options;
 
   const [state, setState] = useState<State>({
     url: jsonData?.url || 'https://grpc.api.kentik.com',
