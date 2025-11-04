@@ -2,12 +2,11 @@ import queryBuilder from './query_builder';
 import { metricList, unitList, filterFieldList, Metric, Unit, FilterField } from './metric_def';
 import { KentikAPI } from './kentik_api';
 import { KentikProxy } from './kentik_proxy';
-import { DataSourceApi, MutableDataFrame, FieldType, DataQueryRequest, DataQueryResponse, TestDataSourceResponse } from '@grafana/data';
+import { DataSourceApi, DataFrame, AdHocVariableFilter, FieldType, DataQueryRequest, DataQueryResponse, TestDataSourceResponse } from '@grafana/data';
 
 import {
   DataSourceInstanceSettings,
   DataSourceJsonData,
-  VariableModel,
 } from '@grafana/data';
 import { getTemplateSrv, TemplateSrv, getBackendSrv } from '@grafana/runtime';
 
@@ -51,20 +50,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
 
     const customDimensions = await this.kentik.getCustomDimensions();
     const savedFiltersList = await this.kentik.getSavedFilters();
-
-    const templateSrv = getTemplateSrv();
-    const kentikFilters: any[] = _.flatten(
-      _.map(
-        _.filter(
-          templateSrv.getVariables(),
-          // @ts-expect-error
-          (variable: VariableModel) => variable.type === 'adhoc' && variable.datasource.type === this.datasourceType
-        ),
-        // @ts-expect-error
-        (variable: VariableModel) => variable.filters
-      )
-    );
-
+    const kentikFilters: AdHocVariableFilter[] = options.filters || [];
     const allDevices = await this.kentik.getDevices();
 
     const promises = _.map(
@@ -199,18 +185,19 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     return seriesList;
   }
 
-  processTableData(bucketData: any, metricDef: any, unitDef: any) {
-    const table = new MutableDataFrame({
+  processTableData(bucketData: any[], metricDef: any, unitDef: any): DataFrame {
+    const table: DataFrame = {
       name: 'My Table',
       fields: [
-        { name: metricDef.text, type: FieldType.number, values: [] },
-        // Dodaj inne kolumny jeśli potrzebne
+        {
+          name: metricDef.text,
+          type: FieldType.number,
+          values: new Array(bucketData.map(item => item.value)),
+          config: {}
+        },
       ],
-    });
-  
-    bucketData.forEach((item: any) => {
-      table.fields[0].values.add(item.value); // dla pierwszej kolumny
-    });
+      length: bucketData.length,
+    };
   
     return table;
   }
