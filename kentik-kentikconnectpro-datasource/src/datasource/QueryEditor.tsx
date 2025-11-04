@@ -101,18 +101,20 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
       const [sites, devices, metrics, units, tagKeys] = await Promise.all([
         fetchSites(),
         fetchDevices(),
-        fetchMetrics(),
-        fetchUnits(),
-        fetchTagKeys(),
+        // fetchMetrics(),
+        // fetchUnits(),
+        // fetchTagKeys(),
       ]);
+
+      console.log(devices);
 
       setState({
         ...state,
         sites,
         devices,
-        metrics,
-        units,
-        tagKeys,
+        // metrics,
+        // units,
+        // tagKeys,
         isLoading: false,
         isDevicesLoading: false,
       });
@@ -120,7 +122,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     init();
     // eslint-disable-next-line
   }, []);
-
+  
   const variableExists = (variableName: string): boolean => {
     const templateSrv = getTemplateSrv();
     const variables = templateSrv.getVariables().map((variable) => `$${variable.name}`);
@@ -133,7 +135,6 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     target?: any
   ): Promise<Array<ComboboxOption<string>>> => {
     let metrics: QueryItem[] = await props.datasource.metricFindQuery(query, target || props.query);
-
     return convertToComboboxOptions(appendVariableIfExists(metrics, variableName));
   };
 

@@ -32,7 +32,7 @@ export class KentikAPI {
   }
 
   async getDevices(): Promise<any> {
-    const resp = await this._get('/api/v6/devices?noCustomColumns=True');
+    const resp = await this._get('/device/v202308beta1/device');
     if (resp && resp.devices) {
       return resp.devices;
     } else {
@@ -103,7 +103,6 @@ export class KentikAPI {
       }),
       (error: FetchError) => {
         // HTTP Error 429: Too Many Requests
-        console.log(error);
         if (error.status === 429) {
           showAlert(error);
           return true;

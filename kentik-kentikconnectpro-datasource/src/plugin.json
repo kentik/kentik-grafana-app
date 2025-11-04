@@ -41,6 +41,16 @@
         {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
         {"name": "Accept", "content": "application/json"}        
       ]
+    },
+    {
+      "path": "device",
+      "method": "*",
+      "url": "{{.JsonData.url}}/device",
+      "headers": [
+        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
+        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
+        {"name": "Accept", "content": "application/json"}        
+      ]
     }
   ],
   "dependencies": {

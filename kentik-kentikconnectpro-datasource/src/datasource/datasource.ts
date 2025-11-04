@@ -227,16 +227,16 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         const site = this.templateSrv.replace(target.site);
         let devices = await this.kentik.getDevices();
         if (target.site && target.site !== 'all') {
-          devices = _.filter(devices, (device) => device.site.site_name === site);
+          devices = _.filter(devices, (device) => device.site.siteName === site);
         }
         return devices.map((device: any) => {
-          return { text: device.device_name, value: device.device_name };
+          return { text: device.deviceName, value: device.deviceName };
         });
       }
       case 'sites()': {
         const sites = await this.kentik.getSites();
         const res = sites.map((site: any) => {
-          return { text: site.site_name, value: site.site_name };
+          return { text: site.title, value: site.title };
         });
         return [{ text: 'all', value: null }, ...res];
       }
