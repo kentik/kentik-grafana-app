@@ -25,7 +25,7 @@
     {
       "path": "site",
       "method": "*",
-      "url": "{{.JsonData.url}}/site",
+      "url": "{{.JsonData.url.v6}}/site",
       "headers": [
         {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
         {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
@@ -35,7 +35,7 @@
     {
       "path": "user",
       "method": "*",
-      "url": "{{.JsonData.url}}/user",
+      "url": "{{.JsonData.url.v6}}/user",
       "headers": [
         {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
         {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
@@ -45,17 +45,17 @@
     {
       "path": "device",
       "method": "*",
-      "url": "{{.JsonData.url}}/device",
+      "url": "{{.JsonData.url.v6}}/device",
       "headers": [
         {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
         {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
-        {"name": "Accept", "content": "application/json"}        
+        {"name": "Accept", "content": "application/json"}       
       ]
     },
     {
       "path": "custom_dimensions",
       "method": "*",
-      "url": "{{.JsonData.url}}/custom_dimensions",
+      "url": "{{.JsonData.url.v6}}/custom_dimensions",
       "headers": [
         {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
         {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
@@ -65,12 +65,21 @@
     {
       "path": "saved-filters",
       "method": "*",
-      "url": "{{.JsonData.url}}/saved-filters",
+      "url": "{{.JsonData.url.v6}}/saved-filters",
       "headers": [
         {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
         {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
         {"name": "Accept", "content": "application/json"}        
       ]
+    },
+    {
+      "path": "/api/v5",
+      "method": "*",
+      "url": "{{.JsonData.url.v5}}",
+      "headers": [
+        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
+        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
+        {"name": "Accept", "content": "application/json"}      ]
     }
   ],
   "dependencies": {

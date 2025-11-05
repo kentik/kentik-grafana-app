@@ -28,8 +28,13 @@ export enum Region {
   CUSTOM = 'custom',
 }
 
+export type Url = {
+  v6: string; 
+  v5: string 
+}
+
 export type JsonData = {
-  url?: string;
+  url?: Url;
   email?: string;
   region?: Region;
   dynamicUrl?: string;

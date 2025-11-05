@@ -8,5 +8,3 @@ datasources:
     orgId: 1
     version: 1
     editable: true
-    jsonData:
-      url: 'https://grpc.api.kentik.com'

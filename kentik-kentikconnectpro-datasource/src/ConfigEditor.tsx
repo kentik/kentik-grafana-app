@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useState, useEffect } from 'react';
-import { JsonData, MyDataSourceOptions, MySecureJsonData, Region } from './types';
+import { JsonData, MyDataSourceOptions, MySecureJsonData, Region, Url } from './types';
 import { css } from '@emotion/css';
 import { GrafanaTheme2, SelectableValue, DataSourcePluginOptionsEditorProps } from '@grafana/data';
 import { getBackendSrv } from '@grafana/runtime';
@@ -12,6 +12,9 @@ const REGION_OPTIONS: Array<SelectableValue<Region>> = [
   { label: 'EU', value: Region.EU },
   { label: 'Custom', value: Region.CUSTOM },
 ];
+
+const DEFAULT_URL = { v6: 'https://grpc.api.kentik.com', v5: 'https://api.kentik.com' };
+const EU_URL = { v6: 'https://grpc.api.kentik.eu', v5: 'https://api.kentik.eu' };
 
 type State = Required<JsonData> & {
   token: string;
@@ -29,7 +32,7 @@ export function ConfigEditor(props: Props) {
   const { jsonData, secureJsonFields } = options;
 
   const [state, setState] = useState<State>({
-    url: jsonData?.url || 'https://grpc.api.kentik.com',
+    url: DEFAULT_URL,
     email: jsonData?.email || '',
     region: jsonData?.region || Region.DEFAULT,
     dynamicUrl: jsonData?.dynamicUrl || '',
@@ -51,14 +54,14 @@ export function ConfigEditor(props: Props) {
     return (!!state.tokenSet || !!state.token) && !!state.email && !!state.region;
   };
 
-  const _getUrlByRegion = (region?: Region): string => {
+  const _getUrlByRegion = (region?: Region): Url => {
     switch (region) {
       case Region.DEFAULT:
-        return 'https://grpc.api.kentik.com';
+        return DEFAULT_URL;
       case Region.EU:
-        return 'https://grpc.api.kentik.eu';
+        return EU_URL;
       case Region.CUSTOM:
-        return state.dynamicUrl;
+        return { v6: state.dynamicUrl, v5: state.dynamicUrl };
       default:
         throw new Error(`Unknown region type: "${region}"`);
     }
