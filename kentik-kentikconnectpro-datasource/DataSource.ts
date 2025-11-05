@@ -2,7 +2,7 @@ import queryBuilder from './query_builder';
 import { metricList, unitList, filterFieldList, Metric, Unit, FilterField } from './metric_def';
 import { KentikAPI } from './kentik_api';
 import { KentikProxy } from './kentik_proxy';
-import { DataSourceApi, DataFrame, AdHocVariableFilter, FieldType, DataQueryRequest, DataQueryResponse, TestDataSourceResponse } from '@grafana/data';
+import { DataSourceApi, DataFrame, MutableDataFrame, AdHocVariableFilter, FieldType, DataQueryRequest, DataQueryResponse, TestDataSourceResponse } from '@grafana/data';
 
 import {
   DataSourceInstanceSettings,
@@ -186,117 +186,131 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   }
 
   processTableData(bucketData: any[], metricDef: any, unitDef: any): DataFrame {
-    const table: DataFrame = {
-      name: 'My Table',
+    const frame = new MutableDataFrame({
+      name: metricDef.text,
       fields: [
-        {
-          name: metricDef.text,
+        { name: metricDef.text, type: FieldType.string },
+        ...unitDef.tableFields.map((col: any) => ({
+          name: col.text,
           type: FieldType.number,
-          values: new Array(bucketData.map(item => item.value)),
-          config: {}
-        },
+          config: { unit: col.unit },
+        })),
       ],
-      length: bucketData.length,
-    };
-  
-    return table;
+    });
+
+    _.forEach(bucketData, (row) => {
+      const seriesName = row.key;
+      const values = [seriesName];
+
+      for (const col of unitDef.tableFields) {
+        let val = row[col.field];
+        if (_.isString(val)) {
+          val = parseFloat(val);
+        }
+        values.push(val);
+      }
+
+      frame.appendRow(values);
+    });
+
+    return frame;
   }
 
   async metricFindQuery(query: any, target: any) {
-    switch (query) {
-      case 'metrics()': {
-        return this._getExtendedDimensionsList(metricList);
-      }
-      case 'units()': {
-        return unitList;
-      }
-      case 'devices()': {
-        const site = this.templateSrv.replace(target.site);
-        let devices = await this.kentik.getDevices();
-        if (target.site && target.site !== 'all') {
-          devices = _.filter(devices, (device) => device.site.siteName === site);
-        }
-        return devices.map((device: any) => {
-          return { text: device.deviceName, value: device.deviceName };
-        });
-      }
-      case 'sites()': {
-        const sites = await this.kentik.getSites();
-        const res = sites.map((site: any) => {
-          return { text: site.title, value: site.title };
-        });
-        return [{ text: 'all', value: null }, ...res];
-      }
-      default:
-        throw new Error(`Unknown query type: ${query}`);
+  switch (query) {
+    case 'metrics()': {
+      return this._getExtendedDimensionsList(metricList);
     }
+    case 'units()': {
+      return unitList;
+    }
+    case 'devices()': {
+      const site = this.templateSrv.replace(target.site);
+      let devices = await this.kentik.getDevices();
+      if (target.site && target.site !== 'all') {
+        devices = _.filter(devices, (device) => device.site.siteName === site);
+      }
+      return devices.map((device: any) => {
+        return { text: device.deviceName, value: device.deviceName };
+      });
+    }
+    case 'sites()': {
+      const sites = await this.kentik.getSites();
+      const res = sites.map((site: any) => {
+        return { text: site.title, value: site.title };
+      });
+      return [{ text: 'all', value: null }, ...res];
+    }
+    default:
+      throw new Error(`Unknown query type: ${query}`);
+  }
+}
+
+findMetric(query: { text?: string; value?: string }): Metric | null {
+  if (query.text === undefined && query.value === undefined) {
+    throw new Error('At least one of text / value must be defined');
+  }
+  const metric = _.find<Metric>(metricList, query);
+  if (metric === undefined) {
+    return null;
   }
 
-  findMetric(query: { text?: string; value?: string }): Metric | null {
-    if (query.text === undefined && query.value === undefined) {
-      throw new Error('At least one of text / value must be defined');
-    }
-    const metric = _.find<Metric>(metricList, query);
-    if (metric === undefined) {
-      return null;
-    }
+  return metric;
+}
 
-    return metric;
+findUnit(query: { text?: string; value?: string }): Unit | null {
+  if (query.text === undefined && query.value === undefined) {
+    throw new Error('At least one of text / value must be defined');
+  }
+  const unit = _.find<Unit>(unitList, query);
+  if (unit === undefined) {
+    return null;
   }
 
-  findUnit(query: { text?: string; value?: string }): Unit | null {
-    if (query.text === undefined && query.value === undefined) {
-      throw new Error('At least one of text / value must be defined');
-    }
-    const unit = _.find<Unit>(unitList, query);
-    if (unit === undefined) {
-      return null;
-    }
-
-    return unit;
-  }
+  return unit;
+}
 
   async getTagKeys() {
-    const initialList = await this._getExtendedDimensionsList(filterFieldList);
-    const savedFilters = await this.kentik.getSavedFilters();
-    return _.concat(initialList, savedFilters);
-  }
+  const initialList = await this._getExtendedDimensionsList(filterFieldList);
+  const savedFilters = await this.kentik.getSavedFilters();
+  return _.concat(initialList, savedFilters);
+}
 
   async getTagValues(options: any) {
-    if (options) {
-      let filter = _.find<FilterField>(filterFieldList, { text: options.key });
+  if (options) {
+    let filter = _.find<FilterField>(filterFieldList, { text: options.key });
+    if (filter === undefined) {
+      const savedFilters = await this.kentik.getSavedFilters();
+      filter = _.find(savedFilters, { text: options.key });
       if (filter === undefined) {
-        const savedFilters = await this.kentik.getSavedFilters();
-        filter = _.find(savedFilters, { text: options.key });
-        if (filter === undefined) {
-          const customDimensions = await this.kentik.getCustomDimensions();
-          const dimension: any = _.find(customDimensions, { text: options.key });
-          return dimension.values.map((value: any) => ({ text: value }));
-        } else {
-          return [{ text: 'include' }, { text: 'exclude' }];
-        }
+        const customDimensions = await this.kentik.getCustomDimensions();
+        const dimension: any = _.find(customDimensions, { text: options.key });
+        return dimension.values.map((value: any) => ({ text: value }));
       } else {
-        const field = filter.field;
-        const result = await this.kentik.getFieldValues(field);
-        return result.rows.map((row: any) => {
-          return { text: row[field].toString() };
-        });
+        return [{ text: 'include' }, { text: 'exclude' }];
       }
     } else {
-      return [];
+      const field = filter.field;
+      const result = await this.kentik.getFieldValues(field);
+      return result.rows.map((row: any) => {
+        return { text: row[field].toString() };
+      });
     }
+  } else {
+    return [];
   }
+}
 
   private async _getExtendedDimensionsList(list: any[]) {
-    const customDimensions = await this.kentik.getCustomDimensions();
-    return _.concat(list, customDimensions);
-  }
+  const customDimensions = await this.kentik.getCustomDimensions();
+  return _.concat(list, customDimensions);
+}
 
-  async testDatasource(): Promise<TestDataSourceResponse> {
-    // TODO: implement testing
-    return {
-      status: '',
-      message: ''
-    }
+  async testDatasource(): Promise < TestDataSourceResponse > {
+  // TODO: implement testing
+  return {
+    status: '',
+    message: ''
   }
+}
 }
