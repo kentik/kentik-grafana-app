@@ -393,7 +393,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
                 placeholder={state.tagValues[filterIdx] === undefined ? 'Loading...' : 'Select...'}
                 disabled={state.tagValues[filterIdx] === undefined}
                 value={filter.valueSegment}
-                options={state.tagValues[filterIdx]}
+                options={state.tagValues[filterIdx] ?? []}
                 width={20}
                 onChange={(option) => onFilterOptionSelect('valueSegment', option, filterIdx)}
               />
