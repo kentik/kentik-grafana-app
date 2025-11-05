@@ -10,7 +10,7 @@
     "sharedCrosshair": false,
     "panels": [
       {
-        "datasource": "kentik",
+        "datasource": {"type": "kentikconnectpro-datasource"},
         "id": 1,
         "links": [],
         "targets": [
@@ -22,7 +22,7 @@
             "refId": "A",
             "target": "",
             "unit": "$unit",
-            "datasource": "kentik"
+            "datasource": {"type": "kentikconnectpro-datasource"}
           }
         ],
         "title": "Kentik Network Flow Data",
@@ -103,7 +103,7 @@
         "timeShift": null
       },
       {
-        "datasource": "kentik",
+        "datasource": {"type": "kentikconnectpro-datasource"},
         "id": 2,
         "links": [],
         "targets": [
@@ -115,7 +115,7 @@
             "refId": "A",
             "target": "",
             "unit": "$unit",
-            "datasource": "kentik"
+            "datasource": {"type": "kentikconnectpro-datasource"}
           }
         ],
         "type": "table",
@@ -262,7 +262,7 @@
               "$__all"
             ]
           },
-          "datasource": "kentik",
+          "datasource": {"type": "kentikconnectpro-datasource"},
           "hide": 0,
           "includeAll": true,
           "label": "Devices",
@@ -275,7 +275,7 @@
         },
         {
           "current": {"value": "Traffic", "text": "Traffic"},
-          "datasource": "kentik",
+          "datasource": {"type": "kentikconnectpro-datasource"},
           "hide": 0,
           "includeAll": false,
           "label": "Group By",
@@ -288,7 +288,7 @@
         },
         {
           "current": {},
-          "datasource": "kentik",
+          "datasource": {"type": "kentikconnectpro-datasource"},
           "hide": 0,
           "includeAll": false,
           "label": "Metric",
@@ -302,7 +302,7 @@
         },
         {
   
-          "datasource": "kentik",
+          "datasource": {"type": "kentikconnectpro-datasource"},
           "filters": [],
           "hide": 0,
           "label": "",
