@@ -66,11 +66,11 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         // TODO: replace 'all' with null
         if (site && site !== 'all') {
           const filteredDevices = _.filter(deviceNames.split(','), (deviceName) => {
-            const device = _.find(allDevices, (d) => d.device_name === deviceName);
+            const device = _.find(allDevices, (d) => d.deviceName === deviceName);
             if (!device) {
               throw new Error(`Can't find device with name ${deviceName}`);
             }
-            return device.site.site_name === site;
+            return device.site.siteName === site;
           });
           deviceNames = filteredDevices.join(',');
         }
