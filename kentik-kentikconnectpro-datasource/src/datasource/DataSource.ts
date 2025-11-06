@@ -219,6 +219,10 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     return frame;
   }
 
+  private isAllSitesSelected(target: any) {
+    return target.sites.map((site: any) => site.label).includes('all');
+  }
+
   async metricFindQuery(query: any, target: any) {
     switch (query) {
       case 'metrics()': {
@@ -228,10 +232,10 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         return unitList;
       }
       case 'devices()': {
-        const site = this.templateSrv.replace(target.site);
         let devices = await this.kentik.getDevices();
-        if (target.site && target.site !== 'all') {
-          devices = _.filter(devices, (device) => device.site.siteName === site);
+        if (!_.isEmpty(target.sites) && !this.isAllSitesSelected(target)) {
+          const siteLabales = target.sites.map((site: any) => site.label);
+          devices = _.filter(devices, (device) => siteLabales.includes(device.site.siteName));
         }
         return devices.map((device: any) => {
           return { text: device.deviceName, value: device.deviceName };

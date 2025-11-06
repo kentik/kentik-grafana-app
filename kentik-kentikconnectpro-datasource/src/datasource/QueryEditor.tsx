@@ -1,6 +1,6 @@
 import { DataSource } from './DataSource';
-import { QueryEditorProps } from '@grafana/data';
-import { Stack, Input, Button, Field, Label, Combobox, ComboboxOption } from '@grafana/ui';
+import { QueryEditorProps, SelectableValue } from '@grafana/data';
+import { Stack, Input, Button, Field, Label, Combobox, ComboboxOption, MultiSelect } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
 import { DataQuery } from '@grafana/schema';
 import React, { useEffect, useState } from 'react';
@@ -8,7 +8,7 @@ import _ from 'lodash';
 
 export interface Query extends DataQuery {
   mode: DataMode;
-  site: string;
+  sites: SelectableValue[];
   device: string | null;
   metric: string;
   unit: string;
@@ -41,7 +41,7 @@ export enum ConjunctionOperator {
 
 export const DEFAULT_QUERY = {
   mode: DataMode.GRAPH,
-  site: null,
+  sites: null,
   device: null,
   metric: null,
   unit: null,
@@ -85,7 +85,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
   };
 
   const [state, setState] = useState({
-    sites: [] as Array<ComboboxOption<string>>,
+    sites: [] as Array<SelectableValue<string>>,
     devices: [] as Array<ComboboxOption<string>>,
     metrics: [] as Array<ComboboxOption<string>>,
     units: [] as Array<ComboboxOption<string>>,
@@ -120,7 +120,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     init();
     // eslint-disable-next-line
   }, []);
-  
+
   const variableExists = (variableName: string): boolean => {
     const templateSrv = getTemplateSrv();
     const variables = templateSrv.getVariables().map((variable) => `$${variable.name}`);
@@ -189,26 +189,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     // @ts-ignore
     query[field] = option.value;
     props.onChange(query);
-    if (field === 'site') {
-      query.device = null;
-      props.onChange(query);
-
-      setState({
-        ...state,
-        isDevicesLoading: true,
-        devices: [],
-      });
-
-      const devices = await fetchDevices(query);
-
-      setState({
-        ...state,
-        isDevicesLoading: false,
-        devices,
-      });
-    } else {
-      props.onRunQuery();
-    }
+    props.onRunQuery();
   };
 
   const onConjuctionOperatorSelect = (option: ComboboxOption<string>) => {
@@ -274,6 +255,27 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     props.onRunQuery();
   };
 
+  const onSitesSelect = async (value: SelectableValue<string>[]) => {
+    const query: Query = _.cloneDeep(props.query);
+    query['sites'] = value;
+    query.device = null;
+    props.onChange(query);
+
+    setState({
+      ...state,
+      isDevicesLoading: true,
+      devices: [],
+    });
+
+    const devices = await fetchDevices(query);
+
+    setState({
+      ...state,
+      isDevicesLoading: false,
+      devices,
+    });
+  }
+
   return (
     <Stack direction="column">
       <Stack direction="row">
@@ -291,13 +293,13 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
       </Stack>
       <Stack direction="row">
         <Field label="Site">
-          <Combobox
+          <MultiSelect
             placeholder={state.isLoading ? 'Loading...' : 'all'}
-            value={props.query.site}
+            value={props.query.sites || []}
             disabled={state.isLoading}
             options={state.isLoading ? [] : state.sites}
             width={20}
-            onChange={(option) => onOptionSelect('site', option)}
+            onChange={(value) => onSitesSelect(value)}
           />
         </Field>
         <Field label="Device">
