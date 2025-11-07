@@ -124,6 +124,7 @@ function buildTopXdataQuery(options: any) {
     filters_obj: formatFilters(options.kentikFilterGroups),
     saved_filters: options.kentikSavedFilters,
     hostname_lookup: options.hostnameLookup,
+    device_sites: options.siteNames?.split(',')
   };
 
   return query;

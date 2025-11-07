@@ -292,7 +292,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
         </Field>
       </Stack>
       <Stack direction="row">
-        <Field label="Site">
+        <Field label="Sites">
           <MultiSelect
             placeholder={state.isLoading ? 'Loading...' : 'all'}
             value={props.query.sites || []}
