@@ -49,16 +49,30 @@ describe('Kentik Query Builder', () => {
         unit: 'bytes',
         metric: 'src_geo_region',
         deviceNames: 'cat2_demo',
+        siteNames: 'site1,site2,site3',
         range: ctx.range,
         kentikFilterGroups: [],
       };
+    });
+
+    it('should build proper topXData query when all sites selected' , () => {
+      ctx.query_options.siteNames = 'all';
+      const topXDataQuery = queryBuilder.buildTopXdataQuery(ctx.query_options);
+      expect(topXDataQuery).toEqual(expect.objectContaining({ device_site: null }));
+    });
+
+    it('should build proper topXData query when no sites selected' , () => {
+      ctx.query_options.siteNames = null;
+      const topXDataQuery = queryBuilder.buildTopXdataQuery(ctx.query_options);
+      expect(topXDataQuery).toEqual(expect.objectContaining({ device_site: null }));
     });
 
     it('should build proper topXData query', (done) => {
       const expectedQuery = {
         metric: 'bytes',
         dimension: ['src_geo_region'],
-        device_name: 'cat2_demo',
+        device_name: ['cat2_demo'],
+        device_site: ['site1', 'site2', 'site3'],
         outsort: 'avg_both',
         time_format: 'UTC',
         ending_time: '1970-01-01 01:00:00',

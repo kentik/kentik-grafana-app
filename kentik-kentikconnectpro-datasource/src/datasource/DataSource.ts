@@ -60,7 +60,6 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
       async (target, i) => {
         _.defaults(target, DEFAULT_QUERY);
         const siteNames = target.sites?.map(site => site.label).toString();
-        const isAllSitesSelected = siteNames?.split(',').includes('all') || _.isNull(target.sites);
         const deviceNames = target.devices?.map(device => device.label).toString();
         this.templateSrv.replace(siteNames, options.scopedVars);
         this.templateSrv.replace(
@@ -105,7 +104,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           kentikFilterGroups: filters,
           kentikSavedFilters: kentikFilterGroups.savedFilters,
           hostnameLookup: this.templateSrv.replace(target.hostnameLookup),
-          siteNames: isAllSitesSelected ? null : siteNames.split(',')
+          siteNames: siteNames
         };
         const query = queryBuilder.buildTopXdataQuery(queryOptions);
 

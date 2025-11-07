@@ -104,6 +104,7 @@ function buildTopXdataQuery(options: any) {
   }
   const startingTime = options.range.from.utc().format(KENTIK_TIME_FORMAT);
   const endingTime = options.range.to.utc().format(KENTIK_TIME_FORMAT);
+  const isAllSitesSelected = options.siteNames?.split(',').includes('all') || _.isEmpty(options.siteNames);
 
   const query = {
     dimension: [options.metric],
@@ -124,7 +125,7 @@ function buildTopXdataQuery(options: any) {
     filters_obj: formatFilters(options.kentikFilterGroups),
     saved_filters: options.kentikSavedFilters,
     hostname_lookup: options.hostnameLookup,
-    device_site: options.siteNames
+    device_site: isAllSitesSelected ? null : options.siteNames.split(',')
   };
 
   return query;
