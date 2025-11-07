@@ -54,30 +54,20 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     const customDimensions = await this.kentik.getCustomDimensions();
     const savedFiltersList = await this.kentik.getSavedFilters();
     const kentikFilters: AdHocVariableFilter[] = options.filters || [];
-    const allDevices = await this.kentik.getDevices();
 
     const promises = _.map(
       _.filter(options.targets, (target) => !target.hide),
       async (target, i) => {
         _.defaults(target, DEFAULT_QUERY);
         const siteNames = target.sites?.map(site => site.label).toString();
-        const site = this.templateSrv.replace(siteNames, options.scopedVars);
-        let deviceNames = this.templateSrv.replace(
-          target.device || undefined,
+        const isAllSitesSelected = siteNames?.split(',').includes('all') || _.isNull(target.sites);
+        const deviceNames = target.devices?.map(device => device.label).toString();
+        this.templateSrv.replace(siteNames, options.scopedVars);
+        this.templateSrv.replace(
+          deviceNames || undefined,
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
         );
-        //TODO: replace 'all' with null
-        if (site && site !== 'all') {
-          const filteredDevices = _.filter(deviceNames.split(','), (deviceName) => {
-            const device = _.find(allDevices, (d) => d.deviceName === deviceName);
-            if (!device) {
-              throw new Error(`Can't find device with name ${deviceName}`);
-            }
-            return device.site.siteName === site;
-          });
-          deviceNames = filteredDevices.join(',');
-        }
 
         const queryCustomFilters = _.map(
           _.filter(
@@ -115,7 +105,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           kentikFilterGroups: filters,
           kentikSavedFilters: kentikFilterGroups.savedFilters,
           hostnameLookup: this.templateSrv.replace(target.hostnameLookup),
-          siteNames: siteNames,
+          siteNames: isAllSitesSelected ? null : siteNames.split(',')
         };
         const query = queryBuilder.buildTopXdataQuery(queryOptions);
 

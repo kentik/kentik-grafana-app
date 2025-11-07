@@ -118,13 +118,13 @@ function buildTopXdataQuery(options: any) {
     time_format: 'UTC',
     starting_time: startingTime,
     ending_time: endingTime,
-    device_name: options.deviceNames,
+    device_name: options.deviceNames?.split(','),
     outsort: unitDef!.outsort,
     aggregates: formatAggs(unitDef),
     filters_obj: formatFilters(options.kentikFilterGroups),
     saved_filters: options.kentikSavedFilters,
     hostname_lookup: options.hostnameLookup,
-    device_sites: options.siteNames?.split(',')
+    device_site: options.siteNames
   };
 
   return query;

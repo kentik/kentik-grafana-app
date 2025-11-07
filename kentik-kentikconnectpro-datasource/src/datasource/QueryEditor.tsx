@@ -9,7 +9,7 @@ import _ from 'lodash';
 export interface Query extends DataQuery {
   mode: DataMode;
   sites: SelectableValue[];
-  device: string | null;
+  devices: SelectableValue[];
   metric: string;
   unit: string;
   hostnameLookup: string;
@@ -42,7 +42,7 @@ export enum ConjunctionOperator {
 export const DEFAULT_QUERY = {
   mode: DataMode.GRAPH,
   sites: null,
-  device: null,
+  devices: null,
   metric: null,
   unit: null,
   hostnameLookup: null,
@@ -86,7 +86,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
 
   const [state, setState] = useState({
     sites: [] as Array<SelectableValue<string>>,
-    devices: [] as Array<ComboboxOption<string>>,
+    devices: [] as Array<SelectableValue<string>>,
     metrics: [] as Array<ComboboxOption<string>>,
     units: [] as Array<ComboboxOption<string>>,
     tagKeys: [] as Array<ComboboxOption<string>>,
@@ -192,6 +192,13 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     props.onRunQuery();
   };
 
+  const onDeviceSelect = (value: SelectableValue[]) => {
+    const query: Query = _.cloneDeep(props.query);
+    // @ts-ignore
+    query['devices'] = value;
+    props.onChange(query);
+  }
+
   const onConjuctionOperatorSelect = (option: ComboboxOption<string>) => {
     if (_.isNil(option.value)) {
       return;
@@ -258,7 +265,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
   const onSitesSelect = async (value: SelectableValue<string>[]) => {
     const query: Query = _.cloneDeep(props.query);
     query['sites'] = value;
-    query.device = null;
+    query.devices = [];
     props.onChange(query);
 
     setState({
@@ -302,14 +309,14 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
             onChange={(value) => onSitesSelect(value)}
           />
         </Field>
-        <Field label="Device">
-          <Combobox
+        <Field label="Devices">
+          <MultiSelect
             placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
             disabled={state.isLoading}
-            value={props.query.device}
+            value={props.query.devices || []}
             options={state.devices}
             width={20}
-            onChange={(option) => onOptionSelect('device', option)}
+            onChange={(value) => onDeviceSelect(value)}
           />
         </Field>
       </Stack>
