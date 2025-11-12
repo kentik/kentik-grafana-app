@@ -17,11 +17,11 @@
           {
             "devices": "$devices",
             "hostnameLookup": "$dns_lookup",
-            "metric": "$metric",
+            "dimension": "$dimension",
             "mode": "graph",
             "refId": "A",
             "target": "",
-            "unit": "$unit",
+            "metric": "$metric",
             "datasource": {"type": "kentikconnectpro-datasource"}
           }
         ],
@@ -110,11 +110,11 @@
           {
             "devices": "$devices",
             "hostnameLookup": "$dns_lookup",
-            "metric": "$metric",
+            "dimension": "$dimension",
             "mode": "table",
             "refId": "A",
             "target": "",
-            "unit": "$unit",
+            "metric": "$metric",
             "datasource": {"type": "kentikconnectpro-datasource"}
           }
         ],
@@ -280,9 +280,9 @@
           "includeAll": false,
           "label": "Group By",
           "multi": false,
-          "name": "metric",
+          "name": "dimension",
           "options": [],
-          "query": "metrics()",
+          "query": "dimensions()",
           "refresh": 1,
           "type": "query"
         },
@@ -293,9 +293,9 @@
           "includeAll": false,
           "label": "Metric",
           "multi": false,
-          "name": "unit",
+          "name": "metric",
           "options": [],
-          "query": "units()",
+          "query": "metrics()",
           "refresh": 1,
           "regex": "",
           "type": "query"

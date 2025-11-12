@@ -61,12 +61,15 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         _.defaults(target, DEFAULT_QUERY);
         const siteNames = target.sites?.map(site => site.label).toString();
         this.templateSrv.replace(siteNames, options.scopedVars);
+        
         const deviceNames = this.templateSrv.replace(
           //@ts-ignore
-          target.devices || undefined,
+          target.devices,
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
         );
+
+        
 
         const queryCustomFilters = _.map(
           _.filter(
@@ -94,7 +97,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         );
         const filters = [...kentikFilterGroups.kentikFilters, ...queryCustomFilterGroups.kentikFilters];
         const queryOptions = {
-          deviceNames: deviceNames,
+          deviceNames: _.isArray(deviceNames) ? deviceNames.map((device) => device.label).toString() : deviceNames,
           range: {
             from: options.range.from,
             to: options.range.to,
