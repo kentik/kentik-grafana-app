@@ -1,5 +1,5 @@
 import queryBuilder from './query_builder';
-import { dimensionList, unitList, filterFieldList, Dimension, Unit, FilterField } from './metric_def';
+import { dimensionList, metricList, filterFieldList, Dimension, Metric, FilterField } from './metric_def';
 import { KentikAPI } from './kentik_api';
 import { KentikProxy } from './kentik_proxy';
 import { DataSourceApi, DataFrame, MutableDataFrame, AdHocVariableFilter, FieldType, DataQueryRequest, DataQueryResponse, TestDataSourceResponse } from '@grafana/data';
@@ -100,7 +100,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
             to: options.range.to,
           },
           dimension: this.templateSrv.replace(target.dimension),
-          unit: this.templateSrv.replace(target.unit),
+          metric: this.templateSrv.replace(target.metric),
           kentikFilterGroups: filters,
           kentikSavedFilters: kentikFilterGroups.savedFilters,
           hostnameLookup: this.templateSrv.replace(target.hostnameLookup),
@@ -136,14 +136,14 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
       throw new Error('Query error: Dimension field is required');
     }
 
-    const unitDef = _.find(unitList, { value: query.metric });
+    const metricDef = _.find(metricList, { value: query.metric });
 
-    if (!unitDef) {
-      throw new Error('Query error: Unit field is required');
+    if (!metricDef) {
+      throw new Error('Query error: Metric field is required');
     }
 
     if (mode === 'table') {
-      return this.processTableData(bucketData, dimensionDef, unitDef);
+      return this.processTableData(bucketData, dimensionDef, metricDef);
     } else {
       return this.processTimeSeries(bucketData, query, target);
     }
@@ -179,15 +179,18 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     return seriesList;
   }
 
-  processTableData(bucketData: any[], dimensionDef: any, unitDef: any): DataFrame {
+  processTableData(bucketData: any[], dimensionDef: any, metricDef: any): DataFrame {
+
+    console.log(metricDef.tableFields);
+    console.log(bucketData);
     const frame = new MutableDataFrame({
       name: dimensionDef.text,
       fields: [
         { name: dimensionDef.text, type: FieldType.string },
-        ...unitDef.tableFields.map((col: any) => ({
+        ...metricDef.tableFields.map((col: any) => ({
           name: col.text,
           type: FieldType.number,
-          config: { unit: col.unit },
+          config: { unit: col.metric },
         })),
       ],
     });
@@ -196,7 +199,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
       const seriesName = row.key;
       const values = [seriesName];
 
-      for (const col of unitDef.tableFields) {
+      for (const col of metricDef.tableFields) {
         let val = row[col.field];
         if (_.isString(val)) {
           val = parseFloat(val);
@@ -219,8 +222,8 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
       case 'dimensions()': {
         return this._getExtendedDimensionList(dimensionList);
       }
-      case 'units()': {
-        return unitList;
+      case 'metrics()': {
+        return metricList;
       }
       case 'devices()': {
         let devices = await this.kentik.getDevices();
@@ -256,16 +259,16 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     return dimension;
   }
 
-  findUnit(query: { text?: string; value?: string }): Unit | null {
+  findMetric(query: { text?: string; value?: string }): Metric | null {
     if (query.text === undefined && query.value === undefined) {
       throw new Error('At least one of text / value must be defined');
     }
-    const unit = _.find<Unit>(unitList, query);
-    if (unit === undefined) {
+    const metric = _.find<Metric>(metricList, query);
+    if (metric === undefined) {
       return null;
     }
 
-    return unit;
+    return metric;
   }
 
   async getTagKeys() {

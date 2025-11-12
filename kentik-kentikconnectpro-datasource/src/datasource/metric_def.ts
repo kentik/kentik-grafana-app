@@ -1,7 +1,7 @@
 
 export type TransformFunction = (value: number, row: any, rangeSeconds: number) => number;
 export type Dimension = { text: string; value: string; field: string };
-export type Unit = {
+export type Metric = {
   text: string;
   value: string;
   field: string;
@@ -9,7 +9,7 @@ export type Unit = {
   gfUnit: string;
   gfAxisLabel: string;
   transform?: TransformFunction;
-  tableFields: Array<{ text: string; field: string; unit: string; transform?: TransformFunction }>;
+  tableFields: Array<{ text: string; field: string; metric: string; transform?: TransformFunction }>;
 };
 export type FilterField = { text: string; field: string; unequatable?: boolean };
 
@@ -81,7 +81,7 @@ function totalToBitsPerSecond(value: number, row: any, rangeSeconds: number): nu
   return (value * 8) / rangeSeconds;
 }
 
-export const unitList: Unit[] = [
+export const metricList: Metric[] = [
   {
     text: 'Bits/s',
     value: 'bytes',
@@ -91,9 +91,9 @@ export const unitList: Unit[] = [
     gfAxisLabel: 'Bits/s',
     transform: toBitsPerSecond,
     tableFields: [
-      { text: 'Avg', field: 'avg_both', unit: 'bps', transform: totalToBitsPerSecond },
-      { text: '95th Percentile', field: 'p95th_both', unit: 'bps' },
-      { text: 'Max', field: 'max_both', unit: 'bps' },
+      { text: 'Avg', field: 'avg_both', metric: 'bps', transform: totalToBitsPerSecond },
+      { text: '95th Percentile', field: 'p95th_both', metric: 'bps' },
+      { text: 'Max', field: 'max_both', metric: 'bps' },
     ],
   },
   {
@@ -105,9 +105,9 @@ export const unitList: Unit[] = [
     gfAxisLabel: 'Packets/s',
     transform: toPerSecondRate,
     tableFields: [
-      { text: 'Avg', field: 'avg_both', unit: 'pps', transform: totalToAvgPerSecond },
-      { text: '95th Percentile', field: 'p95th_both', unit: 'pps' },
-      { text: 'Max', field: 'max_both', unit: 'pps' },
+      { text: 'Avg', field: 'avg_both', metric: 'pps', transform: totalToAvgPerSecond },
+      { text: '95th Percentile', field: 'p95th_both', metric: 'pps' },
+      { text: 'Max', field: 'max_both', metric: 'pps' },
     ],
   },
   {
@@ -118,11 +118,11 @@ export const unitList: Unit[] = [
     gfUnit: 'short',
     gfAxisLabel: 'Unique Src IPs',
     tableFields: [
-      { text: 'Average', field: 'avg_ips', unit: 'none' },
-      { text: 'p95th', field: 'p95th_ips', unit: 'none' },
-      { text: 'Max', field: 'max_ips', unit: 'none' },
-      { text: 'p95th mbps', field: 'p95th_bits_per_sec', unit: 'bps' },
-      { text: 'p95th pps', field: 'p95th_pkts_per_sec', unit: 'pps' },
+      { text: 'Average', field: 'avg_ips', metric: 'none' },
+      { text: 'p95th', field: 'p95th_ips', metric: 'none' },
+      { text: 'Max', field: 'max_ips', metric: 'none' },
+      { text: 'p95th mbps', field: 'p95th_bits_per_sec', metric: 'bps' },
+      { text: 'p95th pps', field: 'p95th_pkts_per_sec', metric: 'pps' },
     ],
   },
   {
@@ -133,11 +133,11 @@ export const unitList: Unit[] = [
     gfUnit: 'short',
     gfAxisLabel: 'Unique Dst IPs',
     tableFields: [
-      { text: 'Average', field: 'avg_ips', unit: 'none' },
-      { text: 'p95th', field: 'p95th_ips', unit: 'none' },
-      { text: 'Max', field: 'max_ips', unit: 'none' },
-      { text: 'p95th mbps', field: 'p95th_bits_per_sec', unit: 'bps' },
-      { text: 'p95th pps', field: 'p95th_pkts_per_sec', unit: 'pps' },
+      { text: 'Average', field: 'avg_ips', metric: 'none' },
+      { text: 'p95th', field: 'p95th_ips', metric: 'none' },
+      { text: 'Max', field: 'max_ips', metric: 'none' },
+      { text: 'p95th mbps', field: 'p95th_bits_per_sec', metric: 'bps' },
+      { text: 'p95th pps', field: 'p95th_pkts_per_sec', metric: 'pps' },
     ],
   },
 ];

@@ -11,7 +11,7 @@ export interface Query extends DataQuery {
   sites: SelectableValue[];
   devices: SelectableValue[];
   dimension: string;
-  unit: string;
+  metric: string;
   hostnameLookup: string;
   prefix: string;
   customFilters: CustomFilter[];
@@ -44,7 +44,7 @@ export const DEFAULT_QUERY = {
   sites: null,
   devices: null,
   dimension: null,
-  unit: null,
+  metric: null,
   hostnameLookup: null,
   prefix: '',
   customFilters: [],
@@ -88,7 +88,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     sites: [] as Array<SelectableValue<string>>,
     devices: [] as Array<SelectableValue<string>>,
     dimensions: [] as Array<ComboboxOption<string>>,
-    units: [] as Array<ComboboxOption<string>>,
+    metrics: [] as Array<ComboboxOption<string>>,
     tagKeys: [] as Array<ComboboxOption<string>>,
     tagValues: [] as Array<Array<ComboboxOption<string>>>,
     operators: getOperators(),
@@ -98,11 +98,11 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
 
   useEffect(() => {
     const init = async () => {
-      const [sites, devices, dimensions, units, tagKeys] = await Promise.all([
+      const [sites, devices, dimensions, metrics, tagKeys] = await Promise.all([
         fetchSites(),
         fetchDevices(),
         fetchDimensions(),
-        fetchUnits(),
+        fetchMetrics(),
         fetchTagKeys(),
       ]);
 
@@ -111,7 +111,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
         sites,
         devices,
         dimensions,
-        units,
+        metrics,
         tagKeys,
         isLoading: false,
         isDevicesLoading: false,
@@ -152,11 +152,11 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
   };
 
   const fetchDimensions = async (): Promise<Array<ComboboxOption<string>>> => {
-    return getOptions('dimensions()', '$dimensions');
+    return getOptions('dimensions()', '$dimension');
   };
 
-  const fetchUnits = async (): Promise<Array<ComboboxOption<string>>> => {
-    return getOptions('units()', '$unit');
+  const fetchMetrics = async (): Promise<Array<ComboboxOption<string>>> => {
+    return getOptions('metrics()', '$metric');
   };
 
   const getFormattedVariables = (): QueryItem[] => {
@@ -331,14 +331,14 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
             onChange={(option) => onOptionSelect('dimension', option)}
           />
         </Field>
-        <Field label="Unit">
+        <Field label="Metric">
           <Combobox
             placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
             disabled={state.isLoading}
-            value={props.query.unit}
-            options={state.units}
+            value={props.query.metric}
+            options={state.metrics}
             width={20}
-            onChange={(option) => onOptionSelect('unit', option)}
+            onChange={(option) => onOptionSelect('metric', option)}
           />
         </Field>
       </Stack>

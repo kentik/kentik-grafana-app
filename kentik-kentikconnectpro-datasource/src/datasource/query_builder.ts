@@ -1,28 +1,28 @@
-import { unitList, filterFieldList, Unit, FilterField } from './metric_def';
+import { metricList, filterFieldList, Metric, FilterField } from './metric_def';
 
 import * as _ from 'lodash';
 
 const KENTIK_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 
-function formatMetricAggs(unitDef: any) {
+function formatMetricAggs(metricDef: any) {
   const aggs = [
     {
       name: 'avg_both',
-      column: unitDef.field,
+      column: metricDef.field,
       fn: 'average',
       raw: true, // Set to get timeseries data
       sample_rate: 1,
     },
     {
       name: 'p95th_both',
-      column: unitDef.field,
+      column: metricDef.field,
       fn: 'percentile',
       rank: 95,
       sample_rate: 1,
     },
     {
       name: 'max_both',
-      column: unitDef.field,
+      column: metricDef.field,
       fn: 'max',
       sample_rate: 1,
     },
@@ -31,25 +31,25 @@ function formatMetricAggs(unitDef: any) {
   return aggs;
 }
 
-function formatUniqueIpAggs(unitDef: any) {
+function formatUniqueIpAggs(metricDef: any) {
   const aggs = [
     {
       name: 'avg_ips',
-      column: unitDef.field,
+      column: metricDef.field,
       fn: 'average',
       raw: true,
       sample_rate: 1,
     },
     {
       name: 'p95th_ips',
-      column: unitDef.field,
+      column: metricDef.field,
       fn: 'percentile',
       rank: 95,
       sample_rate: 1,
     },
     {
       name: 'max_ips',
-      column: unitDef.field,
+      column: metricDef.field,
       fn: 'max',
       sample_rate: 1,
       raw: true,
@@ -73,12 +73,12 @@ function formatUniqueIpAggs(unitDef: any) {
   return aggs;
 }
 
-function formatAggs(unitDef: any) {
+function formatAggs(metricDef: any) {
   let aggs: any[] = [];
-  if (unitDef.value === 'unique_src_ip' || unitDef.value === 'unique_dst_ip') {
-    aggs = formatUniqueIpAggs(unitDef);
+  if (metricDef.value === 'unique_src_ip' || metricDef.value === 'unique_dst_ip') {
+    aggs = formatUniqueIpAggs(metricDef);
   } else {
-    aggs = formatMetricAggs(unitDef);
+    aggs = formatMetricAggs(metricDef);
   }
 
   return aggs;
@@ -98,9 +98,9 @@ function formatFilters(kentikFilterGroups: any[]) {
 }
 
 function buildTopXdataQuery(options: any) {
-  const unitDef = _.find<Unit>(unitList, { value: options.unit });
-  if (!unitDef) {
-    throw new Error('Query error: Unit field is required');
+  const metricDef = _.find<Metric>(metricList, { value: options.metric });
+  if (!metricDef) {
+    throw new Error('Query error: Metric field is required');
   }
   const startingTime = options.range.from.utc().format(KENTIK_TIME_FORMAT);
   const endingTime = options.range.to.utc().format(KENTIK_TIME_FORMAT);
@@ -108,7 +108,7 @@ function buildTopXdataQuery(options: any) {
 
   const query = {
     dimension: [options.dimension],
-    metric: options.unit,
+    metric: options.metric,
     matrixBy: [],
     cidr: 32,
     cidr6: 128,
@@ -120,8 +120,8 @@ function buildTopXdataQuery(options: any) {
     starting_time: startingTime,
     ending_time: endingTime,
     device_name: options.deviceNames?.split(','),
-    outsort: unitDef!.outsort,
-    aggregates: formatAggs(unitDef),
+    outsort: metricDef!.outsort,
+    aggregates: formatAggs(metricDef),
     filters_obj: formatFilters(options.kentikFilterGroups),
     saved_filters: options.kentikSavedFilters,
     hostname_lookup: options.hostnameLookup,

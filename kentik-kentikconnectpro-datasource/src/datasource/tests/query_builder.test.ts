@@ -46,7 +46,7 @@ describe('Kentik Query Builder', () => {
   describe('When building topXData query', () => {
     beforeEach(() => {
       ctx.query_options = {
-        unit: 'bytes',
+        metric: 'bytes',
         dimension: 'src_geo_region',
         deviceNames: 'cat2_demo',
         siteNames: 'site1,site2,site3',
@@ -118,7 +118,7 @@ describe('Kentik Query Builder', () => {
     });
 
     it('should build proper Bits/s query', (done) => {
-      ctx.query_options.unit = 'bytes';
+      ctx.query_options.metric = 'bytes';
 
       const expectedQuery = {
         dimension: ['src_geo_region'],
@@ -153,7 +153,7 @@ describe('Kentik Query Builder', () => {
     });
 
     it('should build proper Packets/s query', (done) => {
-      ctx.query_options.unit = 'packets';
+      ctx.query_options.metric = 'packets';
 
       const expectedQuery = {
         dimension: ['src_geo_region'],
@@ -188,7 +188,7 @@ describe('Kentik Query Builder', () => {
     });
 
     it('should build proper Unique Src IPs query', (done) => {
-      ctx.query_options.unit = 'unique_src_ip';
+      ctx.query_options.metric = 'unique_src_ip';
 
       const expectedQuery = {
         metric: 'unique_src_ip',
@@ -239,7 +239,7 @@ describe('Kentik Query Builder', () => {
     });
 
     it('should build proper Unique Dst IPs query', (done) => {
-      ctx.query_options.unit = 'unique_dst_ip';
+      ctx.query_options.metric = 'unique_dst_ip';
 
       const expectedQuery = {
         metric: 'unique_dst_ip',
