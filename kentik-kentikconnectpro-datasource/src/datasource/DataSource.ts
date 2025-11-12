@@ -60,10 +60,10 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
       async (target, i) => {
         _.defaults(target, DEFAULT_QUERY);
         const siteNames = target.sites?.map(site => site.label).toString();
-        const deviceNames = target.devices?.map(device => device.label).toString();
         this.templateSrv.replace(siteNames, options.scopedVars);
-        this.templateSrv.replace(
-          deviceNames || undefined,
+        const deviceNames = this.templateSrv.replace(
+          //@ts-ignore
+          target.devices || undefined,
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
         );

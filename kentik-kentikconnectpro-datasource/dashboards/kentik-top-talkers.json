@@ -15,7 +15,7 @@
         "links": [],
         "targets": [
           {
-            "device": "$device",
+            "devices": "$devices",
             "hostnameLookup": "$dns_lookup",
             "metric": "$metric",
             "mode": "graph",
@@ -108,7 +108,7 @@
         "links": [],
         "targets": [
           {
-            "device": "$device",
+            "devices": "$devices",
             "hostnameLookup": "$dns_lookup",
             "metric": "$metric",
             "mode": "table",
@@ -267,7 +267,7 @@
           "includeAll": true,
           "label": "Devices",
           "multi": true,
-          "name": "device",
+          "name": "devices",
           "options": [],
           "query": "devices()",
           "refresh": 1,
