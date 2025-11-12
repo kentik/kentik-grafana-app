@@ -107,7 +107,7 @@ function buildTopXdataQuery(options: any) {
   const isAllSitesSelected = options.siteNames?.split(',').includes('all') || _.isEmpty(options.siteNames);
 
   const query = {
-    dimension: [options.metric],
+    dimension: [options.dimension],
     metric: options.unit,
     matrixBy: [],
     cidr: 32,

@@ -1,5 +1,5 @@
 import queryBuilder from './query_builder';
-import { metricList, unitList, filterFieldList, Metric, Unit, FilterField } from './metric_def';
+import { dimensionList, unitList, filterFieldList, Dimension, Unit, FilterField } from './metric_def';
 import { KentikAPI } from './kentik_api';
 import { KentikProxy } from './kentik_proxy';
 import { DataSourceApi, DataFrame, MutableDataFrame, AdHocVariableFilter, FieldType, DataQueryRequest, DataQueryResponse, TestDataSourceResponse } from '@grafana/data';
@@ -99,7 +99,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
             from: options.range.from,
             to: options.range.to,
           },
-          metric: this.templateSrv.replace(target.metric),
+          dimension: this.templateSrv.replace(target.dimension),
           unit: this.templateSrv.replace(target.unit),
           kentikFilterGroups: filters,
           kentikSavedFilters: kentikFilterGroups.savedFilters,
@@ -129,11 +129,11 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
       return [];
     }
 
-    const extendedMetricList = await this._getExtendedDimensionsList(metricList);
-    const metricDef = _.find(extendedMetricList, { value: query.dimension[0] });
+    const extendedDimensionsList = await this._getExtendedDimensionList(dimensionList);
+    const dimensionDef = _.find(extendedDimensionsList, { value: query.dimension[0] });
 
-    if (!metricDef) {
-      throw new Error('Query error: Metric field is required');
+    if (!dimensionDef) {
+      throw new Error('Query error: Dimension field is required');
     }
 
     const unitDef = _.find(unitList, { value: query.metric });
@@ -143,7 +143,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     }
 
     if (mode === 'table') {
-      return this.processTableData(bucketData, metricDef, unitDef);
+      return this.processTableData(bucketData, dimensionDef, unitDef);
     } else {
       return this.processTimeSeries(bucketData, query, target);
     }
@@ -179,11 +179,11 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     return seriesList;
   }
 
-  processTableData(bucketData: any[], metricDef: any, unitDef: any): DataFrame {
+  processTableData(bucketData: any[], dimensionDef: any, unitDef: any): DataFrame {
     const frame = new MutableDataFrame({
-      name: metricDef.text,
+      name: dimensionDef.text,
       fields: [
-        { name: metricDef.text, type: FieldType.string },
+        { name: dimensionDef.text, type: FieldType.string },
         ...unitDef.tableFields.map((col: any) => ({
           name: col.text,
           type: FieldType.number,
@@ -216,8 +216,8 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
 
   async metricFindQuery(query: any, target: any) {
     switch (query) {
-      case 'metrics()': {
-        return this._getExtendedDimensionsList(metricList);
+      case 'dimensions()': {
+        return this._getExtendedDimensionList(dimensionList);
       }
       case 'units()': {
         return unitList;
@@ -244,16 +244,16 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     }
   }
 
-  findMetric(query: { text?: string; value?: string }): Metric | null {
+  findDimension(query: { text?: string; value?: string }): Dimension | null {
     if (query.text === undefined && query.value === undefined) {
       throw new Error('At least one of text / value must be defined');
     }
-    const metric = _.find<Metric>(metricList, query);
-    if (metric === undefined) {
+    const dimension = _.find<Dimension>(dimensionList, query);
+    if (dimension === undefined) {
       return null;
     }
 
-    return metric;
+    return dimension;
   }
 
   findUnit(query: { text?: string; value?: string }): Unit | null {
@@ -269,7 +269,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   }
 
   async getTagKeys() {
-    const initialList = await this._getExtendedDimensionsList(filterFieldList);
+    const initialList = await this._getExtendedDimensionList(filterFieldList);
     const savedFilters = await this.kentik.getSavedFilters();
     return _.concat(initialList, savedFilters);
   }
@@ -299,7 +299,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     }
   }
 
-  private async _getExtendedDimensionsList(list: any[]) {
+  private async _getExtendedDimensionList(list: any[]) {
     const customDimensions = await this.kentik.getCustomDimensions();
     return _.concat(list, customDimensions);
   }

@@ -1,5 +1,6 @@
+
 export type TransformFunction = (value: number, row: any, rangeSeconds: number) => number;
-export type Metric = { text: string; value: string; field: string };
+export type Dimension = { text: string; value: string; field: string };
 export type Unit = {
   text: string;
   value: string;
@@ -12,7 +13,7 @@ export type Unit = {
 };
 export type FilterField = { text: string; field: string; unequatable?: boolean };
 
-export const metricList: Metric[] = [
+export const dimensionList: Dimension[] = [
   { text: 'Traffic', value: 'Traffic', field: 'traffic' },
   { text: 'TopFlow', value: 'TopFlow', field: 'TopFlow' },
   { text: 'Top flow IP', value: 'TopFlowsIP', field: 'TopFlowsIP' },
