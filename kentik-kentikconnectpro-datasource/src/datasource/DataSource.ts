@@ -158,34 +158,55 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     if (bucketData.length < endIndex) {
       endIndex = bucketData.length;
     }
-
+  
     for (let i = 0; i < endIndex; i++) {
       const series = bucketData[i];
       const timeseries = _.find(series.timeSeries, (serie) => {
         return serie.flow && serie.flow.length;
       });
-
-      const prefix = target.prefix ? `${target.prefix} ` : '';
-      const seriesName = `${this.templateSrv.replace(prefix)}${series.key}`;
-
+  
       if (timeseries) {
+        const seriesName = this.applyAliasPattern(series, query, target);
+  
         const grafanaSeries = {
           target: seriesName,
-          datapoints: _.map(timeseries.flow, (point) => {
-            return [point[1], point[0]];
-          }),
+          datapoints: _.map(timeseries.flow, (point) => [point[1], point[0]]),
         };
+  
         seriesList.push(grafanaSeries);
       }
     }
-
+  
     return seriesList;
+  }
+  
+  applyAliasPattern(series: any, query: any, target: any): string {
+    const aliasBy = target.aliasBy;
+    const prefix = target.prefix ? `${target.prefix} ` : '';
+  
+    if (!aliasBy) {
+      return `${this.templateSrv.replace(prefix)}${series.key}`;
+    }
+  
+    let alias = aliasBy;
+  
+    const tagPattern = /\$tag\*([A-Za-z0-9_]+)/g;
+    alias = alias.replace(tagPattern, (match: any, tagName: string) => {
+      const value = series[tagName];
+      return value !== undefined ? value : `{${tagName}}`;
+    });
+  
+    alias = this.templateSrv.replace(`${prefix}${alias}${series.key}`);
+  
+    if (!alias.trim()) {
+      alias = series.key;
+    }
+  
+    return alias;
   }
 
   processTableData(bucketData: any[], dimensionDef: any, metricDef: any): DataFrame {
-
-    console.log(metricDef.tableFields);
-    console.log(bucketData);
+    console.log(dimensionDef);
     const frame = new MutableDataFrame({
       name: dimensionDef.text,
       fields: [

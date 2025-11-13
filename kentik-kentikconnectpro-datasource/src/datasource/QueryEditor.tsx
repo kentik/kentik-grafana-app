@@ -17,6 +17,7 @@ export interface Query extends DataQuery {
   customFilters: CustomFilter[];
   // TODO: enum
   conjunctionOperator: ConjunctionOperator;
+  aliasBy: string;
 }
 
 type Options = {};
@@ -49,6 +50,7 @@ export const DEFAULT_QUERY = {
   prefix: '',
   customFilters: [],
   conjunctionOperator: ConjunctionOperator.AND,
+  aliasBy: '',
 };
 
 export type QueryItem = {
@@ -358,6 +360,18 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
             width={20}
             value={props.query.prefix}
             onChange={(e) => props.onChange({ ...props.query, prefix: e.currentTarget.value })}
+            onBlur={props.onRunQuery}
+            placeholder='Type...'
+          />
+        </Field>
+      </Stack>
+      <Stack direction="row">
+        <Field label="Alias by">
+          <Input
+            type="text"
+            width={20}
+            value={props.query.aliasBy}
+            onChange={(e) => props.onChange({ ...props.query, aliasBy: e.currentTarget.value })}
             onBlur={props.onRunQuery}
             placeholder='Type...'
           />
