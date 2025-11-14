@@ -10,7 +10,7 @@ export interface Query extends DataQuery {
   mode: DataMode;
   sites: SelectableValue[];
   devices: SelectableValue[];
-  dimension: string;
+  dimension: SelectableValue[];
   metric: string;
   hostnameLookup: string;
   prefix: string;
@@ -73,6 +73,8 @@ const HOSTNAME_LOOKUP_CHOICES = [
   { value: 'disabled', text: 'Disabled' },
 ];
 
+const MAX_DIMENSIONS = 8;
+
 export const QueryEditor: React.FC<Props> = (props: Props) => {
   _.defaults(props.query, DEFAULT_QUERY);
 
@@ -89,7 +91,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
   const [state, setState] = useState({
     sites: [] as Array<SelectableValue<string>>,
     devices: [] as Array<SelectableValue<string>>,
-    dimensions: [] as Array<ComboboxOption<string>>,
+    dimensions: [] as Array<SelectableValue<string>>,
     metrics: [] as Array<ComboboxOption<string>>,
     tagKeys: [] as Array<ComboboxOption<string>>,
     tagValues: [] as Array<Array<ComboboxOption<string>>>,
@@ -199,6 +201,19 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     // @ts-ignore
     query['devices'] = value;
     props.onChange(query);
+  }
+
+  const onDimenstionSelect = (value: SelectableValue[]) => {
+    const query: Query = _.cloneDeep(props.query);
+    // @ts-ignore
+    query['dimension'] = value;
+    props.onChange(query);
+    const dimensionLimitReached = query.dimension?.length >= MAX_DIMENSIONS;
+    setState({
+      ...state,
+      dimensions: state.dimensions.map((dimension: SelectableValue) => ({...dimension, isDisabled: dimensionLimitReached})),
+    });
+    props.onRunQuery();
   }
 
   const onConjuctionOperatorSelect = (option: ComboboxOption<string>) => {
@@ -323,15 +338,18 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
         </Field>
       </Stack>
       <Stack direction="row">
-        <Field label="Dimension">
-          <Combobox
-            placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
-            disabled={state.isLoading}
-            value={props.query.dimension}
-            options={state.dimensions}
-            width={20}
-            onChange={(option) => onOptionSelect('dimension', option)}
-          />
+        <Field label="Dimensions">
+          <>
+            <MultiSelect
+              placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
+              disabled={state.isLoading}
+              value={props.query.dimension}
+              options={state.dimensions}
+              width={20}
+              onChange={(value) => onDimenstionSelect(value)}
+            />
+            {props.query.dimension?.length >= MAX_DIMENSIONS && <div style={{width: '150px'}}>Max {MAX_DIMENSIONS} dimensions allowed.</div>}
+          </>
         </Field>
         <Field label="Metric">
           <Combobox

@@ -286,7 +286,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         const res = sites.map((site: any) => {
           return { text: site.title, value: site.title };
         });
-        return [{ text: 'all', value: null }, ...res];
+        return [{ text: 'All', value: null }, ...res];
       }
       default:
         throw new Error(`Unknown query type: ${query}`);

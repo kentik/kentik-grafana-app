@@ -1,3 +1,4 @@
+import { SelectableValue } from '@grafana/data';
 import { metricList, filterFieldList, Metric, FilterField } from './metric_def';
 
 import * as _ from 'lodash';
@@ -104,10 +105,10 @@ function buildTopXdataQuery(options: any) {
   }
   const startingTime = options.range.from.utc().format(KENTIK_TIME_FORMAT);
   const endingTime = options.range.to.utc().format(KENTIK_TIME_FORMAT);
-  const isAllSitesSelected = options.siteNames?.split(',').includes('all') || _.isEmpty(options.siteNames);
+  const isAllSitesSelected = options.siteNames?.split(',').includes('All') || _.isEmpty(options.siteNames);
 
   const query = {
-    dimension: [options.dimension],
+    dimension: options.dimension.map((dimension: SelectableValue) => dimension.value),
     metric: options.metric,
     matrixBy: [],
     cidr: 32,
