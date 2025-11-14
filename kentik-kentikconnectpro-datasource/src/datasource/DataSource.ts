@@ -61,16 +61,12 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         _.defaults(target, DEFAULT_QUERY);
         const siteNames = target.sites?.map(site => site.label).toString();
         this.templateSrv.replace(siteNames, options.scopedVars);
-        
         const deviceNames = this.templateSrv.replace(
           //@ts-ignore
           target.devices,
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
         );
-
-        
-
         const queryCustomFilters = _.map(
           _.filter(
             target.customFilters,
@@ -96,13 +92,15 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           savedFiltersList
         );
         const filters = [...kentikFilterGroups.kentikFilters, ...queryCustomFilterGroups.kentikFilters];
+        //@ts-ignore
+        const dimension = this.templateSrv.replace(target.dimension);
         const queryOptions = {
           deviceNames: _.isArray(deviceNames) ? deviceNames.map((device) => device.label).toString() : deviceNames,
           range: {
             from: options.range.from,
             to: options.range.to,
           },
-          dimension: this.templateSrv.replace(target.dimension),
+          dimension: _.isArray(dimension) ? dimension.map((dimension) => dimension.value).toString() : dimension,
           metric: this.templateSrv.replace(target.metric),
           kentikFilterGroups: filters,
           kentikSavedFilters: kentikFilterGroups.savedFilters,
@@ -228,7 +226,6 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   }
 
   processTableData(bucketData: any[], dimensionDef: any, metricDef: any): DataFrame {
-    console.log(dimensionDef);
     const frame = new MutableDataFrame({
       name: dimensionDef.text,
       fields: [

@@ -47,7 +47,7 @@ describe('Kentik Query Builder', () => {
     beforeEach(() => {
       ctx.query_options = {
         metric: 'bytes',
-        dimension: 'src_geo_region',
+        dimension: 'src_geo_region,traffic,top_flow',
         deviceNames: 'cat2_demo',
         siteNames: 'site1,site2,site3',
         range: ctx.range,
@@ -69,7 +69,7 @@ describe('Kentik Query Builder', () => {
 
     it('should build proper topXData query', (done) => {
       const expectedQuery = {
-        dimension: ['src_geo_region'],
+        dimension: ['src_geo_region', 'traffic', 'top_flow'],
         metric: 'bytes',
         device_name: ['cat2_demo'],
         device_site: ['site1', 'site2', 'site3'],
@@ -121,7 +121,7 @@ describe('Kentik Query Builder', () => {
       ctx.query_options.metric = 'bytes';
 
       const expectedQuery = {
-        dimension: ['src_geo_region'],
+        dimension: ['src_geo_region', 'traffic', 'top_flow'],
         aggregates: [
           {
             name: 'avg_both',
@@ -156,7 +156,7 @@ describe('Kentik Query Builder', () => {
       ctx.query_options.metric = 'packets';
 
       const expectedQuery = {
-        dimension: ['src_geo_region'],
+        dimension: ['src_geo_region', 'traffic', 'top_flow'],
         aggregates: [
           {
             name: 'avg_both',
@@ -192,7 +192,7 @@ describe('Kentik Query Builder', () => {
 
       const expectedQuery = {
         metric: 'unique_src_ip',
-        dimension: ['src_geo_region'],
+        dimension: ['src_geo_region', 'traffic', 'top_flow'],
         aggregates: [
           {
             name: 'avg_ips',
@@ -243,7 +243,7 @@ describe('Kentik Query Builder', () => {
 
       const expectedQuery = {
         metric: 'unique_dst_ip',
-        dimension: ['src_geo_region'],
+        dimension: ['src_geo_region', 'traffic', 'top_flow'],
         aggregates: [
           {
             name: 'avg_ips',

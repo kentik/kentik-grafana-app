@@ -1,4 +1,3 @@
-import { SelectableValue } from '@grafana/data';
 import { metricList, filterFieldList, Metric, FilterField } from './metric_def';
 
 import * as _ from 'lodash';
@@ -108,7 +107,7 @@ function buildTopXdataQuery(options: any) {
   const isAllSitesSelected = options.siteNames?.split(',').includes('All') || _.isEmpty(options.siteNames);
 
   const query = {
-    dimension: options.dimension.map((dimension: SelectableValue) => dimension.value),
+    dimension: options.dimension?.split(','),
     metric: options.metric,
     matrixBy: [],
     cidr: 32,
