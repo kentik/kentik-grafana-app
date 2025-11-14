@@ -112,7 +112,9 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         const query = queryBuilder.buildTopXdataQuery(queryOptions);
 
         const topXData = await this.kentik.invokeTopXDataQuery(query);
-        const data = await this.processResponse(query, target.mode, target, topXData);
+        const drilldownUrl = await this.kentik.invokeDrilldownUrlQuery(query);
+
+        const data = await this.processResponse(query, target.mode, target, topXData, drilldownUrl);
         return data;
       }
     );
@@ -122,7 +124,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     return { data: _.flatten(results) };
   }
 
-  async processResponse(query: any, mode: string, target: any, data: any) {
+  async processResponse(query: any, mode: string, target: any, data: any, drilldownUrl: string) {
     if (!data.results) {
       return Promise.reject({ message: 'no kentik data' });
     }
@@ -148,12 +150,12 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     if (mode === 'table') {
       return this.processTableData(bucketData, dimensionDef, metricDef);
     } else {
-      return this.processTimeSeries(bucketData, query, target);
+      return this.processTimeSeries(bucketData, query, target, drilldownUrl);
     }
   }
 
-  processTimeSeries(bucketData: any, query: any, target: any) {
-    const seriesList: any[] = [];
+  processTimeSeries(bucketData: any, query: any, target: any, drilldownUrl: string) {
+    const frames: any[] = [];
     let endIndex = query.topx;
     if (bucketData.length < endIndex) {
       endIndex = bucketData.length;
@@ -165,19 +167,39 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         return serie.flow && serie.flow.length;
       });
   
+      const seriesName = this.applyAliasPattern(series, query, target);
+        
       if (timeseries) {
-        const seriesName = this.applyAliasPattern(series, query, target);
+        const frame = new MutableDataFrame({
+          name: seriesName,
+          fields: [
+            {
+              name: 'time',
+              type: FieldType.time,
+              values: _.map(timeseries.flow, (p) => p[0]),
+            },
+            {
+              name: 'value',
+              type: FieldType.number,
+              values: _.map(timeseries.flow, (p) => p[1]),
+              config: {
+                links: [
+                  {
+                    title: 'Open in Kentik',
+                    url: drilldownUrl,
+                    targetBlank: true,
+                  },
+                ],
+              },
+            },
+          ],
+        });
   
-        const grafanaSeries = {
-          target: seriesName,
-          datapoints: _.map(timeseries.flow, (point) => [point[1], point[0]]),
-        };
-  
-        seriesList.push(grafanaSeries);
+        frames.push(frame);
       }
     }
   
-    return seriesList;
+    return frames;
   }
   
   applyAliasPattern(series: any, query: any, target: any): string {

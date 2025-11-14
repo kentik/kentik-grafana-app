@@ -115,6 +115,11 @@ export class KentikProxy {
     return this.cache.sitesPromise;
   }
 
+  async invokeDrilldownUrlQuery(query: any) {
+    const url = await this.kentikAPISrv.invokeDrilldownUrlQuery(query);
+    return url;
+  }
+
   async getFieldValues(field: string) {
     let ts = getUTCTimestamp();
     if (this.cache[field] && ts - this.cache[field].ts < this.cacheUpdateInterval) {

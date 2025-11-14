@@ -86,6 +86,14 @@ export class KentikAPI {
     return this._post('/api/v5/query/topXdata', kentikV5Query);
   }
 
+  async invokeDrilldownUrlQuery(query: any): Promise<any> {
+    const kentikV5Query = {
+      queries: [{ query: query, bucketIndex: 0 }],
+    };
+
+    return this._post('/api/v5/query/url', kentikV5Query);
+  }
+
   async invokeSQLQuery(query: any): Promise<any> {
     const data = {
       query: query,
