@@ -21,7 +21,7 @@ export interface Query extends DataQuery {
 }
 
 type Options = {};
-type Props = QueryEditorProps<DataSource, Query, Options>;
+type QueryEditorComponentProps = QueryEditorProps<DataSource, Query, Options>;
 
 export type CustomFilter = {
   conjunctionOperator: string;
@@ -75,7 +75,7 @@ const HOSTNAME_LOOKUP_CHOICES = [
 
 const MAX_DIMENSIONS = 8;
 
-export const QueryEditor: React.FC<Props> = (props: Props) => {
+export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
   _.defaults(props.query, DEFAULT_QUERY);
 
   const convertToComboboxOptions = (items: QueryItem[]): Array<ComboboxOption<string>> => {
@@ -203,7 +203,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
     props.onChange(query);
   }
 
-  const onDimenstionSelect = (value: SelectableValue[]) => {
+  const onDimensionSelect = (value: SelectableValue[]) => {
     const query: Query = _.cloneDeep(props.query);
     // @ts-ignore
     query['dimension'] = value;
@@ -341,12 +341,12 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
         <Field label="Dimensions">
           <>
             <MultiSelect
-              placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
+              placeholder={'Select...'}
               disabled={state.isLoading}
               value={props.query.dimension}
               options={state.dimensions}
               width={20}
-              onChange={(value) => onDimenstionSelect(value)}
+              onChange={(value) => onDimensionSelect(value)}
             />
             {props.query.dimension?.length >= MAX_DIMENSIONS && <div style={{width: '150px'}}>Max {MAX_DIMENSIONS} dimensions allowed.</div>}
           </>
