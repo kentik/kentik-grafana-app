@@ -108,11 +108,8 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           siteNames: siteNames
         };
         const query = queryBuilder.buildTopXdataQuery(queryOptions);
-
         const topXData = await this.kentik.invokeTopXDataQuery(query);
-        const drilldownUrl = await this.kentik.invokeDrilldownUrlQuery(query);
-
-        const data = await this.processResponse(query, target.mode, target, topXData, drilldownUrl);
+        const data = await this.processResponse(query, target.mode, target, topXData.data, topXData.url);
         return data;
       }
     );
@@ -177,7 +174,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
               values: _.map(timeseries.flow, (p) => p[0]),
             },
             {
-              name: 'value',
+              name: seriesName,
               type: FieldType.number,
               values: _.map(timeseries.flow, (p) => p[1]),
               config: {

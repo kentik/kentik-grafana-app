@@ -4,17 +4,28 @@ import { KentikAPI } from './kentik_api';
 import * as _ from 'lodash';
 import * as moment from 'moment';
 
+import localforage from "localforage";
+
+type QueryCache = {
+  query: {starting_time: string, ending_time: string, [key: string]: any,}, 
+  data: [],
+  url: string,
+}
+
 function getUTCTimestamp() {
   const ts = new Date();
   return ts.getTime() + ts.getTimezoneOffset() * 60 * 1000;
 }
 
-// Get hash of Kentik query
-function getHash(queryObj: any) {
-  const query = _.cloneDeep(queryObj);
+function normalizeQuery(q: any) {
+  const query = _.cloneDeep(q);
   query.starting_time = null;
   query.ending_time = null;
-  return JSON.stringify(query);
+  return query;
+}
+
+function getHash(q: any) {
+  return JSON.stringify(normalizeQuery(q));
 }
 
 // Prevent too frequent queries
@@ -30,12 +41,13 @@ function getMaxRefreshInterval(query: any) {
 }
 
 export class KentikProxy {
-  cache: any;
+  cache = localforage.createInstance({
+    name: "kentikCache"
+  });
   cacheUpdateInterval: number;
   requestCachingIntervals: { '1d': number };
 
   constructor(private kentikAPISrv: KentikAPI) {
-    this.cache = {};
     this.cacheUpdateInterval = 5 * 60 * 1000; // 5 min by default
     this.requestCachingIntervals = {
       '1d': 0,
@@ -47,10 +59,10 @@ export class KentikProxy {
     const cachedQuery = _.cloneDeep(query);
     const hash = getHash(cachedQuery);
 
-    if (this.shouldInvoke(query)) {
+    if (await this.shouldInvoke(query)) {
       // Invoke query
       const result = await this.kentikAPISrv.invokeTopXDataQuery(query);
-      const timestamp = getUTCTimestamp();
+      const url = await this.kentikAPISrv.invokeDrilldownUrlQuery(query);
 
       if (query.hostname_lookup) {
         const resultData = result.results[0].data;
@@ -61,20 +73,21 @@ export class KentikProxy {
         });
       }
 
-      this.cache[hash] = {
-        timestamp: timestamp,
+      await this.cache.setItem(hash, {
         query: cachedQuery,
-        result: result,
-      };
-      return result;
+        data: result,
+        url: url,
+      });
+      return {data: result, url};
     } else {
       // Get from cache
-      return this.cache[hash].result;
+      const cached = await this.cache.getItem<QueryCache>(hash); 
+      return cached && {data: cached.data, url: cached.url};
     }
   }
 
   // Decide, if query should be invoked or get data from cache?
-  shouldInvoke(query: any) {
+  async shouldInvoke(query: any) {
     const kentikQuery = query;
     const hash = getHash(kentikQuery);
     const timestamp = getUTCTimestamp();
@@ -83,16 +96,16 @@ export class KentikProxy {
     const endingTime = Date.parse(kentikQuery.ending_time);
     const queryRange = endingTime - startingTime;
 
-    const cacheStartingTime = this.cache[hash] ? Date.parse(this.cache[hash].query.starting_time) : null;
-    const cacheEndingTime = this.cache[hash] ? Date.parse(this.cache[hash].query.ending_time) : null;
+    const cached = await this.cache.getItem<QueryCache>(hash); 
+    const cacheStartingTime = cached ? Date.parse(cached.query.starting_time) : null;
+    const cacheEndingTime = cached ? Date.parse(cached.query.ending_time) : null;
     const cachedQueryRange = cacheEndingTime! - cacheStartingTime!;
-
     const maxRefreshInterval = getMaxRefreshInterval(kentikQuery);
 
     return (
-      !this.cache[hash] ||
+      !cached ||
       timestamp - endingTime > maxRefreshInterval ||
-      (this.cache[hash] &&
+      (cached &&
         (timestamp - cacheEndingTime! > maxRefreshInterval ||
           startingTime < cacheStartingTime! ||
           Math.abs(queryRange - cachedQueryRange) > 60 * 1000)) // is time range changed?
@@ -100,19 +113,21 @@ export class KentikProxy {
   }
 
   async getDevices() {
-    if (this.cache.devicesPromise !== undefined) {
-      return this.cache.devicesPromise;
+    const cachedDevices = await this.cache.getItem('devicesPromise');
+    if (cachedDevices) {
+      return cachedDevices;
     }
-    this.cache.devicesPromise = this.kentikAPISrv.getDevices();
-    return this.cache.devicesPromise;
+    this.cache.setItem('devicesPromise', await this.kentikAPISrv.getDevices());
+    return cachedDevices;
   }
 
   async getSites() {
-    if (this.cache.sitesPromise !== undefined) {
-      return this.cache.sitesPromise;
+    const cachedSites = await this.cache.getItem('sitesPromise');
+    if (cachedSites) {
+      return cachedSites;
     }
-    this.cache.sitesPromise = this.kentikAPISrv.getSites();
-    return this.cache.sitesPromise;
+    this.cache.setItem('sitesPromise', await this.kentikAPISrv.getSites());
+    return cachedSites;
   }
 
   async invokeDrilldownUrlQuery(query: any) {
@@ -122,43 +137,47 @@ export class KentikProxy {
 
   async getFieldValues(field: string) {
     let ts = getUTCTimestamp();
-    if (this.cache[field] && ts - this.cache[field].ts < this.cacheUpdateInterval) {
-      return this.cache[field].value;
+    const cachedField = await this.cache.getItem<{ ts: number, value: string }>(field);
+    if (cachedField && ts - cachedField.ts < this.cacheUpdateInterval) {
+      return cachedField.value;
     } else {
       const result = await this.kentikAPISrv.getFieldValues(field);
       ts = getUTCTimestamp();
-      this.cache[field] = {
+      this.cache.setItem(field, {
         ts: ts,
         value: result,
-      };
+      });
 
       return result;
     }
   }
 
+  // TODO to verify if it works correclty when customDimenstion endpoint will be ready
   async getCustomDimensions() {
-    if (this.cache.customDimensions === undefined) {
+    const customDimensionsField = 'customDimensions';
+    if (!await this.cache.getItem(customDimensionsField)) {
       const customDimensions = await this.kentikAPISrv.getCustomDimensions();
-      this.cache.customDimensions = customDimensions.map((dimension: any) => ({
+      this.cache.setItem(customDimensionsField, customDimensions.map((dimension: any) => ({
         values: this._getDimensionPopulatorsValues(dimension),
         text: `Custom ${dimension.display_name}`,
         value: dimension.name,
         field: dimension.name,
-      }));
+      })));
     }
-    return this.cache.customDimensions;
+    return this.cache.getItem(customDimensionsField);
   }
 
   async getSavedFilters() {
-    if (this.cache.savedFilters === undefined) {
+    const savedFiltersField = 'savedFilters';
+    if (!await this.cache.getItem(savedFiltersField)) {
       const savedFilters = await this.kentikAPISrv.getSavedFilters();
-      this.cache.savedFilters = _.map(savedFilters, (filter) => ({
-        text: `Saved ${filter.filter_name}`,
-        field: filter.filter_name,
+      this.cache.setItem(savedFiltersField, _.map(savedFilters.filters, (filter) => ({
+        text: `Saved ${filter.filterName}`,
+        field: filter.filterName,
         id: filter.id,
-      }));
+      })));
     }
-    return this.cache.savedFilters;
+    return this.cache.getItem(savedFiltersField);
   }
 
   private _getDimensionPopulatorsValues(dimension: any) {
