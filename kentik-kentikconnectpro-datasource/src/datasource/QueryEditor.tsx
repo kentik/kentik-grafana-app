@@ -1,4 +1,4 @@
-import { DataSource } from './DataSource';
+import { ALL_SITES_LABEL, DataSource } from './DataSource';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
 import { Stack, Input, Button, Field, Label, Combobox, ComboboxOption, MultiSelect } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
@@ -18,6 +18,7 @@ export interface Query extends DataQuery {
   // TODO: enum
   conjunctionOperator: ConjunctionOperator;
   aliasBy: string;
+  topx: string;
 }
 
 type Options = {};
@@ -40,6 +41,8 @@ export enum ConjunctionOperator {
   OR = 'OR',
 }
 
+const DEFAULT_TOPX = '8';
+
 export const DEFAULT_QUERY = {
   mode: DataMode.GRAPH,
   sites: null,
@@ -51,6 +54,7 @@ export const DEFAULT_QUERY = {
   customFilters: [],
   conjunctionOperator: ConjunctionOperator.AND,
   aliasBy: '',
+  topx: DEFAULT_TOPX, // Default value of returned top results
 };
 
 export type QueryItem = {
@@ -196,12 +200,28 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     props.onRunQuery();
   };
 
+  const onOptionChange = (field: keyof Query, value: string) => {
+    const query = _.cloneDeep(props.query);
+    //@ts-ignore
+    query[field] = value;
+    props.onChange(query);
+  };
+
   const onDeviceSelect = (value: SelectableValue[]) => {
     const query: Query = _.cloneDeep(props.query);
     // @ts-ignore
     query['devices'] = value;
     props.onChange(query);
   }
+
+  const onTopXBlur = () => {
+    const query = _.cloneDeep(props.query);
+    if (!query.topx) {
+      query.topx = DEFAULT_TOPX;
+      props.onChange(query);
+    }
+    props.onRunQuery();
+  };
 
   const onDimensionSelect = (value: SelectableValue[]) => {
     const query: Query = _.cloneDeep(props.query);
@@ -318,7 +338,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       <Stack direction="row">
         <Field label="Sites">
           <MultiSelect
-            placeholder={state.isLoading ? 'Loading...' : 'all'}
+            placeholder={state.isLoading ? 'Loading...' : ALL_SITES_LABEL}
             value={props.query.sites || []}
             disabled={state.isLoading}
             options={state.isLoading ? [] : state.sites}
@@ -391,6 +411,16 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
             value={props.query.aliasBy}
             onChange={(e) => props.onChange({ ...props.query, aliasBy: e.currentTarget.value })}
             onBlur={props.onRunQuery}
+            placeholder='Type...'
+          />
+        </Field>
+        <Field label="Visualization depth">
+          <Input
+            type="text"
+            width={20}
+            value={props.query.topx}
+            onChange={(e) => onOptionChange('topx', e.currentTarget.value)}
+            onBlur={onTopXBlur}
             placeholder='Type...'
           />
         </Field>

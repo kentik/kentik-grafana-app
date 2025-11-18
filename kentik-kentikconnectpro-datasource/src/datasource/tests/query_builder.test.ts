@@ -1,3 +1,4 @@
+import { ALL_SITES_LABEL } from 'datasource/DataSource';
 import queryBuilder from '../query_builder';
 
 class Moment {
@@ -56,7 +57,7 @@ describe('Kentik Query Builder', () => {
     });
 
     it('should build proper topXData query when all sites selected' , () => {
-      ctx.query_options.siteNames = 'All';
+      ctx.query_options.siteNames = ALL_SITES_LABEL;
       const topXDataQuery = queryBuilder.buildTopXdataQuery(ctx.query_options);
       expect(topXDataQuery).toEqual(expect.objectContaining({ device_site: null }));
     });

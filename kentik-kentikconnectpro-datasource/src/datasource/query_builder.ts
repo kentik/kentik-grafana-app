@@ -1,3 +1,4 @@
+import { ALL_SITES_LABEL } from './DataSource';
 import { metricList, filterFieldList, Metric, FilterField } from './metric_def';
 
 import * as _ from 'lodash';
@@ -104,7 +105,7 @@ function buildTopXdataQuery(options: any) {
   }
   const startingTime = options.range.from.utc().format(KENTIK_TIME_FORMAT);
   const endingTime = options.range.to.utc().format(KENTIK_TIME_FORMAT);
-  const isAllSitesSelected = options.siteNames?.split(',').includes('All') || _.isEmpty(options.siteNames);
+  const isAllSitesSelected = options.siteNames?.split(',').includes(ALL_SITES_LABEL) || _.isEmpty(options.siteNames);
 
   const query = {
     dimension: options.dimension?.split(','),
@@ -112,7 +113,7 @@ function buildTopXdataQuery(options: any) {
     matrixBy: [],
     cidr: 32,
     cidr6: 128,
-    topx: '8', // Visualization depth (8 by default)
+    topx: options.topx,
     depth: 100,
     fastData: 'Auto',
     lookback_seconds: 0,

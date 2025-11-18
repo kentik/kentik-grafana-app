@@ -14,6 +14,7 @@ import * as _ from 'lodash';
 import { CustomFilter, DEFAULT_QUERY, Query } from './QueryEditor';
 
 export interface MyDataSourceOptions extends DataSourceJsonData { }
+export const ALL_SITES_LABEL = 'All';
 
 export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   datasourceType: string;
@@ -105,7 +106,8 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           kentikFilterGroups: filters,
           kentikSavedFilters: kentikFilterGroups.savedFilters,
           hostnameLookup: this.templateSrv.replace(target.hostnameLookup),
-          siteNames: siteNames
+          siteNames: siteNames,
+          topx: target.topx,
         };
         const query = queryBuilder.buildTopXdataQuery(queryOptions);
         const topXData = await this.kentik.invokeTopXDataQuery(query);
@@ -254,7 +256,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   }
 
   private isAllSitesSelected(target: any) {
-    return target.sites.map((site: any) => site.label).includes('all');
+    return target.sites.map((site: any) => site.label).includes(ALL_SITES_LABEL);
   }
 
   async metricFindQuery(query: any, target: any) {
@@ -280,7 +282,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         const res = sites.map((site: any) => {
           return { text: site.title, value: site.title };
         });
-        return [{ text: 'All', value: null }, ...res];
+        return [{ text: ALL_SITES_LABEL, value: null }, ...res];
       }
       default:
         throw new Error(`Unknown query type: ${query}`);
