@@ -109,7 +109,7 @@ function buildTopXdataQuery(options: any) {
 
   const query = {
     dimension: options.dimension?.split(','),
-    metric: options.metric,
+    metric: [options.metric],
     matrixBy: [],
     cidr: 32,
     cidr6: 128,
@@ -127,6 +127,13 @@ function buildTopXdataQuery(options: any) {
     saved_filters: options.kentikSavedFilters,
     hostname_lookup: options.hostnameLookup,
     device_site: isAllSitesSelected ? null : options.siteNames.split(','),
+    aggregateTypes: [
+      "avg_src_port",
+      "p95th_src_port",
+      "max_src_port",
+      "p95th_bits_per_sec",
+      "p95th_pkts_per_sec"
+    ],
   };
 
   return query;

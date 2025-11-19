@@ -3,6 +3,7 @@ import { showAlert } from '../utils/alert_helper';
 import { FetchError, BackendSrv } from '@grafana/runtime';
 
 import * as _ from 'lodash';
+import { lastValueFrom } from 'rxjs';
 
 export class KentikAPI {
   baseUrl: string;
@@ -103,23 +104,27 @@ export class KentikAPI {
   }
 
   private async _get(url: string, requiresAdminLevel = false): Promise<any> {
-   
+    const requestFn = () =>
+      lastValueFrom(
+        this.backendSrv.fetch<any>({
+          method: 'GET',
+          url: this.baseUrl + url,
+          showErrorAlert: !requiresAdminLevel,
+        })
+      ).then(result => result
+      );
+
     return retry(
-      this.backendSrv.request.bind(this.backendSrv, {
-        method: 'GET',
-        url: this.baseUrl + url,
-        showErrorAlert: !requiresAdminLevel,
-      }),
+      requestFn,
       (error: FetchError) => {
-        // HTTP Error 429: Too Many Requests
         if (error.status === 429) {
           showAlert(error);
           return true;
         }
-        // HTTP Error 403: Forbidden
         if (error.status !== 403 || requiresAdminLevel === false) {
           showAlert(error);
         }
+
         return false;
       }
     );

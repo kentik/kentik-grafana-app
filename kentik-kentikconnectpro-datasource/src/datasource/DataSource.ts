@@ -2,12 +2,7 @@ import queryBuilder from './query_builder';
 import { dimensionList, metricList, filterFieldList, Dimension, Metric, FilterField } from './metric_def';
 import { KentikAPI } from './kentik_api';
 import { KentikProxy } from './kentik_proxy';
-import { DataSourceApi, DataFrame, MutableDataFrame, AdHocVariableFilter, FieldType, DataQueryRequest, DataQueryResponse, TestDataSourceResponse } from '@grafana/data';
-
-import {
-  DataSourceInstanceSettings,
-  DataSourceJsonData,
-} from '@grafana/data';
+import { DataSourceInstanceSettings, DataSourceJsonData, DataSourceApi, AdHocVariableFilter, FieldType, DataQueryRequest, DataQueryResponse, TestDataSourceResponse, PartialDataFrame } from '@grafana/data';
 import { getTemplateSrv, TemplateSrv, getBackendSrv } from '@grafana/runtime';
 
 import * as _ from 'lodash';
@@ -138,7 +133,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
       throw new Error('Query error: Dimension field is required');
     }
 
-    const metricDef = _.find(metricList, { value: query.metric });
+    const metricDef = _.find(metricList, { value: query.metric[0] });
 
     if (!metricDef) {
       throw new Error('Query error: Metric field is required');
@@ -152,22 +147,24 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   }
 
   processTimeSeries(bucketData: any, query: any, target: any, drilldownUrl: string) {
-    const frames: any[] = [];
+    const frames: PartialDataFrame[] = [];
+
     let endIndex = query.topx;
     if (bucketData.length < endIndex) {
       endIndex = bucketData.length;
     }
-  
+
     for (let i = 0; i < endIndex; i++) {
       const series = bucketData[i];
+
       const timeseries = _.find(series.timeSeries, (serie) => {
         return serie.flow && serie.flow.length;
       });
-  
+
       const seriesName = this.applyAliasPattern(series, query, target);
-        
+
       if (timeseries) {
-        const frame = new MutableDataFrame({
+        const frame: PartialDataFrame = {
           name: seriesName,
           fields: [
             {
@@ -190,67 +187,74 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
               },
             },
           ],
-        });
-  
+        };
+
         frames.push(frame);
       }
     }
-  
+
     return frames;
   }
-  
+
   applyAliasPattern(series: any, query: any, target: any): string {
     const aliasBy = target.aliasBy;
     const prefix = target.prefix ? `${target.prefix} ` : '';
-  
+
     if (!aliasBy) {
       return `${this.templateSrv.replace(prefix)}${series.key}`;
     }
-  
+
     let alias = aliasBy;
-  
+
     const tagPattern = /\$tag\*([A-Za-z0-9_]+)/g;
     alias = alias.replace(tagPattern, (match: any, tagName: string) => {
       const value = series[tagName];
       return value !== undefined ? value : `{${tagName}}`;
     });
-  
+
     alias = this.templateSrv.replace(`${prefix}${alias}${series.key}`);
-  
+
     if (!alias.trim()) {
       alias = series.key;
     }
-  
+
     return alias;
   }
 
-  processTableData(bucketData: any[], dimensionDef: any, metricDef: any): DataFrame {
-    const frame = new MutableDataFrame({
+  processTableData(bucketData: any[], dimensionDef: any, metricDef: any) {
+    const dimensionColumn = {
       name: dimensionDef.text,
-      fields: [
-        { name: dimensionDef.text, type: FieldType.string },
-        ...metricDef.tableFields.map((col: any) => ({
-          name: col.text,
-          type: FieldType.number,
-          config: { unit: col.metric },
-        })),
-      ],
-    });
+      type: FieldType.string,
+      values: [] as any[],
+    };
+
+    const metricColumns = metricDef.tableFields.map((col: any) => ({
+      name: col.text,
+      type: FieldType.number,
+      values: [] as number[],
+      config: { unit: col.metric },
+    }));
 
     _.forEach(bucketData, (row) => {
       const seriesName = row.key;
-      const values = [seriesName];
+      dimensionColumn.values.push(seriesName);
 
-      for (const col of metricDef.tableFields) {
+      for (let i = 0; i < metricColumns.length; i++) {
+        const col = metricDef.tableFields[i];
         let val = row[col.field];
+
         if (_.isString(val)) {
           val = parseFloat(val);
         }
-        values.push(val);
-      }
 
-      frame.appendRow(values);
+        metricColumns[i].values.push(val);
+      }
     });
+
+    const frame: PartialDataFrame = {
+      name: dimensionDef.text,
+      fields: [dimensionColumn, ...metricColumns],
+    };
 
     return frame;
   }

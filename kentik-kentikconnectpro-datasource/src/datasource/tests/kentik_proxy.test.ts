@@ -52,11 +52,21 @@ function getKentikProxyInstance(ctx: any, data: any) {
         },
       ]);
     },
-    request: () => {
-      return Promise.resolve({
-        status: 200,
-        ...data,
-      });
+    fetch: () => {
+      return {
+        toPromise: () =>
+          Promise.resolve({
+            status: 200,
+            ...data,
+          }),
+        subscribe: (observer: any) => {
+          observer.next({
+            status: 200,
+            ...data,
+          });
+          observer.complete();
+        },
+      };
     },
   };
 

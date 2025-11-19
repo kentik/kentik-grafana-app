@@ -72,7 +72,7 @@ describe('Kentik Query Builder', () => {
     it('should build proper topXData query', (done) => {
       const expectedQuery = {
         dimension: ['src_geo_region', 'traffic', 'top_flow'],
-        metric: 'bytes',
+        metric: ['bytes'],
         device_name: ['cat2_demo'],
         device_site: ['site1', 'site2', 'site3'],
         outsort: 'avg_both',
@@ -90,6 +90,13 @@ describe('Kentik Query Builder', () => {
           connector: 'All',
           filterGroups: [],
         },
+        aggregateTypes: [
+          "avg_src_port",
+          "p95th_src_port",
+          "max_src_port",
+          "p95th_bits_per_sec",
+          "p95th_pkts_per_sec"
+        ],
         aggregates: [
           {
             name: 'avg_both',
@@ -193,7 +200,7 @@ describe('Kentik Query Builder', () => {
       ctx.query_options.metric = 'unique_src_ip';
 
       const expectedQuery = {
-        metric: 'unique_src_ip',
+        metric: ['unique_src_ip'],
         dimension: ['src_geo_region', 'traffic', 'top_flow'],
         aggregates: [
           {
@@ -244,7 +251,7 @@ describe('Kentik Query Builder', () => {
       ctx.query_options.metric = 'unique_dst_ip';
 
       const expectedQuery = {
-        metric: 'unique_dst_ip',
+        metric: ['unique_dst_ip'],
         dimension: ['src_geo_region', 'traffic', 'top_flow'],
         aggregates: [
           {
