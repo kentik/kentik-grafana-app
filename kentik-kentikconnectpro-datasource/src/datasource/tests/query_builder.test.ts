@@ -53,6 +53,7 @@ describe('Kentik Query Builder', () => {
         siteNames: 'site1,site2,site3',
         range: ctx.range,
         kentikFilterGroups: [],
+        topx: '8'
       };
     });
 

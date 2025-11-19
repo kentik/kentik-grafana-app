@@ -12,7 +12,7 @@ type QueryCache = {
   url: string,
 }
 
-function getUTCTimestamp() {
+export function getUTCTimestamp() {
   const ts = new Date();
   return ts.getTime() + ts.getTimezoneOffset() * 60 * 1000;
 }
@@ -29,7 +29,7 @@ function getHash(q: any) {
 }
 
 // Prevent too frequent queries
-function getMaxRefreshInterval(query: any) {
+export function getMaxRefreshInterval(query: any) {
   const interval: any = Date.parse(query.ending_time) - Date.parse(query.starting_time);
   if (interval > moment.duration(1, 'months')) {
     return 60 * 60 * 1000; // 1 hour
