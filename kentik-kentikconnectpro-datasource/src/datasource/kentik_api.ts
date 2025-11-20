@@ -111,7 +111,7 @@ export class KentikAPI {
           url: this.baseUrl + url,
           showErrorAlert: !requiresAdminLevel,
         })
-      ).then(result => result
+      ).then(result => result.data
       );
 
     return retry(

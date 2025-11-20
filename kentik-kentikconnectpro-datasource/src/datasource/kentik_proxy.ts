@@ -114,20 +114,22 @@ export class KentikProxy {
 
   async getDevices() {
     const cachedDevices = await this.cache.getItem('devicesPromise');
-    if (cachedDevices) {
+    if (!!cachedDevices) {
       return cachedDevices;
     }
+    const dataToCache = await this.kentikAPISrv.getDevices();
     this.cache.setItem('devicesPromise', await this.kentikAPISrv.getDevices());
-    return cachedDevices;
+    return dataToCache;
   }
 
   async getSites() {
     const cachedSites = await this.cache.getItem('sitesPromise');
-    if (cachedSites) {
+    if (!!cachedSites) {
       return cachedSites;
     }
-    this.cache.setItem('sitesPromise', await this.kentikAPISrv.getSites());
-    return cachedSites;
+    const dataToCache = await this.kentikAPISrv.getSites();
+    this.cache.setItem('sitesPromise', dataToCache);
+    return dataToCache;
   }
 
   async invokeDrilldownUrlQuery(query: any) {
@@ -138,7 +140,7 @@ export class KentikProxy {
   async getFieldValues(field: string) {
     let ts = getUTCTimestamp();
     const cachedField = await this.cache.getItem<{ ts: number, value: string }>(field);
-    if (cachedField && ts - cachedField.ts < this.cacheUpdateInterval) {
+    if (!!cachedField && ts - cachedField.ts < this.cacheUpdateInterval) {
       return cachedField.value;
     } else {
       const result = await this.kentikAPISrv.getFieldValues(field);
@@ -177,7 +179,7 @@ export class KentikProxy {
         id: filter.id,
       })));
     }
-    return this.cache.getItem(savedFiltersField);
+    return await this.cache.getItem(savedFiltersField);
   }
 
   private _getDimensionPopulatorsValues(dimension: any) {
