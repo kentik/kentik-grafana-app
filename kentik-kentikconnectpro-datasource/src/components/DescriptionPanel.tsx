@@ -2,7 +2,7 @@ import { KentikAPI } from '../datasource/kentik_api';
 
 import { getBackendSrv, getDataSourceSrv } from '@grafana/runtime';
 import { PanelProps, GrafanaTheme2 } from '@grafana/data';
-import { HorizontalGroup, VerticalGroup, useStyles2 } from '@grafana/ui';
+import { Stack, useStyles2 } from '@grafana/ui';
 import React, { FC, useEffect, useState } from 'react';
 
 import { css } from '@emotion/css';
@@ -46,19 +46,19 @@ export const DescriptionPanel: FC<Props> = (props) => {
                 into consumers of network bandwidth and anomalies that can affect application or service performance.
             </p>
             <div className={styles.actionsContainer}>
-                <VerticalGroup>
+                <Stack direction="column">
                     <div>Complete:</div>
-                    <HorizontalGroup>
+                    <Stack direction="row">
                         <i className={styles.successIcon + ' icon-gf icon-gf-check'}></i>
                         <span className={styles.successLine}>Install Kentik Connect for Grafana.</span>
-                    </HorizontalGroup>
+                    </Stack>
                     {state.devices.length > 0 && (
-                        <HorizontalGroup>
+                        <Stack direction="row">
                             <i className={styles.successIcon + ' icon-gf icon-gf-check'}></i>
                             <span className={styles.successLine}>Add your first device.</span>
-                        </HorizontalGroup>
+                        </Stack>
                     )}
-                </VerticalGroup>
+                </Stack>
             </div>
         </div>
     );
