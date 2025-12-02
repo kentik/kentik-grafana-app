@@ -3,7 +3,7 @@ import { QueryEditorProps, SelectableValue } from '@grafana/data';
 import { Stack, Input, Button, Field, Label, Combobox, ComboboxOption, MultiSelect } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
 import { DataQuery } from '@grafana/schema';
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState } from 'react';
 import _ from 'lodash';
 
 export interface Query extends DataQuery {
@@ -231,7 +231,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     const dimensionLimitReached = query.dimension?.length >= MAX_DIMENSIONS;
     setState({
       ...state,
-      dimensions: state.dimensions.map((dimension: SelectableValue) => ({...dimension, isDisabled: dimensionLimitReached})),
+      dimensions: state.dimensions.map((dimension: SelectableValue) => ({ ...dimension, isDisabled: dimensionLimitReached })),
     });
     props.onRunQuery();
   }
@@ -334,6 +334,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
             }}
           />
         </Field>
+
       </Stack>
       <Stack direction="row">
         <Field label="Sites">
@@ -368,7 +369,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
               width={20}
               onChange={(value) => onDimensionSelect(value)}
             />
-            {props.query.dimension?.length >= MAX_DIMENSIONS && <div style={{width: '150px'}}>Max {MAX_DIMENSIONS} dimensions allowed.</div>}
+            {props.query.dimension?.length >= MAX_DIMENSIONS && <div style={{ width: '150px' }}>Max {MAX_DIMENSIONS} dimensions allowed.</div>}
           </>
         </Field>
         <Field label="Metric">

@@ -127,13 +127,7 @@ function buildTopXdataQuery(options: any) {
     saved_filters: options.kentikSavedFilters,
     hostname_lookup: options.hostnameLookup,
     device_site: isAllSitesSelected ? null : options.siteNames.split(','),
-    aggregateTypes: [
-      "avg_src_port",
-      "p95th_src_port",
-      "max_src_port",
-      "p95th_bits_per_sec",
-      "p95th_pkts_per_sec"
-    ],
+    aggregateTypes: formatAggs(metricDef).map((agg: any) => agg.name),
   };
 
   return query;

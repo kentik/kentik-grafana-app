@@ -10,6 +10,7 @@ import { CustomFilter, DEFAULT_QUERY, Query } from './QueryEditor';
 
 export interface MyDataSourceOptions extends DataSourceJsonData { }
 export const ALL_SITES_LABEL = 'All';
+type ConfiguredQueryField = 'dimension' | 'metric' | 'device_site' | 'device_name';
 
 export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   datasourceType: string;
@@ -106,6 +107,30 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         };
         const query = queryBuilder.buildTopXdataQuery(queryOptions);
         const topXData = await this.kentik.invokeTopXDataQuery(query);
+
+        // const allAggResults: any[] = [];
+
+        // try {
+        // for (const singleAgg of query.aggregates) {
+        //   const perAggQuery = {
+        //     ...query,
+        //     aggregates: [singleAgg], // <- tylko 1 aggregate!
+        //     aggregateTypes: [singleAgg.name]
+        //   };
+
+        //   const topXData = await this.kentik.invokeTopXDataQuery(perAggQuery);
+
+        //   const processed = await this.processResponse(
+        //     perAggQuery,
+        //     target.mode,
+        //     { ...target, aggregate: singleAgg }, // możesz dodać info o aggregate
+        //     topXData.data,
+        //     topXData.url
+        //   );
+
+        //   allAggResults.push(processed);
+        // }
+
         const data = await this.processResponse(query, target.mode, target, topXData.data, topXData.url);
         return data;
       }
@@ -114,7 +139,15 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     const results = await Promise.all(promises);
 
     return { data: _.flatten(results) };
-  }
+
+    // return {
+    //   data: _.flatten(
+    //     results
+    //       .filter(r => r.status === 'fulfilled')
+    //       .map(r => r.value)
+    //   )
+    // }
+  };
 
   async processResponse(query: any, mode: string, target: any, data: any, drilldownUrl: string) {
     if (!data.results) {
@@ -165,7 +198,6 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
 
       if (timeseries) {
         const frame: PartialDataFrame = {
-          name: seriesName,
           fields: [
             {
               name: 'time',
@@ -197,28 +229,29 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   }
 
   applyAliasPattern(series: any, query: any, target: any): string {
-    const aliasBy = target.aliasBy;
-    const prefix = target.prefix ? `${target.prefix} ` : '';
+    const configuredQueryFields: Array<ConfiguredQueryField> = ['dimension', 'metric', 'device_site', 'device_name'];
+    const { aliasBy, prefix = '' } = target;
 
     if (!aliasBy) {
-      return `${this.templateSrv.replace(prefix)}${series.key}`;
+      return `${this.templateSrv.replace(prefix)} ${series.key}`;
     }
 
     let alias = aliasBy;
-
     const tagPattern = /\$tag\*([A-Za-z0-9_]+)/g;
-    alias = alias.replace(tagPattern, (match: any, tagName: string) => {
-      const value = series[tagName];
-      return value !== undefined ? value : `{${tagName}}`;
+    alias = alias.replace(tagPattern, (_: string, tagName: ConfiguredQueryField & 'series_name') => {
+      if (tagName === "series_name") {
+        return series.key ?? '';
+      }
+      if (configuredQueryFields.includes(tagName)) {
+        const configuredValue = query[tagName];
+        return (configuredValue && Array.isArray(configuredValue)) ?
+          configuredValue.join(", ") : ''
+      }
+      return '';
     });
 
-    alias = this.templateSrv.replace(`${prefix}${alias}${series.key}`);
-
-    if (!alias.trim()) {
-      alias = series.key;
-    }
-
-    return alias;
+    alias = this.templateSrv.replace(`${prefix} ${alias}`);
+    return alias ? alias : series.key;
   }
 
   processTableData(bucketData: any[], dimensionDef: any, metricDef: any) {

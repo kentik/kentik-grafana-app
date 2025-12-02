@@ -65,7 +65,7 @@ export class KentikAPI {
       // const requiresAdminLevel = true;
       const resp = await this._get('/custom_dimensions/v202411alpha1');
       // return [];
-      return resp.customDimensions;
+      return resp.dimensions;
     } catch (e: any) {
       if (e.status === 403) {
         return [];
