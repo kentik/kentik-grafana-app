@@ -4,14 +4,14 @@ describe('DataSource', () => {
   const ctx: any = {};
 
   const data = {
-    customDimensions: [
+    dimensions: [
       {
-        display_name: 'just-testing',
+        description: 'just-testing',
         name: 'c_test',
         populators: [{ value: 'value1' }, { value: 'value2' }],
       },
       {
-        display_name: 'just-testing-2',
+        description: 'just-testing-2',
         name: 'c_test_2',
         populators: [{ value: 'value3' }, { value: 'value4' }],
       },
@@ -54,12 +54,12 @@ function createDatasourceInstance(ctx: any, data: any) {
         toPromise: () =>
           Promise.resolve({
             status: 200,
-            ...data,
+            data,
           }),
         subscribe: (observer: any) => {
           observer.next({
             status: 200,
-            ...data,
+            data,
           });
           observer.complete();
         },

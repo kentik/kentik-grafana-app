@@ -161,7 +161,7 @@ export class KentikProxy {
       const customDimensions = await this.kentikAPISrv.getCustomDimensions();
       this.cache.setItem(customDimensionsField, customDimensions.map((dimension: any) => ({
         values: this._getDimensionPopulatorsValues(dimension),
-        text: `Custom ${dimension.display_name}`,
+        text: `Custom ${dimension.description}`,
         value: dimension.name,
         field: dimension.name,
       })));
