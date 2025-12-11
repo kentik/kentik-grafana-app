@@ -106,33 +106,32 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           topx: target.topx,
         };
         const query = queryBuilder.buildTopXdataQuery(queryOptions);
-        const topXData = await this.kentik.invokeTopXDataQuery(query);
+        // const topXData = await this.kentik.invokeTopXDataQuery(query);
 
-        // const allAggResults: any[] = [];
+        const allAggResults: any[] = [];
 
-        // try {
-        // for (const singleAgg of query.aggregates) {
-        //   const perAggQuery = {
-        //     ...query,
-        //     aggregates: [singleAgg], // <- tylko 1 aggregate!
-        //     aggregateTypes: [singleAgg.name]
-        //   };
+        query.aggregates.forEach(async (singleAgg) => {
+          const perAggQuery = {
+            ...query,
+            aggregates: [singleAgg], // <- tylko 1 aggregate!
+            aggregateTypes: [singleAgg.name]
+          };
 
-        //   const topXData = await this.kentik.invokeTopXDataQuery(perAggQuery);
+          const topXData = await this.kentik.invokeTopXDataQuery(perAggQuery);
 
-        //   const processed = await this.processResponse(
-        //     perAggQuery,
-        //     target.mode,
-        //     { ...target, aggregate: singleAgg }, // możesz dodać info o aggregate
-        //     topXData.data,
-        //     topXData.url
-        //   );
+          const processed = await this.processResponse(
+            perAggQuery,
+            target.mode,
+            { ...target, aggregate: singleAgg },
+            topXData.data,
+            topXData.url
+          );
 
-        //   allAggResults.push(processed);
-        // }
+          allAggResults.push(processed);
+        })
 
-        const data = await this.processResponse(query, target.mode, target, topXData.data, topXData.url);
-        return data;
+        // const data = await this.processResponse(query, target.mode, target, topXData.data, topXData.url);
+        // return data;
       }
     );
 

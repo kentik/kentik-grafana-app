@@ -20,12 +20,14 @@ function formatMetricAggs(metricDef: any) {
       fn: 'percentile',
       rank: 95,
       sample_rate: 1,
+      raw: true,
     },
     {
       name: 'max_both',
       column: metricDef.field,
       fn: 'max',
       sample_rate: 1,
+      raw: true,
     },
   ];
 
@@ -47,6 +49,7 @@ function formatUniqueIpAggs(metricDef: any) {
       fn: 'percentile',
       rank: 95,
       sample_rate: 1,
+      raw: true,
     },
     {
       name: 'max_ips',
@@ -61,6 +64,7 @@ function formatUniqueIpAggs(metricDef: any) {
       fn: 'percentile',
       rank: 95,
       sample_rate: 1,
+      raw: true,
     },
     {
       name: 'p95th_pkts_per_sec',
@@ -68,6 +72,7 @@ function formatUniqueIpAggs(metricDef: any) {
       fn: 'percentile',
       rank: 95,
       sample_rate: 1,
+      raw: true,
     },
   ];
 
