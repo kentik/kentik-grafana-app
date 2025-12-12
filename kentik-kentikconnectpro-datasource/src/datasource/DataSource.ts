@@ -106,19 +106,33 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           topx: target.topx,
         };
         const query = queryBuilder.buildTopXdataQuery(queryOptions);
-        // const topXData = await this.kentik.invokeTopXDataQuery(query);
 
+        // table mode
+        if (target.mode === 'table') {
+          const topXData = await this.kentik.invokeTopXDataQuery(query);
+          const processed = await this.processResponse(
+            query,
+            target.mode,
+            target,
+            topXData.data,
+            topXData.url
+          );
+        
+          return processed;
+        }
+
+        // graph mode
         const allAggResults: any[] = [];
 
-        query.aggregates.forEach(async (singleAgg) => {
+        for (const singleAgg of query.aggregates) {
           const perAggQuery = {
             ...query,
-            aggregates: [singleAgg], // <- tylko 1 aggregate!
-            aggregateTypes: [singleAgg.name]
+            aggregates: [singleAgg], // tylko 1 aggregate!
+            aggregateTypes: [singleAgg.name],
+            outsort: singleAgg.name,
           };
-
+        
           const topXData = await this.kentik.invokeTopXDataQuery(perAggQuery);
-
           const processed = await this.processResponse(
             perAggQuery,
             target.mode,
@@ -128,24 +142,14 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           );
 
           allAggResults.push(processed);
-        })
+        }
 
-        // const data = await this.processResponse(query, target.mode, target, topXData.data, topXData.url);
-        // return data;
+        return _.flatten(allAggResults);
       }
     );
 
     const results = await Promise.all(promises);
-
     return { data: _.flatten(results) };
-
-    // return {
-    //   data: _.flatten(
-    //     results
-    //       .filter(r => r.status === 'fulfilled')
-    //       .map(r => r.value)
-    //   )
-    // }
   };
 
   async processResponse(query: any, mode: string, target: any, data: any, drilldownUrl: string) {
