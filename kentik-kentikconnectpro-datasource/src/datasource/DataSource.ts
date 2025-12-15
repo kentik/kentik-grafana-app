@@ -232,29 +232,25 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   }
 
   applyAliasPattern(series: any, query: any, target: any): string {
-    const configuredQueryFields: Array<ConfiguredQueryField> = ['dimension', 'metric', 'device_site', 'device_name'];
+    const aggName = query.aggregates[0].name || query.aggregateTypes[0];
     const { aliasBy, prefix = '' } = target;
-
+  
     if (!aliasBy) {
-      return `${this.templateSrv.replace(prefix)} ${series.key}`;
+      const alias = `${prefix} ${series.key} (${aggName})`;
+      return this.templateSrv.replace(alias, target.scopedVars);
     }
 
     let alias = aliasBy;
-    const tagPattern = /\$tag\*([A-Za-z0-9_]+)/g;
-    alias = alias.replace(tagPattern, (_: string, tagName: ConfiguredQueryField & 'series_name') => {
-      if (tagName === "series_name") {
-        return series.key ?? '';
+    alias = aliasBy.replace(/\$tag_([a-zA-Z0-9_]+)/g, (match: string, tagName: string) => {
+      if (!_.isNil(series[tagName])) {
+        return series[tagName];
       }
-      if (configuredQueryFields.includes(tagName)) {
-        const configuredValue = query[tagName];
-        return (configuredValue && Array.isArray(configuredValue)) ?
-          configuredValue.join(", ") : ''
-      }
-      return '';
+      return match;
     });
-
+  
+    alias = alias.replace(/\$col/g, aggName);
     alias = this.templateSrv.replace(`${prefix} ${alias}`);
-    return alias ? alias : series.key;
+    return alias;
   }
 
   processTableData(bucketData: any[], dimensionDef: any, metricDef: any) {
