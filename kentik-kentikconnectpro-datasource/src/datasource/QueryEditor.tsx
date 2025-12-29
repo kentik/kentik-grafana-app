@@ -334,7 +334,6 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
             }}
           />
         </Field>
-
       </Stack>
       <Stack direction="row">
         <Field label="Sites">

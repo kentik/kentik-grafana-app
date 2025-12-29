@@ -18,7 +18,9 @@ describe('DataSource', () => {
     ],
     rows: [{ src_geo_city: 'city' }],
   };
-  beforeEach(() => createDatasourceInstance(ctx, data));
+  beforeEach(() => {
+    createDatasourceInstance(ctx, data);
+  });
 
   describe('When querying Kentik data', () => {
     it('Should return tag values for default dimensions', async () => {
@@ -33,6 +35,82 @@ describe('DataSource', () => {
       expect(tagValues[0]).toEqual({ text: 'value3' });
       expect(tagValues[1]).toEqual({ text: 'value4' });
     });
+  });
+});
+
+describe('applyAliasPattern', () => {
+  const ctx: any = {};
+
+  const series = {
+    key: '1.1.1.1',
+    src_as: 'AS123',
+    dst_as: 'AS456',
+  };
+
+  const query = {
+    aggregates: [{ name: 'bps' }],
+    aggregateTypes: ['bps'],
+  };
+
+  beforeEach(() => {
+    createDatasourceInstance(ctx, {});
+    ctx.ds.templateSrv = {
+      replace: jest.fn((value: string) => value),
+    };
+  });
+
+  it('returns default alias when aliasBy is not provided', () => {
+    const target = {
+      prefix: 'Traffic',
+    };
+
+    const result = ctx.ds.applyAliasPattern(series, query, target);
+
+    expect(result).toBe('Traffic 1.1.1.1 (bps)');
+  });
+
+  it('replaces $tag_* variables from series', () => {
+    const target = {
+      aliasBy: '$tag_src_as → $tag_dst_as',
+      prefix: '',
+    };
+
+    const result = ctx.ds.applyAliasPattern(series, query, target);
+
+    expect(result).toBe(' AS123 → AS456');
+  });
+
+  it('replaces $col with aggregate name', () => {
+    const target = {
+      aliasBy: 'metric: $col',
+      prefix: '',
+    };
+
+    const result = ctx.ds.applyAliasPattern(series, query, target);
+
+    expect(result).toBe(' metric: bps');
+  });
+
+  it('adds prefix before alias', () => {
+    const target = {
+      aliasBy: '$tag_src_as',
+      prefix: 'IN',
+    };
+
+    const result = ctx.ds.applyAliasPattern(series, query, target);
+
+    expect(result).toBe('IN AS123');
+  });
+
+  it('keeps $tag placeholder when value is missing', () => {
+    const target = {
+      aliasBy: '$tag_missing',
+      prefix: '',
+    };
+
+    const result = ctx.ds.applyAliasPattern(series, query, target);
+
+    expect(result).toBe(' $tag_missing');
   });
 });
 

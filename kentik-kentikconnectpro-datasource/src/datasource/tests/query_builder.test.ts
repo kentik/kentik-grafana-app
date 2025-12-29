@@ -90,13 +90,7 @@ describe('Kentik Query Builder', () => {
           connector: 'All',
           filterGroups: [],
         },
-        aggregateTypes: [
-          "avg_src_port",
-          "p95th_src_port",
-          "max_src_port",
-          "p95th_bits_per_sec",
-          "p95th_pkts_per_sec"
-        ],
+        aggregateTypes: ['avg_both', 'p95th_both', 'max_both'],
         aggregates: [
           {
             name: 'avg_both',

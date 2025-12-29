@@ -10,7 +10,6 @@ import { CustomFilter, DEFAULT_QUERY, Query } from './QueryEditor';
 
 export interface MyDataSourceOptions extends DataSourceJsonData { }
 export const ALL_SITES_LABEL = 'All';
-type ConfiguredQueryField = 'dimension' | 'metric' | 'device_site' | 'device_name';
 
 export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   datasourceType: string;
