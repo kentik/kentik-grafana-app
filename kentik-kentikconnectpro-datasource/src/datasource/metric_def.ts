@@ -879,1148 +879,201 @@ export const metricList = [
   {
     label: 'Bits/s',
     options: [
-      {
-        "value": "avg_bits_per_sec",
-        "column": "f_sum_both_bytes",
-        "fn": "average",
-        "label": "Average",
-        "unit": "bytes",
-        "group": "Bits/s",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "raw": true,
-        "name": "avg_bits_per_sec"
-      },
-      {
-        "value": "p95th_bits_per_sec",
-        "column": "f_sum_both_bytes",
-        "fn": "percentile",
-        "label": "Percentile",
-        "rank": 95,
-        "unit": "bytes",
-        "group": "Bits/s",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_bits_per_sec"
-      },
-      {
-        "value": "p99th_bits_per_sec",
-        "column": "f_sum_both_bytes",
-        "fn": "percentile",
-        "label": "Percentile",
-        "rank": 99,
-        "unit": "bytes",
-        "group": "Bits/s",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_bits_per_sec"
-      },
-      {
-        "value": "max_bits_per_sec",
-        "column": "f_sum_both_bytes",
-        "fn": "max",
-        "label": "Max",
-        "unit": "bytes",
-        "group": "Bits/s",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_bits_per_sec"
-      },
+      { value: "avg_bits_per_sec", column: "f_sum_both_bytes", fn: "average", label: "Average", unit: "bytes", group: "Bits/s", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_bits_per_sec" },
+      { value: "p95th_bits_per_sec", column: "f_sum_both_bytes", fn: "percentile", label: "95th Percentile", rank: 95, unit: "bytes", group: "Bits/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_bits_per_sec" },
+      { value: "p99th_bits_per_sec", column: "f_sum_both_bytes", fn: "percentile", label: "99th Percentile", rank: 99, unit: "bytes", group: "Bits/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_bits_per_sec" },
+      { value: "max_bits_per_sec", column: "f_sum_both_bytes", fn: "max", label: "Max", unit: "bytes", group: "Bits/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_bits_per_sec" },
     ]
   },
   {
     label: 'Packets/s',
     options: [
-      {
-        "value": "avg_pkts_per_sec",
-        "column": "f_sum_both_pkts",
-        "fn": "average",
-        "label": "Average",
-        "unit": "packets",
-        "group": "Packets/s",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "name": "avg_pkts_per_sec"
-      },
-      {
-        "value": "p95th_pkts_per_sec",
-        "column": "f_sum_both_pkts",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "Percentile",
-        "unit": "packets",
-        "group": "Packets/s",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_pkts_per_sec"
-      },
-      {
-        "value": "p99th_pkts_per_sec",
-        "column": "f_sum_both_pkts",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "Percentile",
-        "unit": "packets",
-        "group": "Packets/s",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_pkts_per_sec"
-      },
-      {
-        "value": "max_pkts_per_sec",
-        "column": "f_sum_both_pkts",
-        "fn": "max",
-        "label": "Max",
-        "unit": "packets",
-        "group": "Packets/s",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_pkts_per_sec"
-      },
+      { value: "avg_pkts_per_sec", column: "f_sum_both_pkts", fn: "average", label: "Average", unit: "packets", group: "Packets/s", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_pkts_per_sec" },
+      { value: "p95th_pkts_per_sec", column: "f_sum_both_pkts", fn: "percentile", rank: 95, label: "95th Percentile", unit: "packets", group: "Packets/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_pkts_per_sec" },
+      { value: "p99th_pkts_per_sec", column: "f_sum_both_pkts", fn: "percentile", rank: 99, label: "99th Percentile", unit: "packets", group: "Packets/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_pkts_per_sec" },
+      { value: "max_pkts_per_sec", column: "f_sum_both_pkts", fn: "max", label: "Max", unit: "packets", group: "Packets/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_pkts_per_sec" },
     ]
   },
   {
     label: 'Flows/s',
     options: [
-      {
-        "value": "avg_flows_per_sec",
-        "column": "trautocount",
-        "columnPrefixes": [
-          "f_fumlat",
-          "f_fsumloc"
-        ],
-        "fn": "average",
-        "label": "Average",
-        "unit": "fps",
-        "group": "Flows/s",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "name": "avg_flows_per_sec"
-      },
-      {
-        "value": "p95th_flows_per_sec",
-        "column": "trautocount",
-        "columnPrefixes": [
-          "f_fumlat",
-          "f_fsumloc"
-        ],
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "fps",
-        "group": "Flows/s",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_flows_per_sec"
-      },
-      {
-        "value": "p99th_flows_per_sec",
-        "column": "trautocount",
-        "columnPrefixes": [
-          "f_fumlat",
-          "f_fsumloc"
-        ],
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "fps",
-        "group": "Flows/s",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_flows_per_sec"
-      },
-      {
-        "value": "max_flows_per_sec",
-        "column": "trautocount",
-        "columnPrefixes": [
-          "f_fumlat",
-          "f_fsumloc"
-        ],
-        "fn": "max",
-        "label": "Max",
-        "unit": "fps",
-        "group": "Flows/s",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_flows_per_sec"
-      },
+      { value: "avg_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat","f_fsumloc"], fn: "average", label: "Average", unit: "fps", group: "Flows/s", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_flows_per_sec" },
+      { value: "p95th_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat","f_fsumloc"], fn: "percentile", rank: 95, label: "95th Percentile", unit: "fps", group: "Flows/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_flows_per_sec" },
+      { value: "p99th_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat","f_fsumloc"], fn: "percentile", rank: 99, label: "99th Percentile", unit: "fps", group: "Flows/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_flows_per_sec" },
+      { value: "max_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat","f_fsumloc"], fn: "max", label: "Max", unit: "fps", group: "Flows/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_flows_per_sec" },
     ]
   },
   {
     label: 'Unique IPs Source IPs Unique Count',
     options: [
-      {
-        "value": "avg_src_ip",
-        "column": "f_hll(inet_src_addr,0.0001)",
-        "fn": "average",
-        "label": "Average",
-        "unit": "unique_src_ip",
-        "group": "Unique IPs Source IPs Unique Count",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "raw": true,
-        "name": "avg_src_ip"
-      },
-      {
-        "value": "p95th_src_ip",
-        "column": "f_hll(inet_src_addr,0.0001)",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "unique_src_ip",
-        "group": "Unique IPs Source IPs Unique Count",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_src_ip"
-      },
-      {
-        "value": "p99th_src_ip",
-        "column": "f_hll(inet_src_addr,0.0001)",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "unique_src_ip",
-        "group": "Unique IPs Source IPs Unique Count",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_src_ip"
-      },
-      {
-        "value": "max_src_ip",
-        "column": "f_hll(inet_src_addr,0.0001)",
-        "fn": "max",
-        "label": "Max",
-        "unit": "unique_src_ip",
-        "group": "Unique IPs Source IPs Unique Count",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_src_ip"
-      },
+      { value: "avg_src_ip", column: "f_hll(inet_src_addr,0.0001)", fn: "average", label: "Average", unit: "unique_src_ip", group: "Unique IPs Source IPs Unique Count", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_src_ip" },
+      { value: "p95th_src_ip", column: "f_hll(inet_src_addr,0.0001)", fn: "percentile", rank: 95, label: "95th Percentile", unit: "unique_src_ip", group: "Unique IPs Source IPs Unique Count", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_src_ip" },
+      { value: "p99th_src_ip", column: "f_hll(inet_src_addr,0.0001)", fn: "percentile", rank: 99, label: "99th Percentile", unit: "unique_src_ip", group: "Unique IPs Source IPs Unique Count", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_src_ip" },
+      { value: "max_src_ip", column: "f_hll(inet_src_addr,0.0001)", fn: "max", label: "Max", unit: "unique_src_ip", group: "Unique IPs Source IPs Unique Count", origLabel: "Max", sample_rate: 1, raw: true, name: "max_src_ip" },
     ]
   },
   {
     label: 'Unique IPs Source IPs Bitrate Per IP',
     options: [
-      {
-        "value": "avg_bytes_per_src_ip",
-        "column": "bytes_per_src_ip",
-        "fn": "average",
-        "label": "Average",
-        "unit": "bytes_per_src_ip",
-        "group": "Unique IPs Source IPs Bitrate Per IP",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "name": "avg_bytes_per_src_ip"
-      },
-      {
-        "value": "p95th_bytes_per_src_ip",
-        "column": "bytes_per_src_ip",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "bytes_per_src_ip",
-        "group": "Unique IPs Source IPs Bitrate Per IP",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_bytes_per_src_ip"
-      },
-      {
-        "value": "p99th_bytes_per_src_ip",
-        "column": "bytes_per_src_ip",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "bytes_per_src_ip",
-        "group": "Unique IPs Source IPs Bitrate Per IP",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_bytes_per_src_ip"
-      },
-      {
-        "value": "max_bytes_per_src_ip",
-        "column": "bytes_per_src_ip",
-        "fn": "max",
-        "label": "Max",
-        "unit": "bytes_per_src_ip",
-        "group": "Unique IPs Source IPs Bitrate Per IP",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_bytes_per_src_ip"
-      },
+      { value: "avg_bytes_per_src_ip", column: "bytes_per_src_ip", fn: "average", label: "Average", unit: "bytes_per_src_ip", group: "Unique IPs Source IPs Bitrate Per IP", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_bytes_per_src_ip" },
+      { value: "p95th_bytes_per_src_ip", column: "bytes_per_src_ip", fn: "percentile", rank: 95, label: "95th Percentile", unit: "bytes_per_src_ip", group: "Unique IPs Source IPs Bitrate Per IP", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_bytes_per_src_ip" },
+      { value: "p99th_bytes_per_src_ip", column: "bytes_per_src_ip", fn: "percentile", rank: 99, label: "99th Percentile", unit: "bytes_per_src_ip", group: "Unique IPs Source IPs Bitrate Per IP", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_bytes_per_src_ip" },
+      { value: "max_bytes_per_src_ip", column: "bytes_per_src_ip", fn: "max", label: "Max", unit: "bytes_per_src_ip", group: "Unique IPs Source IPs Bitrate Per IP", origLabel: "Max", sample_rate: 1, raw: true, name: "max_bytes_per_src_ip" },
     ]
   },
   {
     label: 'Unique IPs Destination IPs Unique Count',
     options: [
-      {
-        "value": "avg_dst_ip",
-        "column": "f_hll(inet_dst_addr,0.0001)",
-        "fn": "average",
-        "label": "Average",
-        "unit": "unique_dst_ip",
-        "group": "Unique IPs Destination IPs Unique Count",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "name": "avg_dst_ip"
-      },
-      {
-        "value": "p95th_dst_ip",
-        "column": "f_hll(inet_dst_addr,0.0001)",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "unique_dst_ip",
-        "group": "Unique IPs Destination IPs Unique Count",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_dst_ip"
-      },
-      {
-        "value": "p99th_dst_ip",
-        "column": "f_hll(inet_dst_addr,0.0001)",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "unique_dst_ip",
-        "group": "Unique IPs Destination IPs Unique Count",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_dst_ip"
-      },
-      {
-        "value": "max_dst_ip",
-        "column": "f_hll(inet_dst_addr,0.0001)",
-        "fn": "max",
-        "label": "Max",
-        "unit": "unique_dst_ip",
-        "group": "Unique IPs Destination IPs Unique Count",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_dst_ip"
-      },
+      { value: "avg_dst_ip", column: "f_hll(inet_dst_addr,0.0001)", fn: "average", label: "Average", unit: "unique_dst_ip", group: "Unique IPs Destination IPs Unique Count", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_dst_ip" },
+      { value: "p95th_dst_ip", column: "f_hll(inet_dst_addr,0.0001)", fn: "percentile", rank: 95, label: "95th Percentile", unit: "unique_dst_ip", group: "Unique IPs Destination IPs Unique Count", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_dst_ip" },
+      { value: "p99th_dst_ip", column: "f_hll(inet_dst_addr,0.0001)", fn: "percentile", rank: 99, label: "99th Percentile", unit: "unique_dst_ip", group: "Unique IPs Destination IPs Unique Count", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_dst_ip" },
+      { value: "max_dst_ip", column: "f_hll(inet_dst_addr,0.0001)", fn: "max", label: "Max", unit: "unique_dst_ip", group: "Unique IPs Destination IPs Unique Count", origLabel: "Max", sample_rate: 1, raw: true, name: "max_dst_ip" },
     ]
   },
   {
     label: 'Unique IPs Destination IPs Bitrate Per IP',
     options: [
-      {
-        "value": "avg_bytes_per_dst_ip",
-        "column": "bytes_per_dst_ip",
-        "fn": "average",
-        "label": "Average",
-        "unit": "bytes_per_dst_ip",
-        "group": "Unique IPs Destination IPs Bitrate Per IP",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "name": "avg_bytes_per_dst_ip"
-      },
-      {
-        "value": "p95th_bytes_per_dst_ip",
-        "column": "bytes_per_dst_ip",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "bytes_per_dst_ip",
-        "group": "Unique IPs Destination IPs Bitrate Per IP",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_bytes_per_dst_ip"
-      },
-      {
-        "value": "p99th_bytes_per_dst_ip",
-        "column": "bytes_per_dst_ip",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "bytes_per_dst_ip",
-        "group": "Unique IPs Destination IPs Bitrate Per IP",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_bytes_per_dst_ip"
-      },
-      {
-        "value": "max_bytes_per_dst_ip",
-        "column": "bytes_per_dst_ip",
-        "fn": "max",
-        "label": "Max",
-        "unit": "bytes_per_dst_ip",
-        "group": "Unique IPs Destination IPs Bitrate Per IP",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_bytes_per_dst_ip"
-      },
+      { value: "avg_bytes_per_dst_ip", column: "bytes_per_dst_ip", fn: "average", label: "Average", unit: "bytes_per_dst_ip", group: "Unique IPs Destination IPs Bitrate Per IP", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_bytes_per_dst_ip" },
+      { value: "p95th_bytes_per_dst_ip", column: "bytes_per_dst_ip", fn: "percentile", rank: 95, label: "95th Percentile", unit: "bytes_per_dst_ip", group: "Unique IPs Destination IPs Bitrate Per IP", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_bytes_per_dst_ip" },
+      { value: "p99th_bytes_per_dst_ip", column: "bytes_per_dst_ip", fn: "percentile", rank: 99, label: "99th Percentile", unit: "bytes_per_dst_ip", group: "Unique IPs Destination IPs Bitrate Per IP", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_bytes_per_dst_ip" },
+      { value: "max_bytes_per_dst_ip", column: "bytes_per_dst_ip", fn: "max", label: "Max", unit: "bytes_per_dst_ip", group: "Unique IPs Destination IPs Bitrate Per IP", origLabel: "Max", sample_rate: 1, raw: true, name: "max_bytes_per_dst_ip" },
     ]
   },
   {
     label: 'Unique Route Prefixes Source',
     options: [
-      {
-        "value": "avg_src_route_prefix",
-        "column": "f_hll(inet_src_route_prefix,0.0001)",
-        "fn": "average",
-        "label": "Average",
-        "unit": "unique_src_route_prefix",
-        "group": "Unique Route Prefixes Source",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "raw": true,
-        "name": "avg_src_route_prefix"
-      },
-      {
-        "value": "p95th_src_route_prefix",
-        "column": "f_hll(inet_src_route_prefix,0.0001)",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "unique_src_route_prefix",
-        "group": "Unique Route Prefixes Source",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_src_route_prefix"
-      },
-      {
-        "value": "p99th_src_route_prefix",
-        "column": "f_hll(inet_src_route_prefix,0.0001)",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "unique_src_route_prefix",
-        "group": "Unique Route Prefixes Source",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_src_route_prefix"
-      },
-      {
-        "value": "max_src_route_prefix",
-        "column": "f_hll(inet_src_route_prefix,0.0001)",
-        "fn": "max",
-        "label": "Max",
-        "unit": "unique_src_route_prefix",
-        "group": "Unique Route Prefixes Source",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_src_route_prefix"
-      },
+      {"value":"avg_src_route_prefix","column":"f_hll(inet_src_route_prefix,0.0001)","fn":"average","label":"Average","unit":"unique_src_route_prefix","group":"Unique Route Prefixes Source","origLabel":"Average","sample_rate":1,"name":"avg_src_route_prefix","raw":true},
+      {"value":"p95th_src_route_prefix","column":"f_hll(inet_src_route_prefix,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_src_route_prefix","group":"Unique Route Prefixes Source","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_src_route_prefix","raw":true},
+      {"value":"p99th_src_route_prefix","column":"f_hll(inet_src_route_prefix,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_src_route_prefix","group":"Unique Route Prefixes Source","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_src_route_prefix","raw":true},
+      {"value":"max_src_route_prefix","column":"f_hll(inet_src_route_prefix,0.0001)","fn":"max","label":"Max","unit":"unique_src_route_prefix","group":"Unique Route Prefixes Source","origLabel":"Max","sample_rate":1,"name":"max_src_route_prefix","raw":true}
     ]
   },
   {
     label: 'Unique Route Prefixes Destination',
     options: [
-      {
-        "value": "avg_dst_route_prefix",
-        "column": "f_hll(inet_dst_route_prefix,0.0001)",
-        "fn": "average",
-        "label": "Average",
-        "unit": "unique_dst_route_prefix",
-        "group": "Unique Route Prefixes Destination",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "name": "avg_dst_route_prefix"
-      },
-      {
-        "value": "p95th_dst_route_prefix",
-        "column": "f_hll(inet_dst_route_prefix,0.0001)",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "unique_dst_route_prefix",
-        "group": "Unique Route Prefixes Destination",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_dst_route_prefix"
-      },
-      {
-        "value": "p99th_dst_route_prefix",
-        "column": "f_hll(inet_dst_route_prefix,0.0001)",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "unique_dst_route_prefix",
-        "group": "Unique Route Prefixes Destination",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_dst_route_prefix"
-      },
-      {
-        "value": "max_dst_route_prefix",
-        "column": "f_hll(inet_dst_route_prefix,0.0001)",
-        "fn": "max",
-        "label": "Max",
-        "unit": "unique_dst_route_prefix",
-        "group": "Unique Route Prefixes Destination",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_dst_route_prefix"
-      }, 
+      {"value":"avg_dst_route_prefix","column":"f_hll(inet_dst_route_prefix,0.0001)","fn":"average","label":"Average","unit":"unique_dst_route_prefix","group":"Unique Route Prefixes Destination","origLabel":"Average","sample_rate":1,"name":"avg_dst_route_prefix","raw":true},
+      {"value":"p95th_dst_route_prefix","column":"f_hll(inet_dst_route_prefix,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_dst_route_prefix","group":"Unique Route Prefixes Destination","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_dst_route_prefix","raw":true},
+      {"value":"p99th_dst_route_prefix","column":"f_hll(inet_dst_route_prefix,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_dst_route_prefix","group":"Unique Route Prefixes Destination","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_dst_route_prefix","raw":true},
+      {"value":"max_dst_route_prefix","column":"f_hll(inet_dst_route_prefix,0.0001)","fn":"max","label":"Max","unit":"unique_dst_route_prefix","group":"Unique Route Prefixes Destination","origLabel":"Max","sample_rate":1,"name":"max_dst_route_prefix","raw":true}
     ]
   },
   {
     label: 'Unique Ports Source',
     options: [
-      {
-        "value": "avg_src_port",
-        "column": "f_hll(l4_src_port.agg0,0.0001)",
-        "fn": "average",
-        "label": "Average",
-        "unit": "unique_src_port",
-        "group": "Unique Ports Source",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "raw": true,
-        "name": "avg_src_port"
-      },
-      {
-        "value": "p95th_src_port",
-        "column": "f_hll(l4_src_port.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "unique_src_port",
-        "group": "Unique Ports Source",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_src_port"
-      },
-      {
-        "value": "p99th_src_port",
-        "column": "f_hll(l4_src_port.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "unique_src_port",
-        "group": "Unique Ports Source",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_src_port"
-      },
-      {
-        "value": "max_src_port",
-        "column": "f_hll(l4_src_port.agg0,0.0001)",
-        "fn": "max",
-        "label": "Max",
-        "unit": "unique_src_port",
-        "group": "Unique Ports Source",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_src_port"
-      },
+      {"value":"avg_src_port","column":"f_hll(l4_src_port.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_src_port","group":"Unique Ports Source","origLabel":"Average","sample_rate":1,"name":"avg_src_port","raw":true},
+      {"value":"p95th_src_port","column":"f_hll(l4_src_port.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_src_port","group":"Unique Ports Source","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_src_port","raw":true},
+      {"value":"p99th_src_port","column":"f_hll(l4_src_port.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_src_port","group":"Unique Ports Source","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_src_port","raw":true},
+      {"value":"max_src_port","column":"f_hll(l4_src_port.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_src_port","group":"Unique Ports Source","origLabel":"Max","sample_rate":1,"name":"max_src_port","raw":true}
     ]
   },
   {
     label: 'Unique Ports Destination',
     options: [
-      {
-        "value": "avg_dst_port",
-        "column": "f_hll(l4_dst_port.agg0,0.0001)",
-        "fn": "average",
-        "label": "Average",
-        "unit": "unique_dst_port",
-        "group": "Unique Ports Destination",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "name": "avg_dst_port"
-      },
-      {
-        "value": "p95th_dst_port",
-        "column": "f_hll(l4_dst_port.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "unique_dst_port",
-        "group": "Unique Ports Destination",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_dst_port"
-      },
-      {
-        "value": "p99th_dst_port",
-        "column": "f_hll(l4_dst_port.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "unique_dst_port",
-        "group": "Unique Ports Destination",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_dst_port"
-      },
-      {
-        "value": "max_dst_port",
-        "column": "f_hll(l4_dst_port.agg0,0.0001)",
-        "fn": "max",
-        "label": "Max",
-        "unit": "unique_dst_port",
-        "group": "Unique Ports Destination",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_dst_port"
-      },
+      {"value":"avg_dst_port","column":"f_hll(l4_dst_port.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_dst_port","group":"Unique Ports Destination","origLabel":"Average","sample_rate":1,"name":"avg_dst_port","raw":true},
+      {"value":"p95th_dst_port","column":"f_hll(l4_dst_port.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_dst_port","group":"Unique Ports Destination","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_dst_port","raw":true},
+      {"value":"p99th_dst_port","column":"f_hll(l4_dst_port.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_dst_port","group":"Unique Ports Destination","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_dst_port","raw":true},
+      {"value":"max_dst_port","column":"f_hll(l4_dst_port.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_dst_port","group":"Unique Ports Destination","origLabel":"Max","sample_rate":1,"name":"max_dst_port","raw":true}
     ]
   },
   {
     label: 'Unique ASNs Source',
     options: [
-      {
-        "value": "avg_src_as",
-        "column": "f_hll(src_as.agg0,0.0001)",
-        "fn": "average",
-        "label": "Average",
-        "unit": "unique_src_as",
-        "group": "Unique ASNs Source",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "name": "avg_src_as"
-      },
-      {
-        "value": "p95th_src_as",
-        "column": "f_hll(src_as.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "unique_src_as",
-        "group": "Unique ASNs Source",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_src_as"
-      },
-      {
-        "value": "p99th_src_as",
-        "column": "f_hll(src_as.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "unique_src_as",
-        "group": "Unique ASNs Source",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_src_as"
-      },
-      {
-        "value": "max_src_as",
-        "column": "f_hll(src_as.agg0,0.0001)",
-        "fn": "max",
-        "label": "Max",
-        "unit": "unique_src_as",
-        "group": "Unique ASNs Source",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_src_as"
-      },
+      {"value":"avg_src_as","column":"f_hll(src_as.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_src_as","group":"Unique ASNs Source","origLabel":"Average","sample_rate":1,"name":"avg_src_as","raw":true},
+      {"value":"p95th_src_as","column":"f_hll(src_as.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_src_as","group":"Unique ASNs Source","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_src_as","raw":true},
+      {"value":"p99th_src_as","column":"f_hll(src_as.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_src_as","group":"Unique ASNs Source","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_src_as","raw":true},
+      {"value":"max_src_as","column":"f_hll(src_as.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_src_as","group":"Unique ASNs Source","origLabel":"Max","sample_rate":1,"name":"max_src_as","raw":true}
     ]
   },
   {
     label: 'Unique ASNs Destination',
     options: [
-      {
-        "value": "avg_dst_as",
-        "column": "f_hll(dst_as.agg0,0.0001)",
-        "fn": "average",
-        "label": "Average",
-        "unit": "unique_dst_as",
-        "group": "Unique ASNs Destination",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "name": "avg_dst_as"
-      },
-      {
-        "value": "p95th_dst_as",
-        "column": "f_hll(dst_as.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "unique_dst_as",
-        "group": "Unique ASNs Destination",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_dst_as"
-      },
-      {
-        "value": "p99th_dst_as",
-        "column": "f_hll(dst_as.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "unique_dst_as",
-        "group": "Unique ASNs Destination",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_dst_as"
-      },
-      {
-        "value": "max_dst_as",
-        "column": "f_hll(dst_as.agg0,0.0001)",
-        "fn": "max",
-        "label": "Max",
-        "unit": "unique_dst_as",
-        "group": "Unique ASNs Destination",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_dst_as"
-      },
+      {"value":"avg_dst_as","column":"f_hll(dst_as.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_dst_as","group":"Unique ASNs Destination","origLabel":"Average","sample_rate":1,"name":"avg_dst_as","raw":true},
+      {"value":"p95th_dst_as","column":"f_hll(dst_as.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_dst_as","group":"Unique ASNs Destination","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_dst_as","raw":true},
+      {"value":"p99th_dst_as","column":"f_hll(dst_as.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_dst_as","group":"Unique ASNs Destination","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_dst_as","raw":true},
+      {"value":"max_dst_as","column":"f_hll(dst_as.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_dst_as","group":"Unique ASNs Destination","origLabel":"Max","sample_rate":1,"name":"max_dst_as","raw":true}
     ]
   },
   {
     label: 'Unique ASNs Next Hop Destination',
     options: [
-      {
-        "value": "avg_dst_nexthop_as",
-        "column": "f_hll(dst_nexthop_as.agg0,0.0001)",
-        "fn": "average",
-        "label": "Average",
-        "unit": "unique_dst_nexthop_asn",
-        "group": "Unique ASNs Next Hop Destination",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "raw": true,
-        "name": "avg_dst_nexthop_as"
-      },
-      {
-        "value": "p95th_dst_nexthop_as",
-        "column": "f_hll(dst_nexthop_as.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "unique_dst_nexthop_asn",
-        "group": "Unique ASNs Next Hop Destination",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_dst_nexthop_as"
-      },
-      {
-        "value": "p99th_dst_nexthop_as",
-        "column": "f_hll(dst_nexthop_as.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "unique_dst_nexthop_asn",
-        "group": "Unique ASNs Next Hop Destination",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_dst_nexthop_as"
-      },
-      {
-        "value": "max_dst_nexthop_as",
-        "column": "f_hll(dst_nexthop_as.agg0,0.0001)",
-        "fn": "max",
-        "label": "Max",
-        "unit": "unique_dst_nexthop_asn",
-        "group": "Unique ASNs Next Hop Destination",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_dst_nexthop_as"
-      },
-    ],
+      {"value":"avg_dst_nexthop_as","column":"f_hll(dst_nexthop_as.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_dst_nexthop_asn","group":"Unique ASNs Next Hop Destination","origLabel":"Average","sample_rate":1,"name":"avg_dst_nexthop_as","raw":true},
+      {"value":"p95th_dst_nexthop_as","column":"f_hll(dst_nexthop_as.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_dst_nexthop_asn","group":"Unique ASNs Next Hop Destination","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_dst_nexthop_as","raw":true},
+      {"value":"p99th_dst_nexthop_as","column":"f_hll(dst_nexthop_as.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_dst_nexthop_asn","group":"Unique ASNs Next Hop Destination","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_dst_nexthop_as","raw":true},
+      {"value":"max_dst_nexthop_as","column":"f_hll(dst_nexthop_as.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_dst_nexthop_asn","group":"Unique ASNs Next Hop Destination","origLabel":"Max","sample_rate":1,"name":"max_dst_nexthop_as","raw":true}
+    ]
   },
   {
     label: 'Unique Countries Source',
     options: [
-      {
-        "value": "avg_src_countries",
-        "column": "f_hll(src_geo.agg0,0.0001)",
-        "fn": "average",
-        "label": "Average",
-        "unit": "unique_src_geo",
-        "group": "Unique Countries Source",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "name": "avg_src_countries"
-      },
-      {
-        "value": "p95th_src_countries",
-        "column": "f_hll(src_geo.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "unique_src_geo",
-        "group": "Unique Countries Source",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_src_countries"
-      },
-      {
-        "value": "p99th_src_countries",
-        "column": "f_hll(src_geo.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "unique_src_geo",
-        "group": "Unique Countries Source",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_src_countries"
-      },
-      {
-        "value": "max_src_countries",
-        "column": "f_hll(src_geo.agg0,0.0001)",
-        "fn": "max",
-        "label": "Max",
-        "unit": "unique_src_geo",
-        "group": "Unique Countries Source",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_src_countries"
-      },
-    ],
+      {"value":"avg_src_countries","column":"f_hll(src_geo.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_src_geo","group":"Unique Countries Source","origLabel":"Average","sample_rate":1,"name":"avg_src_countries","raw":true},
+      {"value":"p95th_src_countries","column":"f_hll(src_geo.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_src_geo","group":"Unique Countries Source","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_src_countries","raw":true},
+      {"value":"p99th_src_countries","column":"f_hll(src_geo.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_src_geo","group":"Unique Countries Source","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_src_countries","raw":true},
+      {"value":"max_src_countries","column":"f_hll(src_geo.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_src_geo","group":"Unique Countries Source","origLabel":"Max","sample_rate":1,"name":"max_src_countries","raw":true}
+    ]
   },
   {
     label: 'Unique Countries Destination',
     options: [
-      {
-        "value": "avg_dst_countries",
-        "column": "f_hll(dst_geo.agg0,0.0001)",
-        "fn": "average",
-        "label": "Average",
-        "unit": "unique_dst_geo",
-        "group": "Unique Countries Destination",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "name": "avg_dst_countries"
-      },
-      {
-        "value": "p95th_dst_countries",
-        "column": "f_hll(dst_geo.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "unique_dst_geo",
-        "group": "Unique Countries Destination",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_dst_countries"
-      },
-      {
-        "value": "p99th_dst_countries",
-        "column": "f_hll(dst_geo.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "unique_dst_geo",
-        "group": "Unique Countries Destination",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_dst_countries"
-      },
-      {
-        "value": "max_dst_countries",
-        "column": "f_hll(dst_geo.agg0,0.0001)",
-        "fn": "max",
-        "label": "Max",
-        "unit": "unique_dst_geo",
-        "group": "Unique Countries Destination",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_dst_countries"
-      },
-    ],
+      {"value":"avg_dst_countries","column":"f_hll(dst_geo.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_dst_geo","group":"Unique Countries Destination","origLabel":"Average","sample_rate":1,"name":"avg_dst_countries","raw":true},
+      {"value":"p95th_dst_countries","column":"f_hll(dst_geo.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_dst_geo","group":"Unique Countries Destination","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_dst_countries","raw":true},
+      {"value":"p99th_dst_countries","column":"f_hll(dst_geo.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_dst_geo","group":"Unique Countries Destination","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_dst_countries","raw":true},
+      {"value":"max_dst_countries","column":"f_hll(dst_geo.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_dst_geo","group":"Unique Countries Destination","origLabel":"Max","sample_rate":1,"name":"max_dst_countries","raw":true}
+    ]
   },
   {
     label: 'Unique Regions Source',
     options: [
-      {
-        "value": "avg_src_regions",
-        "column": "f_hll(src_geo_region.agg0,0.0001)",
-        "fn": "average",
-        "label": "Average",
-        "unit": "unique_src_geo_region",
-        "group": "Unique Regions Source",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "name": "avg_src_regions"
-      },
-      {
-        "value": "p95th_src_regions",
-        "column": "f_hll(src_geo_region.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "unique_src_geo_region",
-        "group": "Unique Regions Source",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_src_regions"
-      },
-      {
-        "value": "p99th_src_regions",
-        "column": "f_hll(src_geo_region.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "unique_src_geo_region",
-        "group": "Unique Regions Source",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_src_regions"
-      },
-      {
-        "value": "max_src_regions",
-        "column": "f_hll(src_geo_region.agg0,0.0001)",
-        "fn": "max",
-        "label": "Max",
-        "unit": "unique_src_geo_region",
-        "group": "Unique Regions Source",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_src_regions"
-      },
-    ],
+      {"value":"avg_src_regions","column":"f_hll(src_geo_region.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_src_geo_region","group":"Unique Regions Source","origLabel":"Average","sample_rate":1,"name":"avg_src_regions","raw":true},
+      {"value":"p95th_src_regions","column":"f_hll(src_geo_region.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_src_geo_region","group":"Unique Regions Source","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_src_regions","raw":true},
+      {"value":"p99th_src_regions","column":"f_hll(src_geo_region.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_src_geo_region","group":"Unique Regions Source","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_src_regions","raw":true},
+      {"value":"max_src_regions","column":"f_hll(src_geo_region.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_src_geo_region","group":"Unique Regions Source","origLabel":"Max","sample_rate":1,"name":"max_src_regions","raw":true}
+    ]
   },
   {
     label: 'Unique Regions Destination',
     options: [
-      {
-        "value": "avg_dst_regions",
-        "column": "f_hll(dst_geo_region.agg0,0.0001)",
-        "fn": "average",
-        "label": "Average",
-        "unit": "unique_dst_geo_region",
-        "group": "Unique Regions Destination",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "raw": true,
-        "name": "avg_dst_regions"
-      },
-      {
-        "value": "p95th_dst_regions",
-        "column": "f_hll(dst_geo_region.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "unique_dst_geo_region",
-        "group": "Unique Regions Destination",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_dst_regions"
-      },
-      {
-        "value": "p99th_dst_regions",
-        "column": "f_hll(dst_geo_region.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "unique_dst_geo_region",
-        "group": "Unique Regions Destination",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_dst_regions"
-      },
-      {
-        "value": "max_dst_regions",
-        "column": "f_hll(dst_geo_region.agg0,0.0001)",
-        "fn": "max",
-        "label": "Max",
-        "unit": "unique_dst_geo_region",
-        "group": "Unique Regions Destination",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_dst_regions"
-      },
-    ],
+      {"value":"avg_dst_regions","column":"f_hll(dst_geo_region.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_dst_geo_region","group":"Unique Regions Destination","origLabel":"Average","sample_rate":1,"name":"avg_dst_regions","raw":true},
+      {"value":"p95th_dst_regions","column":"f_hll(dst_geo_region.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_dst_geo_region","group":"Unique Regions Destination","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_dst_regions","raw":true},
+      {"value":"p99th_dst_regions","column":"f_hll(dst_geo_region.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_dst_geo_region","group":"Unique Regions Destination","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_dst_regions","raw":true},
+      {"value":"max_dst_regions","column":"f_hll(dst_geo_region.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_dst_geo_region","group":"Unique Regions Destination","origLabel":"Max","sample_rate":1,"name":"max_dst_regions","raw":true}
+    ]
   },
   {
     label: 'Unique Cities Source',
     options: [
-      {
-        "value": "avg_src_cities",
-        "column": "f_hll(src_geo_city.agg0,0.0001)",
-        "fn": "average",
-        "label": "Average",
-        "unit": "unique_src_geo_city",
-        "group": "Unique Cities Source",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "name": "avg_src_cities"
-      },
-      {
-        "value": "p95th_src_cities",
-        "column": "f_hll(src_geo_city.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "unique_src_geo_city",
-        "group": "Unique Cities Source",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_src_cities"
-      },
-      {
-        "value": "p99th_src_cities",
-        "column": "f_hll(src_geo_city.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "unique_src_geo_city",
-        "group": "Unique Cities Source",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_src_cities"
-      },
-      {
-        "value": "max_src_cities",
-        "column": "f_hll(src_geo_city.agg0,0.0001)",
-        "fn": "max",
-        "label": "Max",
-        "unit": "unique_src_geo_city",
-        "group": "Unique Cities Source",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_src_cities"
-      },
-    ],
+      {"value":"avg_src_cities","column":"f_hll(src_geo_city.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_src_geo_city","group":"Unique Cities Source","origLabel":"Average","sample_rate":1,"name":"avg_src_cities","raw":true},
+      {"value":"p95th_src_cities","column":"f_hll(src_geo_city.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_src_geo_city","group":"Unique Cities Source","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_src_cities","raw":true},
+      {"value":"p99th_src_cities","column":"f_hll(src_geo_city.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_src_geo_city","group":"Unique Cities Source","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_src_cities","raw":true},
+      {"value":"max_src_cities","column":"f_hll(src_geo_city.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_src_geo_city","group":"Unique Cities Source","origLabel":"Max","sample_rate":1,"name":"max_src_cities","raw":true}
+    ]
   },
   {
     label: 'Unique Cities Destination',
     options: [
-      {
-        "value": "avg_dst_cities",
-        "column": "f_hll(dst_geo_city.agg0,0.0001)",
-        "fn": "average",
-        "label": "Average",
-        "unit": "unique_dst_geo_city",
-        "group": "Unique Cities Destination",
-        "origLabel": "Average",
-        "sample_rate": 1,
-        "name": "avg_dst_cities"
-      },
-      {
-        "value": "p95th_dst_cities",
-        "column": "f_hll(dst_geo_city.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "unique_dst_geo_city",
-        "group": "Unique Cities Destination",
-        "origLabel": "95th Percentile",
-        "sample_rate": 1,
-        "name": "p95th_dst_cities"
-      },
-      {
-        "value": "p99th_dst_cities",
-        "column": "f_hll(dst_geo_city.agg0,0.0001)",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "unique_dst_geo_city",
-        "group": "Unique Cities Destination",
-        "origLabel": "99th Percentile",
-        "sample_rate": 1,
-        "name": "p99th_dst_cities"
-      },
-      {
-        "value": "max_dst_cities",
-        "column": "f_hll(dst_geo_city.agg0,0.0001)",
-        "fn": "max",
-        "label": "Max",
-        "unit": "unique_dst_geo_city",
-        "group": "Unique Cities Destination",
-        "origLabel": "Max",
-        "sample_rate": 1,
-        "name": "max_dst_cities"
-      },
-    ],
+      {"value":"avg_dst_cities","column":"f_hll(dst_geo_city.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_dst_geo_city","group":"Unique Cities Destination","origLabel":"Average","sample_rate":1,"name":"avg_dst_cities","raw":true},
+      {"value":"p95th_dst_cities","column":"f_hll(dst_geo_city.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_dst_geo_city","group":"Unique Cities Destination","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_dst_cities","raw":true},
+      {"value":"p99th_dst_cities","column":"f_hll(dst_geo_city.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_dst_geo_city","group":"Unique Cities Destination","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_dst_cities","raw":true},
+      {"value":"max_dst_cities","column":"f_hll(dst_geo_city.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_dst_geo_city","group":"Unique Cities Destination","origLabel":"Max","sample_rate":1,"name":"max_dst_cities","raw":true}
+    ]
   },
   {
     label: 'Sample Rate Max',
     options: [
-      {
-        "value": "avg_max_sample_rate",
-        "column": "f_max_sample_rate",
-        "fn": "average",
-        "label": "Average",
-        "unit": "max_sample_rate",
-        "group": "Sample Rate Max",
-        "origLabel": "Average",
-        "sample_rate": 0.01,
-        "name": "avg_max_sample_rate"
-      },
-      {
-        "value": "p95th_max_sample_rate",
-        "column": "f_max_sample_rate",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "max_sample_rate",
-        "group": "Sample Rate Max",
-        "origLabel": "95th Percentile",
-        "sample_rate": 0.01,
-        "name": "p95th_max_sample_rate"
-      },
-      {
-        "value": "p99th_max_sample_rate",
-        "column": "f_max_sample_rate",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "max_sample_rate",
-        "group": "Sample Rate Max",
-        "origLabel": "99th Percentile",
-        "sample_rate": 0.01,
-        "name": "p99th_max_sample_rate"
-      },
-      {
-        "value": "max_max_sample_rate",
-        "column": "f_max_sample_rate",
-        "fn": "max",
-        "label": "Max",
-        "unit": "max_sample_rate",
-        "group": "Sample Rate Max",
-        "origLabel": "Max",
-        "sample_rate": 0.01,
-        "name": "max_max_sample_rate"
-      },
-    ],
+      {"value":"avg_max_sample_rate","column":"f_max_sample_rate","fn":"average","label":"Average","unit":"max_sample_rate","group":"Sample Rate Max","origLabel":"Average","sample_rate":0.01,"name":"avg_max_sample_rate","raw":true},
+      {"value":"p95th_max_sample_rate","column":"f_max_sample_rate","fn":"percentile","rank":95,"label":"95th Percentile","unit":"max_sample_rate","group":"Sample Rate Max","origLabel":"95th Percentile","sample_rate":0.01,"name":"p95th_max_sample_rate","raw":true},
+      {"value":"p99th_max_sample_rate","column":"f_max_sample_rate","fn":"percentile","rank":99,"label":"99th Percentile","unit":"max_sample_rate","group":"Sample Rate Max","origLabel":"99th Percentile","sample_rate":0.01,"name":"p99th_max_sample_rate","raw":true},
+      {"value":"max_max_sample_rate","column":"f_max_sample_rate","fn":"max","label":"Max","unit":"max_sample_rate","group":"Sample Rate Max","origLabel":"Max","sample_rate":0.01,"name":"max_max_sample_rate","raw":true}
+    ]
   },
   {
     label: 'Sample Rate Average',
     options: [
-      {
-        "value": "avg_avg_sample_rate",
-        "column": "f_avg_sample_rate",
-        "fn": "average",
-        "label": "Average",
-        "unit": "avg_sample_rate",
-        "group": "Sample Rate Average",
-        "origLabel": "Average",
-        "sample_rate": 0.01,
-        "raw": true,
-        "name": "avg_avg_sample_rate"
-      },
-      {
-        "value": "p95th_avg_sample_rate",
-        "column": "f_avg_sample_rate",
-        "fn": "percentile",
-        "rank": 95,
-        "label": "95th Percentile",
-        "unit": "avg_sample_rate",
-        "group": "Sample Rate Average",
-        "origLabel": "95th Percentile",
-        "sample_rate": 0.01,
-        "name": "p95th_avg_sample_rate"
-      },
-      {
-        "value": "p99th_avg_sample_rate",
-        "column": "f_avg_sample_rate",
-        "fn": "percentile",
-        "rank": 99,
-        "label": "99th Percentile",
-        "unit": "avg_sample_rate",
-        "group": "Sample Rate Average",
-        "origLabel": "99th Percentile",
-        "sample_rate": 0.01,
-        "name": "p99th_avg_sample_rate"
-      },
-      {
-        "value": "max_avg_sample_rate",
-        "column": "f_avg_sample_rate",
-        "fn": "max",
-        "label": "Max",
-        "unit": "avg_sample_rate",
-        "group": "Sample Rate Average",
-        "origLabel": "Max",
-        "sample_rate": 0.01,
-        "name": "max_avg_sample_rate"
-      }
-    ],
-  },
+      {"value":"avg_avg_sample_rate","column":"f_avg_sample_rate","fn":"average","label":"Average","unit":"avg_sample_rate","group":"Sample Rate Average","origLabel":"Average","sample_rate":0.01,"name":"avg_avg_sample_rate","raw":true},
+      {"value":"p95th_avg_sample_rate","column":"f_avg_sample_rate","fn":"percentile","rank":95,"label":"95th Percentile","unit":"avg_sample_rate","group":"Sample Rate Average","origLabel":"95th Percentile","sample_rate":0.01,"name":"p95th_avg_sample_rate","raw":true},
+      {"value":"p99th_avg_sample_rate","column":"f_avg_sample_rate","fn":"percentile","rank":99,"label":"99th Percentile","unit":"avg_sample_rate","group":"Sample Rate Average","origLabel":"99th Percentile","sample_rate":0.01,"name":"p99th_avg_sample_rate","raw":true},
+      {"value":"max_avg_sample_rate","column":"f_avg_sample_rate","fn":"max","label":"Max","unit":"avg_sample_rate","group":"Sample Rate Average","origLabel":"Max","sample_rate":0.01,"name":"max_avg_sample_rate","raw":true}
+    ]
+  }
 ];
 
 export const allMetricOptions = flattenMetricOptions(metricList);

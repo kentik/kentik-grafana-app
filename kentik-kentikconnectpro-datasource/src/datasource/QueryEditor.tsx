@@ -114,8 +114,6 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         fetchTagKeys(),
       ]);
 
-      console.log(metrics);
-
       setState({
         ...state,
         sites,
@@ -143,7 +141,6 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     target?: any
   ): Promise<Array<ComboboxOption<string>>> => {
     let metrics: QueryItem[] = await props.datasource.metricFindQuery(query, target || props.query);
-    console.log(variableName);
     if (variableName === '$metric') {
       return metrics;
     }
@@ -398,6 +395,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
             }}
             options={state.metrics}
             width={40}
+            hideSelectedOptions={false}
             onChange={(value) => onMetricSelect(value)}
           />
         </Field>

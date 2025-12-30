@@ -168,7 +168,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
       throw new Error('Query error: Dimension field is required');
     }
 
-    const metricDef = _.find(metricList, { value: query.metric[0] });
+    const metricDef = _.find(allMetricOptions, { unit: query.metric[0] });
 
     if (!metricDef) {
       throw new Error('Query error: Metric field is required');
