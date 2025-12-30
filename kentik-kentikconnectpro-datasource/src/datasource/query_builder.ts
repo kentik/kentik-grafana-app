@@ -1,5 +1,5 @@
 import { ALL_SITES_LABEL } from './DataSource';
-import { metricList, filterFieldList, Metric, FilterField } from './metric_def';
+import { metricList, filterFieldList, Metric, FilterField, allMetricOptions } from './metric_def';
 
 import * as _ from 'lodash';
 
@@ -99,7 +99,9 @@ function formatFilters(kentikFilterGroups: any[]) {
 }
 
 function buildTopXdataQuery(options: any) {
-  const metricDef = _.find<Metric>(metricList, { value: options.metric });
+  const metricDef = allMetricOptions.find(opt =>
+    options.metric.some((metric: any) => metric.value === opt.value)
+  );
   if (!metricDef) {
     throw new Error('Query error: Metric field is required');
   }
@@ -109,7 +111,7 @@ function buildTopXdataQuery(options: any) {
 
   const query = {
     dimension: options.dimension?.split(','),
-    metric: [options.metric],
+    metric: _.uniq(options.metric.map((m: any) => m.unit)),
     matrixBy: [],
     cidr: 32,
     cidr6: 128,
@@ -121,7 +123,8 @@ function buildTopXdataQuery(options: any) {
     starting_time: startingTime,
     ending_time: endingTime,
     device_name: options.deviceNames?.split(','),
-    outsort: metricDef!.outsort,
+    // outsort: metricDef!.outsort,
+    outsort: "avg_both",
     aggregates: formatAggs(metricDef),
     filters_obj: formatFilters(options.kentikFilterGroups),
     saved_filters: options.kentikSavedFilters,

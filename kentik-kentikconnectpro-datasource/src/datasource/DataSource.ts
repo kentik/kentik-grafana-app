@@ -1,5 +1,5 @@
 import queryBuilder from './query_builder';
-import { dimensionList, metricList, filterFieldList, Dimension, Metric, FilterField } from './metric_def';
+import { dimensionList, metricList, filterFieldList, Dimension, Metric, FilterField, allMetricOptions } from './metric_def';
 import { KentikAPI } from './kentik_api';
 import { KentikProxy } from './kentik_proxy';
 import { DataSourceInstanceSettings, DataSourceJsonData, DataSourceApi, AdHocVariableFilter, FieldType, DataQueryRequest, DataQueryResponse, TestDataSourceResponse, PartialDataFrame } from '@grafana/data';
@@ -126,7 +126,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         for (const singleAgg of query.aggregates) {
           const perAggQuery = {
             ...query,
-            aggregates: [singleAgg], // tylko 1 aggregate!
+            aggregates: [singleAgg], 
             aggregateTypes: [singleAgg.name],
             outsort: singleAgg.name,
           };
@@ -340,7 +340,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     if (query.text === undefined && query.value === undefined) {
       throw new Error('At least one of text / value must be defined');
     }
-    const metric = _.find<Metric>(metricList, query);
+    const metric = _.find<Metric>(allMetricOptions, query);
     if (metric === undefined) {
       return null;
     }

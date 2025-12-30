@@ -11,7 +11,7 @@ export interface Query extends DataQuery {
   sites: SelectableValue[];
   devices: SelectableValue[];
   dimension: SelectableValue[];
-  metric: string;
+  metric: SelectableValue[];
   hostnameLookup: string;
   prefix: string;
   customFilters: CustomFilter[];
@@ -96,7 +96,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     sites: [] as Array<SelectableValue<string>>,
     devices: [] as Array<SelectableValue<string>>,
     dimensions: [] as Array<SelectableValue<string>>,
-    metrics: [] as Array<ComboboxOption<string>>,
+    metrics: [] as Array<SelectableValue<string>>,
     tagKeys: [] as Array<ComboboxOption<string>>,
     tagValues: [] as Array<Array<ComboboxOption<string>>>,
     operators: getOperators(),
@@ -113,6 +113,8 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         fetchMetrics(),
         fetchTagKeys(),
       ]);
+
+      console.log(metrics);
 
       setState({
         ...state,
@@ -141,6 +143,10 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     target?: any
   ): Promise<Array<ComboboxOption<string>>> => {
     let metrics: QueryItem[] = await props.datasource.metricFindQuery(query, target || props.query);
+    console.log(variableName);
+    if (variableName === '$metric') {
+      return metrics;
+    }
     return convertToComboboxOptions(appendVariableIfExists(metrics, variableName));
   };
 
@@ -212,6 +218,14 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     // @ts-ignore
     query['devices'] = value;
     props.onChange(query);
+  }
+
+  const onMetricSelect = (value: SelectableValue[]) => {
+    const query: Query = _.cloneDeep(props.query);
+    // @ts-ignore
+    query['metric'] = value;
+    props.onChange(query);
+    props.onRunQuery();
   }
 
   const onTopXBlur = () => {
@@ -342,7 +356,8 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
             value={props.query.sites || []}
             disabled={state.isLoading}
             options={state.isLoading ? [] : state.sites}
-            width={20}
+            width={40}
+            hideSelectedOptions={false}
             onChange={(value) => onSitesSelect(value)}
           />
         </Field>
@@ -352,7 +367,8 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
             disabled={state.isLoading}
             value={props.query.devices || []}
             options={state.devices}
-            width={20}
+            width={40}
+            hideSelectedOptions={false}
             onChange={(value) => onDeviceSelect(value)}
           />
         </Field>
@@ -365,20 +381,24 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
               disabled={state.isLoading}
               value={props.query.dimension}
               options={state.dimensions}
-              width={20}
+              width={40}
+              hideSelectedOptions={false}
               onChange={(value) => onDimensionSelect(value)}
             />
             {props.query.dimension?.length >= MAX_DIMENSIONS && <div style={{ width: '150px' }}>Max {MAX_DIMENSIONS} dimensions allowed.</div>}
           </>
         </Field>
         <Field label="Metric">
-          <Combobox
+          <MultiSelect
             placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
             disabled={state.isLoading}
             value={props.query.metric}
+            components={{
+              MultiValueLabel,
+            }}
             options={state.metrics}
-            width={20}
-            onChange={(option) => onOptionSelect('metric', option)}
+            width={40}
+            onChange={(value) => onMetricSelect(value)}
           />
         </Field>
       </Stack>
@@ -387,7 +407,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
           <Combobox
             value={props.query.hostnameLookup}
             options={convertToComboboxOptions(appendVariableIfExists(HOSTNAME_LOOKUP_CHOICES, '$dns_lookup'))}
-            width={20}
+            width={19.5}
             placeholder='Select...'
             onChange={(option) => onOptionSelect('hostnameLookup', option)}
           />
@@ -395,19 +415,17 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         <Field label="Prefix">
           <Input
             type="text"
-            width={20}
+            width={19.5}
             value={props.query.prefix}
             onChange={(e) => props.onChange({ ...props.query, prefix: e.currentTarget.value })}
             onBlur={props.onRunQuery}
             placeholder='Type...'
           />
         </Field>
-      </Stack>
-      <Stack direction="row">
         <Field label="Alias by">
           <Input
             type="text"
-            width={20}
+            width={19.5}
             value={props.query.aliasBy}
             onChange={(e) => props.onChange({ ...props.query, aliasBy: e.currentTarget.value })}
             onBlur={props.onRunQuery}
@@ -417,7 +435,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         <Field label="Visualization depth">
           <Input
             type="text"
-            width={20}
+            width={19.5}
             value={props.query.topx}
             onChange={(e) => onOptionChange('topx', e.currentTarget.value)}
             onBlur={onTopXBlur}
@@ -481,5 +499,19 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         </Stack>
       ))}
     </Stack>
+  );
+};
+
+import { components, MultiValueProps } from 'react-select';
+
+const MultiValueLabel = (props: MultiValueProps<any>) => {
+  const { label, group } = props.data;
+
+  return (
+    <components.MultiValueLabel {...props}>
+      <strong>{group}</strong>
+      <span style={{ margin: '0 4px' }}>/</span>
+      {label}
+    </components.MultiValueLabel>
   );
 };
