@@ -1,5 +1,5 @@
 import queryBuilder from './query_builder';
-import { dimensionList, metricList, filterFieldList, Dimension, Metric, FilterField, allMetricOptions } from './metric_def';
+import { dimensionList, metricNestedList, filterFieldList, Dimension, Metric, FilterField, allMetricOptions } from './metric_def';
 import { KentikAPI } from './kentik_api';
 import { KentikProxy } from './kentik_proxy';
 import { DataSourceInstanceSettings, DataSourceJsonData, DataSourceApi, AdHocVariableFilter, FieldType, DataQueryRequest, DataQueryResponse, TestDataSourceResponse, PartialDataFrame } from '@grafana/data';
@@ -10,6 +10,7 @@ import { CustomFilter, DEFAULT_QUERY, Query } from './QueryEditor';
 
 export interface MyDataSourceOptions extends DataSourceJsonData { }
 export const ALL_SITES_LABEL = 'All';
+export const KENTIK_DESCRIPTION_PANEL = 'kentik-description-panel';
 
 export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   datasourceType: string;
@@ -43,7 +44,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     if (!options.targets || options.targets.length === 0) {
       return Promise.resolve({ data: [] });
     }
-    if (options.panelPluginId === 'kentik-description-panel') {
+    if (options.panelPluginId === KENTIK_DESCRIPTION_PANEL) {
       return Promise.resolve({ data: [] });
     }
 
@@ -63,6 +64,14 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
         );
+
+        const metrics = this.templateSrv.replace(
+          //@ts-ignore
+          target.metric,
+          options.scopedVars,
+          this.interpolateDeviceField.bind(this)
+        );
+
         const queryCustomFilters = _.map(
           _.filter(
             target.customFilters,
@@ -97,14 +106,14 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
             to: options.range.to,
           },
           dimension: _.isArray(dimension) ? dimension.map((dimension) => dimension.value).toString() : dimension,
-          metric: this.templateSrv.replace(target.metric),
+          metric: _.isArray(metrics) ? metrics.map((metric) => metric.value).toString() : metrics,
           kentikFilterGroups: filters,
           kentikSavedFilters: kentikFilterGroups.savedFilters,
           hostnameLookup: this.templateSrv.replace(target.hostnameLookup),
           siteNames: siteNames,
           topx: target.topx,
         };
-        const query = queryBuilder.buildTopXdataQuery(queryOptions);
+        const query = queryBuilder.buildTopXdataQuery(queryOptions, options.panelPluginId);
 
         // table mode
         if (target.mode === 'table') {
@@ -162,20 +171,23 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     }
 
     const extendedDimensionsList = await this._getExtendedDimensionList(dimensionList);
-    const dimensionDef = _.find(extendedDimensionsList, { value: query.dimension[0] });
+    const dimensionDefs = _.filter(
+      extendedDimensionsList,
+      item => query.dimension.includes(item.value)
+    );
 
-    if (!dimensionDef) {
+    if (_.isEmpty(dimensionDefs)) {
       throw new Error('Query error: Dimension field is required');
     }
 
-    const metricDef = _.find(allMetricOptions, { unit: query.metric[0] });
+    const metricDefs = allMetricOptions.filter(opt => query.aggregateTypes.includes(opt.value));;
 
-    if (!metricDef) {
+    if (!metricDefs) {
       throw new Error('Query error: Metric field is required');
     }
 
     if (mode === 'table') {
-      return this.processTableData(bucketData, dimensionDef, metricDef);
+      return this.processTableData(bucketData, dimensionDefs, metricDefs);
     } else {
       return this.processTimeSeries(bucketData, query, target, drilldownUrl);
     }
@@ -252,41 +264,48 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     return alias;
   }
 
-  processTableData(bucketData: any[], dimensionDef: any, metricDef: any) {
-    const dimensionColumn = {
-      name: dimensionDef.text,
+  processTableData(bucketData: any[], dimensionDefs: any[], metricDefs: any[]) {
+    const seriesColumn = {
+      name: 'Series name',
       type: FieldType.string,
-      values: [] as any[],
+      values: [] as string[],
     };
-
-    const metricColumns = metricDef.tableFields.map((col: any) => ({
-      name: col.text,
+  
+    const dimensionColumn = {
+      name: 'Dimension',
+      type: FieldType.string,
+      values: [] as string[],
+    };
+  
+    const metricColumns = metricDefs.map((def: any) => ({
+      name: def.tableField.text,
       type: FieldType.number,
       values: [] as number[],
-      config: { unit: col.metric },
+      config: { unit: def.tableField.metric },
     }));
-
+  
+    const allDimensionNames = dimensionDefs.map(d => d.text).join(', ');
+  
     _.forEach(bucketData, (row) => {
-      const seriesName = row.key;
-      dimensionColumn.values.push(seriesName);
-
-      for (let i = 0; i < metricColumns.length; i++) {
-        const col = metricDef.tableFields[i];
-        let val = row[col.field];
-
-        if (_.isString(val)) {
-          val = parseFloat(val);
-        }
-
+      seriesColumn.values.push(row.key);
+      dimensionColumn.values.push(allDimensionNames); 
+  
+      metricDefs.forEach((metricDef, i) => {
+        let val = row[metricDef.tableField.field];
+        if (_.isString(val)) val = parseFloat(val);
         metricColumns[i].values.push(val);
-      }
+      });
     });
-
+  
     const frame: PartialDataFrame = {
-      name: dimensionDef.text,
-      fields: [dimensionColumn, ...metricColumns],
+      name: 'Series by Dimension',
+      fields: [
+        seriesColumn,
+        dimensionColumn,
+        ...metricColumns,
+      ],
     };
-
+  
     return frame;
   }
 
@@ -300,7 +319,10 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         return this._getExtendedDimensionList(dimensionList);
       }
       case 'metrics()': {
-        return metricList;
+        return metricNestedList;
+      }
+      case 'metricsOptions()': {
+        return allMetricOptions;
       }
       case 'devices()': {
         let devices = await this.kentik.getDevices();

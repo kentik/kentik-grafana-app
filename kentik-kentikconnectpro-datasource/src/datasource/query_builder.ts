@@ -98,12 +98,11 @@ function formatFilters(kentikFilterGroups: any[]) {
   return filtersObj;
 }
 
-function buildTopXdataQuery(options: any) {
-  console.log(options.metric);
-  const metricDef = allMetricOptions.find(opt =>
-    _.isArray(options.metric) ? options.metric.some((metric: any) => metric.value === opt.value) : false
-  );
-  if (!metricDef) {
+function buildTopXdataQuery(options: any, panelId?: string) {
+  const metricArray = options.metric.split(',')
+  const metricDefs = allMetricOptions.filter(opt => metricArray.includes(opt.value));
+
+  if (_.isEmpty(metricDefs)) {
     throw new Error('Query error: Metric field is required');
   }
   const startingTime = options.range.from.utc().format(KENTIK_TIME_FORMAT);
@@ -112,7 +111,7 @@ function buildTopXdataQuery(options: any) {
 
   const query = {
     dimension: options.dimension?.split(','),
-    metric: _.uniq(options.metric.map((m: any) => m.unit)),
+    metric: _.uniq(metricDefs.map((m: any) => m.unit)),
     matrixBy: [],
     cidr: 32,
     cidr6: 128,
@@ -124,13 +123,13 @@ function buildTopXdataQuery(options: any) {
     starting_time: startingTime,
     ending_time: endingTime,
     device_name: options.deviceNames?.split(','),
-    outsort: metricDef!.value,
-    aggregates: options.metric,
+    outsort: metricDefs[0]?.value,
+    aggregates: metricDefs,
     filters: formatFilters(options.kentikFilterGroups),
     saved_filters: options.kentikSavedFilters,
     hostname_lookup: options.hostnameLookup,
     device_site: isAllSitesSelected ? null : options.siteNames.split(','),
-    aggregateTypes: options.metric.map((agg: any) => agg.name),
+    aggregateTypes: metricDefs.map((agg: any) => agg.name),
   };
 
   return query;

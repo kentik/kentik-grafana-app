@@ -13,17 +13,22 @@ export type Dimension = { text: string; value: string; field: string };
 // };
 
 export type Metric = {
-    value: string,
-    column: string,
-    fn: string,
-    rank?: number,
-    label: string,
-    unit: string,
-    group: string,
-    origLabel: string,
-    sample_rate: number,
-    name: string
-}
+  value: string;
+  column: string;
+  fn: string;
+  rank?: number;
+  label: string;
+  unit: string;
+  group: string;
+  origLabel: string;
+  sample_rate: number;
+  name: string;
+  tableField?: {
+    text: string;
+    field: string;
+    metric: string;
+  };
+};
 
 type MetricGroup = {
   label: string;
@@ -35,7 +40,6 @@ export function flattenMetricOptions(
 ): Metric[] {
   return groups.flatMap(group => group.options);
 }
-
 
 export type FilterField = { text: string; field: string; unequatable?: boolean };
 
@@ -56,8 +60,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Destination Interface Capacity', value: 'i_output_interface_speed', field: 'i_output_interface_speed' },
   { text: 'Destination VLAN', value: 'VLAN_dst', field: 'VLAN_dst' },
   { text: 'Destination MAC Address', value: 'dst_eth_mac', field: 'dst_eth_mac' },
-
-
   { text: 'Ultimate Exit Interface', value: 'bgp_ult_exit_interface', field: 'bgp_ult_exit_interface' },
   { text: 'Ultimate Exit Connectivity Type', value: 'i_ult_exit_connect_type_name', field: 'i_ult_exit_connect_type_name' },
   { text: 'Ultimate Exit Network Boundary', value: 'i_ult_exit_network_bndry_name', field: 'i_ult_exit_network_bndry_name' },
@@ -74,8 +76,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Ultimate Exit VRF RD', value: 'i_ult_exit_vrf_rd', field: 'i_ult_exit_vrf_rd' },
   { text: 'Host Direction', value: 'i_host_direction', field: 'i_host_direction' },
   { text: 'Device Sample Rate', value: 'device_sample_rate', field: 'device_sample_rate' },
-
-
   { text: 'Source IP/CIDR', value: 'IP_src', field: 'IP_src' },
   { text: 'Source Source Site by IP', value: 'kt_src_site_title', field: 'kt_src_site_title' },
   { text: 'Source Source Site Type by IP', value: 'kt_src_site_type', field: 'kt_src_site_type' },
@@ -100,8 +100,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Source VRF Route Distinguisher', value: 'i_input_vrf_rd', field: 'i_input_vrf_rd' },
   { text: 'Source VRF Route Target', value: 'i_input_vrf_rt', field: 'i_input_vrf_rt' },
   { text: 'Source VRF Extended Route Distinguisher', value: 'input_vrf', field: 'input_vrf' },
-
-
   { text: 'Destination IP/CIDR', value: 'IP_dst', field: 'IP_dst' },
   { text: 'Destination Site by IP', value: 'kt_dst_site_title', field: 'kt_dst_site_title' },
   { text: 'Destination Site Type by IP', value: 'kt_dst_site_type', field: 'kt_dst_site_type' },
@@ -128,8 +126,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Destination VRF Extended Route Distinguisher', value: 'output_vrf', field: 'output_vrf' },
   { text: 'Destination RPKI Validation Status', value: 'i_dst_rpki_name', field: 'i_dst_rpki_name' },
   { text: 'Destination RPKI Quick Status', value: 'i_dst_rpki_min_name', field: 'i_dst_rpki_min_name' },
-
-
   { text: 'Protocol', value: 'Proto', field: 'Proto' },
   { text: 'INET Family', value: 'inet_family', field: 'inet_family' },
   { text: 'DSCP', value: 'dscp', field: 'dscp' },
@@ -138,11 +134,7 @@ export const dimensionList: Dimension[] = [
   { text: 'Packet Size (nearest 100)', value: 'sampledpktsize_100', field: 'sampledpktsize_100' },
   { text: 'Sampling Rate * 100', value: 'sample_rate', field: 'sample_rate' },
   { text: 'IPv6 Flow Label', value: 'ipv6_flow_label', field: 'ipv6_flow_label' },
-
-
   { text: 'Cloud Flow Log Provider', value: 'kt_cloud_provider', field: 'kt_cloud_provider' },
-
-
   { text: 'Source AWS Account', value: 'kt_aws_src_acc_id', field: 'kt_aws_src_acc_id' },
   { text: 'Source AWS Account Alias', value: 'kt_aws_src_acc_alias', field: 'kt_aws_src_acc_alias' },
   { text: 'Source AWS Account Name', value: 'kt_aws_src_acc_name', field: 'kt_aws_src_acc_name' },
@@ -178,8 +170,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Source Core Network Edge Attachment ID', value: 'ktsubtype__aws_subnet__STR41', field: 'ktsubtype__aws_subnet__STR41' },
   { text: 'Source Core Network Edge Attachment ENI', value: 'ktsubtype__aws_subnet__STR43', field: 'ktsubtype__aws_subnet__STR43' },
   { text: 'Source Packet Address VPC ID', value: 'ktsubtype__aws_subnet__STR53', field: 'ktsubtype__aws_subnet__STR53' },
-
-
   { text: 'Destination AWS Account', value: 'kt_aws_dst_acc_id', field: 'kt_aws_dst_acc_id' },
   { text: 'Destination AWS Account Alias', value: 'kt_aws_dst_acc_alias', field: 'kt_aws_dst_acc_alias' },
   { text: 'Destination AWS Account Name', value: 'kt_aws_dst_acc_name', field: 'kt_aws_dst_acc_name' },
@@ -218,8 +208,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Destination Core Network Edge Attachment ID', value: 'ktsubtype__aws_subnet__STR42', field: 'ktsubtype__aws_subnet__STR42' },
   { text: 'Destination Core Network Edge Attachment ENI', value: 'ktsubtype__aws_subnet__STR44', field: 'ktsubtype__aws_subnet__STR44' },
   { text: 'Destination Packet Address VPC ID', value: 'ktsubtype__aws_subnet__STR54', field: 'ktsubtype__aws_subnet__STR54' },
-
-
   { text: 'AWS Firewall Action', value: 'kt_aws_action', field: 'kt_aws_action' },
   { text: 'AWS Logging Status', value: 'kt_aws_status', field: 'kt_aws_status' },
   { text: 'AWS Start Time', value: 'ktsubtype__aws_subnet__INT00', field: 'ktsubtype__aws_subnet__INT00' },
@@ -257,7 +245,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Firewall Alert Severity', value: 'ktsubtype__aws_subnet__STR57', field: 'ktsubtype__aws_subnet__STR57' },
   { text: 'Firewall TLS SNI', value: 'ktsubtype__aws_subnet__STR58', field: 'ktsubtype__aws_subnet__STR58' },
   { text: 'Firewall TLS Version', value: 'ktsubtype__aws_subnet__STR59', field: 'ktsubtype__aws_subnet__STR59' },
-
   { text: 'Source GCP Source Project ID', value: 'ktsubtype__gcp_subnet__STR00', field: 'ktsubtype__gcp_subnet__STR00' },
   { text: 'Source GCP Source VM Name', value: 'ktsubtype__gcp_subnet__STR02', field: 'ktsubtype__gcp_subnet__STR02' },
   { text: 'Source GCP Source Region', value: 'ktsubtype__gcp_subnet__STR04', field: 'ktsubtype__gcp_subnet__STR04' },
@@ -273,8 +260,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Source Entity Gateway Name', value: 'ktsubtype__gcp_subnet__STR27', field: 'ktsubtype__gcp_subnet__STR27' },
   { text: 'Source Entity Gateway Type', value: 'ktsubtype__gcp_subnet__STR29', field: 'ktsubtype__gcp_subnet__STR29' },
   { text: 'Source Firewall Rule Name', value: 'ktsubtype__gcp_subnet__STR31', field: 'ktsubtype__gcp_subnet__STR31' },
-
-
   { text: 'Destination GCP Destination Project ID', value: 'ktsubtype__gcp_subnet__STR01', field: 'ktsubtype__gcp_subnet__STR01' },
   { text: 'Destination GCP Destination VM Name', value: 'ktsubtype__gcp_subnet__STR03', field: 'ktsubtype__gcp_subnet__STR03' },
   { text: 'Destination GCP Destination Region', value: 'ktsubtype__gcp_subnet__STR05', field: 'ktsubtype__gcp_subnet__STR05' },
@@ -293,9 +278,7 @@ export const dimensionList: Dimension[] = [
   { text: 'GCP Reporter', value: 'ktsubtype__gcp_subnet__STR10', field: 'ktsubtype__gcp_subnet__STR10' },
   { text: 'GCP Dedicated Interconnect Name', value: 'ktsubtype__gcp_subnet__STR25', field: 'ktsubtype__gcp_subnet__STR25' },
   { text: 'GCP Dedicated Interconnect Type', value: 'ktsubtype__gcp_subnet__STR26', field: 'ktsubtype__gcp_subnet__STR26' },
-
-
- { text: 'Source Azure Instance Name', value: 'kt_az_src_inst_name', field: 'kt_az_src_inst_name' },
+  { text: 'Source Azure Instance Name', value: 'kt_az_src_inst_name', field: 'kt_az_src_inst_name' },
   { text: 'Source Azure Instance', value: 'kt_az_src_inst_id', field: 'kt_az_src_inst_id' },
   { text: 'Source Azure Region', value: 'kt_az_src_region', field: 'kt_az_src_region' },
   { text: 'Source Azure Zone', value: 'kt_az_src_zone', field: 'kt_az_src_zone' },
@@ -314,7 +297,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Source Azure Gateway Name', value: 'ktsubtype__azure_subnet__STR09', field: 'ktsubtype__azure_subnet__STR09' },
   { text: 'Source Azure Gateway Type', value: 'ktsubtype__azure_subnet__STR11', field: 'ktsubtype__azure_subnet__STR11' },
   { text: 'Source Azure Load Balancer', value: 'ktsubtype__azure_subnet__STR23', field: 'ktsubtype__azure_subnet__STR23' },
-
   { text: 'Destination Azure Instance Name', value: 'kt_az_dst_inst_name', field: 'kt_az_dst_inst_name' },
   { text: 'Destination Azure Instance', value: 'kt_az_dst_inst_id', field: 'kt_az_dst_inst_id' },
   { text: 'Destination Azure Region', value: 'kt_az_dst_region', field: 'kt_az_dst_region' },
@@ -335,8 +317,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Destination Azure Gateway Type', value: 'ktsubtype__azure_subnet__STR12', field: 'ktsubtype__azure_subnet__STR12' },
   { text: 'Destination Azure FQDN', value: 'ktsubtype__azure_subnet__STR19', field: 'ktsubtype__azure_subnet__STR19' },
   { text: 'Destination Azure Load Balancer', value: 'ktsubtype__azure_subnet__STR24', field: 'ktsubtype__azure_subnet__STR24' },
-
-
   { text: 'Azure Observing MAC Address', value: 'ktsubtype__azure_subnet__STR08', field: 'ktsubtype__azure_subnet__STR08' },
   { text: 'Azure Ingress Virtual Hub', value: 'ktsubtype__azure_subnet__STR13', field: 'ktsubtype__azure_subnet__STR13' },
   { text: 'Azure Egress Virtual Hub', value: 'ktsubtype__azure_subnet__STR14', field: 'ktsubtype__azure_subnet__STR14' },
@@ -353,16 +333,12 @@ export const dimensionList: Dimension[] = [
   { text: 'Azure Observing Resource Name', value: 'ktsubtype__azure_subnet__STR30', field: 'ktsubtype__azure_subnet__STR30' },
   { text: 'Azure Flow Direction', value: 'ktsubtype__azure_subnet__INT00', field: 'ktsubtype__azure_subnet__INT00' },
   { text: 'Azure Observing Resource Type', value: 'ktsubtype__azure_subnet__INT01', field: 'ktsubtype__azure_subnet__INT01' },
-
-
   { text: 'GCR Resource Type', value: 'ktsubtype__gcp_cloud_run__STR00', field: 'ktsubtype__gcp_cloud_run__STR00' },
   { text: 'GCR Service Name', value: 'ktsubtype__gcp_cloud_run__STR01', field: 'ktsubtype__gcp_cloud_run__STR01' },
   { text: 'GCR Location', value: 'ktsubtype__gcp_cloud_run__STR02', field: 'ktsubtype__gcp_cloud_run__STR02' },
   { text: 'GCR Service Revision Name', value: 'ktsubtype__gcp_cloud_run__STR03', field: 'ktsubtype__gcp_cloud_run__STR03' },
   { text: 'GCR Project ID', value: 'ktsubtype__gcp_cloud_run__STR04', field: 'ktsubtype__gcp_cloud_run__STR04' },
   { text: 'GCR HTTP Status Code', value: 'ktsubtype__gcp_cloud_run__INT00', field: 'ktsubtype__gcp_cloud_run__INT00' },
-
-
   { text: 'Source OCI Subnet Name', value: 'ktsubtype__oci_subnet__STR06', field: 'ktsubtype__oci_subnet__STR06' },
   { text: 'Source OCI VCN Name', value: 'ktsubtype__oci_subnet__STR08', field: 'ktsubtype__oci_subnet__STR08' },
   { text: 'Source OCI Region', value: 'ktsubtype__oci_subnet__STR10', field: 'ktsubtype__oci_subnet__STR10' },
@@ -376,8 +352,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Source OCI Subnet OCID', value: 'ktsubtype__oci_subnet__STR31', field: 'ktsubtype__oci_subnet__STR31' },
   { text: 'Source OCI Compartment OCID', value: 'ktsubtype__oci_subnet__STR33', field: 'ktsubtype__oci_subnet__STR33' },
   { text: 'Source OCI VCN OCID', value: 'ktsubtype__oci_subnet__STR35', field: 'ktsubtype__oci_subnet__STR35' },
-
-
   { text: 'Destination OCI Subnet Name', value: 'ktsubtype__oci_subnet__STR07', field: 'ktsubtype__oci_subnet__STR07' },
   { text: 'Destination OCI VCN Name', value: 'ktsubtype__oci_subnet__STR09', field: 'ktsubtype__oci_subnet__STR09' },
   { text: 'Destination OCI Region', value: 'ktsubtype__oci_subnet__STR11', field: 'ktsubtype__oci_subnet__STR11' },
@@ -391,7 +365,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Destination OCI Subnet OCID', value: 'ktsubtype__oci_subnet__STR32', field: 'ktsubtype__oci_subnet__STR32' },
   { text: 'Destination OCI Compartment OCID', value: 'ktsubtype__oci_subnet__STR34', field: 'ktsubtype__oci_subnet__STR34' },
   { text: 'Destination OCI VCN OCID', value: 'ktsubtype__oci_subnet__STR36', field: 'ktsubtype__oci_subnet__STR36' },
-
   { text: 'OCI Action', value: 'ktsubtype__oci_subnet__STR00', field: 'ktsubtype__oci_subnet__STR00' },
   { text: 'OCI Status', value: 'ktsubtype__oci_subnet__STR01', field: 'ktsubtype__oci_subnet__STR01' },
   { text: 'OCI Tenant OCID', value: 'ktsubtype__oci_subnet__STR02', field: 'ktsubtype__oci_subnet__STR02' },
@@ -406,8 +379,6 @@ export const dimensionList: Dimension[] = [
   { text: 'OCI Start Time', value: 'ktsubtype__oci_subnet__INT00', field: 'ktsubtype__oci_subnet__INT00' },
   { text: 'OCI End Time', value: 'ktsubtype__oci_subnet__INT01', field: 'ktsubtype__oci_subnet__INT01' },
   { text: 'OCI Ingest Time Delta', value: 'ktsubtype__oci_subnet__INT02', field: 'ktsubtype__oci_subnet__INT02' },
-
-
   { text: 'Source Custom Geo', value: 'kt_src_market', field: 'kt_src_market' },
   { text: 'Source Country', value: 'Geography_src', field: 'Geography_src' },
   { text: 'Source Region', value: 'src_geo_region', field: 'src_geo_region' },
@@ -418,8 +389,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Destination City', value: 'dst_geo_city', field: 'dst_geo_city' },
   { text: 'Site Country', value: 'i_device_site_country', field: 'i_device_site_country' },
   { text: 'Ultimate Exit Site Country', value: 'i_ult_exit_site_country', field: 'i_ult_exit_site_country' },
-
-
   { text: 'Source Public Cloud Provider', value: 'src_cloud', field: 'src_cloud' },
   { text: 'Source Public Cloud Service', value: 'src_cloud_service', field: 'src_cloud_service' },
   { text: 'Source CDN', value: 'src_cdn', field: 'src_cdn' },
@@ -432,8 +401,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Destination Service (Port+Proto)', value: 'dst_proto_port', field: 'dst_proto_port' },
   { text: 'Destination Botnet C&C', value: 'dst_threat_bnetcc', field: 'dst_threat_bnetcc' },
   { text: 'Destination Threat-list Host', value: 'dst_threat_host', field: 'dst_threat_host' },
-
-
   { text: 'Application', value: 'application', field: 'application' },
   { text: 'TCP Flags', value: 'tcp_flags', field: 'tcp_flags' },
   { text: 'OTT Service', value: 'service_name', field: 'service_name' },
@@ -464,7 +431,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Destination Kubernetes Container Name', value: 'kt_k8s_dst_cont_name', field: 'kt_k8s_dst_cont_name' },
   { text: 'Destination Kubernetes Service Name', value: 'kt_k8s_dst_svc_name', field: 'kt_k8s_dst_svc_name' },
   { text: 'Destination Kubernetes Service Namespace', value: 'kt_k8s_dst_svc_ns', field: 'kt_k8s_dst_svc_ns' },
-
   { text: 'Source Process-Aware Telemetry Agent Process PID', value: 'ktsubtype__kappa__INT01', field: 'ktsubtype__kappa__INT01' },
   { text: 'Source Process-Aware Telemetry Agent Process Name', value: 'ktsubtype__kappa__STR00', field: 'ktsubtype__kappa__STR00' },
   { text: 'Source Process-Aware Telemetry Agent Process Cmdline', value: 'ktsubtype__kappa__STR01', field: 'ktsubtype__kappa__STR01' },
@@ -478,8 +444,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Source Process-Aware Telemetry Agent Workload Namespace', value: 'ktsubtype__kappa__STR13', field: 'ktsubtype__kappa__STR13' },
   { text: 'Source Process-Aware Telemetry Agent Object Labels', value: 'ktsubtype__kappa__STR20', field: 'ktsubtype__kappa__STR20' },
   { text: 'Source Process-Aware Telemetry Agent Cloud Provider', value: 'ktsubtype__kappa__STR22', field: 'ktsubtype__kappa__STR22' },
-
-
   { text: 'Destination Process-Aware Telemetry Agent Process PID', value: 'ktsubtype__kappa__INT02', field: 'ktsubtype__kappa__INT02' },
   { text: 'Destination Process-Aware Telemetry Agent Process Name', value: 'ktsubtype__kappa__STR03', field: 'ktsubtype__kappa__STR03' },
   { text: 'Destination Process-Aware Telemetry Agent Process Cmdline', value: 'ktsubtype__kappa__STR04', field: 'ktsubtype__kappa__STR04' },
@@ -493,8 +457,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Destination Process-Aware Telemetry Agent Workload Namespace', value: 'ktsubtype__kappa__STR19', field: 'ktsubtype__kappa__STR19' },
   { text: 'Destination Process-Aware Telemetry Agent Object Labels', value: 'ktsubtype__kappa__STR21', field: 'ktsubtype__kappa__STR21' },
   { text: 'Destination Process-Aware Telemetry Agent Cloud Provider', value: 'ktsubtype__kappa__STR23', field: 'ktsubtype__kappa__STR23' },
-
-
   { text: 'Source Palo Alto Networks Firewall Post-NAT Transport Port', value: 'ktsubtype__paloalto__INT02', field: 'ktsubtype__paloalto__INT02' },
   { text: 'Source Palo Alto Networks Firewall Post-NAT Address', value: 'ktsubtype__paloalto__INET_00', field: 'ktsubtype__paloalto__INET_00' },
   { text: 'Destination Palo Alto Networks Firewall Post-NAT Transport Port', value: 'ktsubtype__paloalto__INT03', field: 'ktsubtype__paloalto__INT03' },
@@ -505,8 +467,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Palo Alto Networks Firewall Firewall Event', value: 'ktsubtype__paloalto__INT04', field: 'ktsubtype__paloalto__INT04' },
   { text: 'Palo Alto Networks Firewall User ID', value: 'ktsubtype__paloalto__STR01', field: 'ktsubtype__paloalto__STR01' },
   { text: 'Palo Alto Networks Firewall Application ID', value: 'ktsubtype__paloalto__STR00', field: 'ktsubtype__paloalto__STR00' },
-
-
   { text: 'MPLS Forwarding Type', value: 'ktsubtype__mpls__INT00', field: 'ktsubtype__mpls__INT00' },
   { text: 'MPLS Forwarding Address', value: 'ktsubtype__mpls__INET_00', field: 'ktsubtype__mpls__INET_00' },
   { text: 'MPLS Forwarding Address Prefix Length', value: 'ktsubtype__mpls__INT01', field: 'ktsubtype__mpls__INT01' },
@@ -517,35 +477,28 @@ export const dimensionList: Dimension[] = [
   { text: 'MPLS Forwarding Status', value: 'ktsubtype__mpls__INT02', field: 'ktsubtype__mpls__INT02' },
   { text: 'MPLS Label 3', value: 'ktsubtype__mpls__INT07', field: 'ktsubtype__mpls__INT07' },
   { text: 'MPLS Label 3 EXP', value: 'ktsubtype__mpls__INT08', field: 'ktsubtype__mpls__INT08' },
-
   { text: 'Source Silver Peak EdgeConnect From Zone', value: 'ktsubtype__silverpeak__STR02', field: 'ktsubtype__silverpeak__STR02' },
   { text: 'Destination Silver Peak EdgeConnect To Zone', value: 'ktsubtype__silverpeak__STR03', field: 'ktsubtype__silverpeak__STR03' },
   { text: 'Silver Peak EdgeConnect Application Name', value: 'ktsubtype__silverpeak__STR01', field: 'ktsubtype__silverpeak__STR01' },
   { text: 'Silver Peak EdgeConnect Firewall Event', value: 'ktsubtype__silverpeak__INT01', field: 'ktsubtype__silverpeak__INT01' },
   { text: 'Silver Peak EdgeConnect Business Intent Overlay', value: 'ktsubtype__silverpeak__STR00', field: 'ktsubtype__silverpeak__STR00' },
   { text: 'Silver Peak EdgeConnect Application Category', value: 'ktsubtype__silverpeak__STR04', field: 'ktsubtype__silverpeak__STR04' },
-
   { text: 'Source Advanced sFlow Physical Interface', value: 'ktsubtype__advanced_sflow__INT00', field: 'ktsubtype__advanced_sflow__INT00' },
   { text: 'Destination Advanced sFlow Physical Interface', value: 'ktsubtype__advanced_sflow__INT01', field: 'ktsubtype__advanced_sflow__INT01' },
   { text: 'Advanced sFlow Vlan Rewrite Occurred', value: 'ktsubtype__advanced_sflow__INT02', field: 'ktsubtype__advanced_sflow__INT02' },
   { text: 'Advanced sFlow IP TTL', value: 'ktsubtype__advanced_sflow__INT03', field: 'ktsubtype__advanced_sflow__INT03' },
   { text: 'Advanced sFlow VLL VC ID', value: 'ktsubtype__advanced_sflow__INT04', field: 'ktsubtype__advanced_sflow__INT04' },
-
   { text: 'Cisco NBAR-Enabled Router Application Name', value: 'ktsubtype__cisco_nbar__STR00', field: 'ktsubtype__cisco_nbar__STR00' },
   { text: 'Cisco NBAR-Enabled Router Application Category', value: 'ktsubtype__cisco_nbar__STR01', field: 'ktsubtype__cisco_nbar__STR01' },
   { text: 'Cisco NBAR-Enabled Router Application Subcategory', value: 'ktsubtype__cisco_nbar__STR02', field: 'ktsubtype__cisco_nbar__STR02' },
   { text: 'Cisco NBAR-Enabled Router Application Group', value: 'ktsubtype__cisco_nbar__STR03', field: 'ktsubtype__cisco_nbar__STR03' },
   { text: 'Cisco NBAR-Enabled Router Application Traffic Class', value: 'ktsubtype__cisco_nbar__STR04', field: 'ktsubtype__cisco_nbar__STR04' },
   { text: 'Cisco NBAR-Enabled Router Application Business Relevance', value: 'ktsubtype__cisco_nbar__STR05', field: 'ktsubtype__cisco_nbar__STR05' },
-
-
   { text: 'Cisco SDWAN vEdge Maximum packet length', value: 'ktsubtype__viptela__INT64_00', field: 'ktsubtype__viptela__INT64_00' },
   { text: 'Cisco SDWAN vEdge Minimum packet length', value: 'ktsubtype__viptela__INT64_01', field: 'ktsubtype__viptela__INT64_01' },
   { text: 'Cisco SDWAN vEdge VPN identifier', value: 'ktsubtype__viptela__INT64_02', field: 'ktsubtype__viptela__INT64_02' },
   { text: 'Cisco SDWAN vEdge Flow end reason', value: 'ktsubtype__viptela__INT00', field: 'ktsubtype__viptela__INT00' },
   { text: 'Cisco SDWAN vEdge Field 4322', value: 'ktsubtype__viptela__INT01', field: 'ktsubtype__viptela__INT01' },
-
-
   { text: 'Source VXLAN VNI 0 MAC Address', value: 'ktsubtype__vxlan__INT64_00', field: 'ktsubtype__vxlan__INT64_00' },
   { text: 'Source VXLAN VNI 0 IP Address', value: 'ktsubtype__vxlan__INET_00', field: 'ktsubtype__vxlan__INET_00' },
   { text: 'Source VXLAN VNI 0 Port', value: 'ktsubtype__vxlan__INT06', field: 'ktsubtype__vxlan__INT06' },
@@ -558,8 +511,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Destination VXLAN VNI 1 MAC Address', value: 'ktsubtype__vxlan__INT64_03', field: 'ktsubtype__vxlan__INT64_03' },
   { text: 'Destination VXLAN VNI 1 IP Address', value: 'ktsubtype__vxlan__INET_03', field: 'ktsubtype__vxlan__INET_03' },
   { text: 'Destination VXLAN VNI 1 Port', value: 'ktsubtype__vxlan__INT64_08', field: 'ktsubtype__vxlan__INT64_08' },
-
-
   { text: 'IP TTL', value: 'ktsubtype__vxlan__INT00', field: 'ktsubtype__vxlan__INT00' },
   { text: 'VXLAN VNI 0', value: 'ktsubtype__vxlan__INT01', field: 'ktsubtype__vxlan__INT01' },
   { text: 'VXLAN VNI 0 DSCP', value: 'ktsubtype__vxlan__INT02', field: 'ktsubtype__vxlan__INT02' },
@@ -572,8 +523,6 @@ export const dimensionList: Dimension[] = [
   { text: 'VXLAN VNI 1 IP TTL', value: 'ktsubtype__vxlan__INT64_05', field: 'ktsubtype__vxlan__INT64_05' },
   { text: 'VXLAN VNI 1 Protocol', value: 'ktsubtype__vxlan__INT64_06', field: 'ktsubtype__vxlan__INT64_06' },
   { text: 'VXLAN VNI 2', value: 'ktsubtype__vxlan__INT64_09', field: 'ktsubtype__vxlan__INT64_09' },
-
-
   { text: 'Source Fortinet FortiGate Post-NAT Transport Port', value: 'ktsubtype__fortinet_fortigate__INT02', field: 'ktsubtype__fortinet_fortigate__INT02' },
   { text: 'Source Fortinet FortiGate Post-NAT Address', value: 'ktsubtype__fortinet_fortigate__INET_00', field: 'ktsubtype__fortinet_fortigate__INET_00' },
   { text: 'Destination Fortinet FortiGate Post-NAT Transport Port', value: 'ktsubtype__fortinet_fortigate__INT03', field: 'ktsubtype__fortinet_fortigate__INT03' },
@@ -583,8 +532,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Fortinet FortiGate Flow Flags', value: 'ktsubtype__fortinet_fortigate__INT00', field: 'ktsubtype__fortinet_fortigate__INT00' },
   { text: 'Fortinet FortiGate Forwarding Status', value: 'ktsubtype__fortinet_fortigate__INT01', field: 'ktsubtype__fortinet_fortigate__INT01' },
   { text: 'Fortinet FortiGate Flow end reason', value: 'ktsubtype__fortinet_fortigate__INT04', field: 'ktsubtype__fortinet_fortigate__INT04' },
-
-
   { text: 'Source Cisco SD-WAN IOS XE Overlay Session ID', value: 'ktsubtype__cisco_sdwan_xe__INT01', field: 'ktsubtype__cisco_sdwan_xe__INT01' },
   { text: 'Destination Cisco SD-WAN IOS XE Overlay Session ID', value: 'ktsubtype__cisco_sdwan_xe__INT02', field: 'ktsubtype__cisco_sdwan_xe__INT02' },
   { text: 'Cisco SD-WAN IOS XE Application Name', value: 'ktsubtype__cisco_sdwan_xe__STR00', field: 'ktsubtype__cisco_sdwan_xe__STR00' },
@@ -596,25 +543,18 @@ export const dimensionList: Dimension[] = [
   { text: 'Cisco SD-WAN IOS XE Flow end reason', value: 'ktsubtype__cisco_sdwan_xe__INT00', field: 'ktsubtype__cisco_sdwan_xe__INT00' },
   { text: 'Cisco SD-WAN IOS XE VPN identifier', value: 'ktsubtype__cisco_sdwan_xe__INT64_00', field: 'ktsubtype__cisco_sdwan_xe__INT64_00' },
   { text: 'Cisco SD-WAN IOS XE Connection ID', value: 'ktsubtype__cisco_sdwan_xe__INT64_01', field: 'ktsubtype__cisco_sdwan_xe__INT64_01' },
-
-
   { text: 'DNS Query Name', value: 'ktappprotocol__dns__STR00', field: 'ktappprotocol__dns__STR00' },
   { text: 'DNS Query Type', value: 'ktappprotocol__dns__INT00', field: 'ktappprotocol__dns__INT00' },
   { text: 'DNS Reply Code', value: 'ktappprotocol__dns__INT01', field: 'ktappprotocol__dns__INT01' },
   { text: 'DNS Reply Data', value: 'ktappprotocol__dns__STR01', field: 'ktappprotocol__dns__STR01' },
-
   { text: 'HTTP URL', value: 'ktappprotocol__http__STR00', field: 'ktappprotocol__http__STR00' },
   { text: 'HTTP Host', value: 'ktappprotocol__http__STR01', field: 'ktappprotocol__http__STR01' },
   { text: 'HTTP User Agent', value: 'ktappprotocol__http__STR03', field: 'ktappprotocol__http__STR03' },
   { text: 'HTTP Referer', value: 'ktappprotocol__http__STR02', field: 'ktappprotocol__http__STR02' },
   { text: 'HTTP Status', value: 'ktappprotocol__http__INT00', field: 'ktappprotocol__http__INT00' },
-
-
   { text: 'TLS Server Name', value: 'ktappprotocol__tls__STR00', field: 'ktappprotocol__tls__STR00' },
   { text: 'TLS Server Version', value: 'ktappprotocol__tls__INT00', field: 'ktappprotocol__tls__INT00' },
   { text: 'TLS Cipher Suite', value: 'ktappprotocol__tls__INT01', field: 'ktappprotocol__tls__INT01' },
-
-
   { text: 'DHCP OP', value: 'ktappprotocol__dhcp__INT00', field: 'ktappprotocol__dhcp__INT00' },
   { text: 'DHCP Message Type', value: 'ktappprotocol__dhcp__INT01', field: 'ktappprotocol__dhcp__INT01' },
   { text: 'DHCP CI Address', value: 'ktappprotocol__dhcp__INET_00', field: 'ktappprotocol__dhcp__INET_00' },
@@ -624,7 +564,6 @@ export const dimensionList: Dimension[] = [
   { text: 'DHCP CH Address', value: 'ktappprotocol__dhcp__STR00', field: 'ktappprotocol__dhcp__STR00' },
   { text: 'DHCP Hostname', value: 'ktappprotocol__dhcp__STR01', field: 'ktappprotocol__dhcp__STR01' },
   { text: 'DHCP Domain', value: 'ktappprotocol__dhcp__STR02', field: 'ktappprotocol__dhcp__STR02' },
-
   { text: 'Radius Code', value: 'ktappprotocol__radius__INT00', field: 'ktappprotocol__radius__INT00' },
   { text: 'Radius User Name', value: 'ktappprotocol__radius__STR00', field: 'ktappprotocol__radius__STR00' },
   { text: 'Radius Service Type', value: 'ktappprotocol__radius__INT01', field: 'ktappprotocol__radius__INT01' },
@@ -633,15 +572,11 @@ export const dimensionList: Dimension[] = [
   { text: 'Radius Framed Protocol', value: 'ktappprotocol__radius__STR01', field: 'ktappprotocol__radius__STR01' },
   { text: 'Radius Accounting Status', value: 'ktappprotocol__radius__INT02', field: 'ktappprotocol__radius__INT02' },
   { text: 'Radius Accounting Session ID', value: 'ktappprotocol__radius__STR02', field: 'ktappprotocol__radius__STR02' },
-
-
   { text: 'SNMP Device Metrics Error', value: 'ktappprotocol__snmp_device_metrics__STR00', field: 'ktappprotocol__snmp_device_metrics__STR00' },
   { text: 'SNMP Device Metrics Component', value: 'ktappprotocol__snmp_device_metrics__STR01', field: 'ktappprotocol__snmp_device_metrics__STR01' },
   { text: 'SNMP Device Metrics Uptime', value: 'ktappprotocol__snmp_device_metrics__INT64_05', field: 'ktappprotocol__snmp_device_metrics__INT64_05' },
   { text: 'SNMP Device Metrics Device', value: 'ktappprotocol__snmp_device_metrics__i_device_name', field: 'ktappprotocol__snmp_device_metrics__i_device_name' },
   { text: 'SNMP Device Metrics Site', value: 'ktappprotocol__snmp_device_metrics__i_device_site_name', field: 'ktappprotocol__snmp_device_metrics__i_device_site_name' },
-
-
   { text: 'SNMP Interface Metrics Interface', value: 'ktappprotocol__snmp__output_port', field: 'ktappprotocol__snmp__output_port' },
   { text: 'SNMP Interface Metrics Device', value: 'ktappprotocol__snmp__i_device_name', field: 'ktappprotocol__snmp__i_device_name' },
   { text: 'SNMP Interface Metrics Site', value: 'ktappprotocol__snmp__i_device_site_name', field: 'ktappprotocol__snmp__i_device_site_name' },
@@ -651,8 +586,6 @@ export const dimensionList: Dimension[] = [
   { text: 'SNMP Interface Metrics Interface Capacity', value: 'ktappprotocol__snmp__i_output_interface_speed', field: 'ktappprotocol__snmp__i_output_interface_speed' },
   { text: 'SNMP Interface Metrics Admin Status', value: 'ktappprotocol__snmp__INT02', field: 'ktappprotocol__snmp__INT02' },
   { text: 'SNMP Interface Metrics Oper Status', value: 'ktappprotocol__snmp__INT03', field: 'ktappprotocol__snmp__INT03' },
-
-
   { text: 'Streaming Telemetry Interface Metrics Interface', value: 'ktappprotocol__st__output_port', field: 'ktappprotocol__st__output_port' },
   { text: 'Streaming Telemetry Interface Metrics Device', value: 'ktappprotocol__st__i_device_name', field: 'ktappprotocol__st__i_device_name' },
   { text: 'Streaming Telemetry Interface Metrics Site', value: 'ktappprotocol__st__i_device_site_name', field: 'ktappprotocol__st__i_device_site_name' },
@@ -660,18 +593,12 @@ export const dimensionList: Dimension[] = [
   { text: 'Streaming Telemetry Interface Metrics Connectivity Type', value: 'ktappprotocol__st__i_dst_connect_type_name', field: 'ktappprotocol__st__i_dst_connect_type_name' },
   { text: 'Streaming Telemetry Interface Metrics Network Boundary', value: 'ktappprotocol__st__i_dst_network_bndry_name', field: 'ktappprotocol__st__i_dst_network_bndry_name' },
   { text: 'Streaming Telemetry Interface Metrics Interface Capacity', value: 'ktappprotocol__st__i_output_interface_speed', field: 'ktappprotocol__st__i_output_interface_speed' },
-
-
   { text: 'Cisco RAS Monitorings Device Name', value: 'ktappprotocol__ktranslate_cisco_ras__i_device_name', field: 'ktappprotocol__ktranslate_cisco_ras__i_device_name' },
-
-
   { text: 'Measurement Name', value: 'ktappprotocol__azure_express_route_metrics__STR00', field: 'ktappprotocol__azure_express_route_metrics__STR00' },
   { text: 'Express Route Circuit Name', value: 'ktappprotocol__azure_express_route_metrics__STR01', field: 'ktappprotocol__azure_express_route_metrics__STR01' },
   { text: 'Express Route Circuit Peering Name', value: 'ktappprotocol__azure_express_route_metrics__STR02', field: 'ktappprotocol__azure_express_route_metrics__STR02' },
   { text: 'Measurement Duration', value: 'ktappprotocol__azure_express_route_metrics__INT00', field: 'ktappprotocol__azure_express_route_metrics__INT00' },
   { text: 'Timestamp', value: 'ktappprotocol__azure_express_route_metrics__INT64_00', field: 'ktappprotocol__azure_express_route_metrics__INT64_00' },
-
-
   { text: 'SNMP Traps Dataset', value: 'ktappprotocol__event_snmp_traps__STR00', field: 'ktappprotocol__event_snmp_traps__STR00' },
   { text: 'SNMP Traps Trap Type', value: 'ktappprotocol__event_snmp_traps__INT00', field: 'ktappprotocol__event_snmp_traps__INT00' },
   { text: 'SNMP Traps Uptime', value: 'ktappprotocol__event_snmp_traps__INT64_00', field: 'ktappprotocol__event_snmp_traps__INT64_00' },
@@ -712,8 +639,6 @@ export const dimensionList: Dimension[] = [
   { text: 'SNMP Traps Event Type', value: 'ktappprotocol__event_snmp_traps__STR12', field: 'ktappprotocol__event_snmp_traps__STR12' },
   { text: 'SNMP Traps Event Source', value: 'ktappprotocol__event_snmp_traps__STR13', field: 'ktappprotocol__event_snmp_traps__STR13' },
   { text: 'SNMP Traps Alarm Description', value: 'ktappprotocol__event_snmp_traps__STR14', field: 'ktappprotocol__event_snmp_traps__STR14' },
-
-
   { text: 'Device Config Change Dataset', value: 'ktappprotocol__event_deviceconf__STR00', field: 'ktappprotocol__event_deviceconf__STR00' },
   { text: 'Device Config Change Revision', value: 'ktappprotocol__event_deviceconf__INT64_00', field: 'ktappprotocol__event_deviceconf__INT64_00' },
   { text: 'Device Config Change Fetch Status', value: 'ktappprotocol__event_deviceconf__INT00', field: 'ktappprotocol__event_deviceconf__INT00' },
@@ -726,8 +651,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Device Config Change Commit User', value: 'ktappprotocol__event_deviceconf__STR02', field: 'ktappprotocol__event_deviceconf__STR02' },
   { text: 'Device Config Change Commit Comment', value: 'ktappprotocol__event_deviceconf__STR03', field: 'ktappprotocol__event_deviceconf__STR03' },
   { text: 'Device Config Change Commit Method', value: 'ktappprotocol__event_deviceconf__STR04', field: 'ktappprotocol__event_deviceconf__STR04' },
-
-
   { text: 'Syslog Dataset', value: 'ktappprotocol__event_syslog__STR00', field: 'ktappprotocol__event_syslog__STR00' },
   { text: 'Syslog Transport', value: 'ktappprotocol__event_syslog__INT00', field: 'ktappprotocol__event_syslog__INT00' },
   { text: 'Syslog Format', value: 'ktappprotocol__event_syslog__INT01', field: 'ktappprotocol__event_syslog__INT01' },
@@ -875,14 +798,15 @@ export const filterFieldList: FilterField[] = [
   { text: 'TOS/Diffserv', field: 'tos' },
 ];
 
-export const metricList = [
+
+export const metricNestedList = [
   {
     label: 'Bits/s',
     options: [
-      { value: "avg_bits_per_sec", column: "f_sum_both_bytes", fn: "average", label: "Average", unit: "bytes", group: "Bits/s", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_bits_per_sec" },
-      { value: "p95th_bits_per_sec", column: "f_sum_both_bytes", fn: "percentile", label: "95th Percentile", rank: 95, unit: "bytes", group: "Bits/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_bits_per_sec" },
-      { value: "p99th_bits_per_sec", column: "f_sum_both_bytes", fn: "percentile", label: "99th Percentile", rank: 99, unit: "bytes", group: "Bits/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_bits_per_sec" },
-      { value: "max_bits_per_sec", column: "f_sum_both_bytes", fn: "max", label: "Max", unit: "bytes", group: "Bits/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_bits_per_sec" },
+      { value: "avg_bits_per_sec", column: "f_sum_both_bytes", fn: "average", label: "Average", unit: "bytes", group: "Bits/s", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_bits_per_sec", tableField: { text: 'Avg', field: 'avg_bits_per_sec', metric: 'bps', } },
+      { value: "p95th_bits_per_sec", column: "f_sum_both_bytes", fn: "percentile", label: "95th Percentile", rank: 95, unit: "bytes", group: "Bits/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_bits_per_sec", tableField: { text: '95th Percentile', field: 'p95th_bits_per_sec', metric: 'bps' } },
+      { value: "p99th_bits_per_sec", column: "f_sum_both_bytes", fn: "percentile", label: "99th Percentile", rank: 99, unit: "bytes", group: "Bits/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_bits_per_sec", tableField: { text: '95th Percentile', field: 'p99th_bits_per_sec', metric: 'bps' } },
+      { value: "max_bits_per_sec", column: "f_sum_both_bytes", fn: "max", label: "Max", unit: "bytes", group: "Bits/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_bits_per_sec", tableField: { text: 'Max', field: 'max_bits_per_sec', metric: 'bps' } } ,
     ]
   },
   {
@@ -897,10 +821,10 @@ export const metricList = [
   {
     label: 'Flows/s',
     options: [
-      { value: "avg_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat","f_fsumloc"], fn: "average", label: "Average", unit: "fps", group: "Flows/s", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_flows_per_sec" },
-      { value: "p95th_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat","f_fsumloc"], fn: "percentile", rank: 95, label: "95th Percentile", unit: "fps", group: "Flows/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_flows_per_sec" },
-      { value: "p99th_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat","f_fsumloc"], fn: "percentile", rank: 99, label: "99th Percentile", unit: "fps", group: "Flows/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_flows_per_sec" },
-      { value: "max_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat","f_fsumloc"], fn: "max", label: "Max", unit: "fps", group: "Flows/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_flows_per_sec" },
+      { value: "avg_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat", "f_fsumloc"], fn: "average", label: "Average", unit: "fps", group: "Flows/s", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_flows_per_sec" },
+      { value: "p95th_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat", "f_fsumloc"], fn: "percentile", rank: 95, label: "95th Percentile", unit: "fps", group: "Flows/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_flows_per_sec" },
+      { value: "p99th_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat", "f_fsumloc"], fn: "percentile", rank: 99, label: "99th Percentile", unit: "fps", group: "Flows/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_flows_per_sec" },
+      { value: "max_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat", "f_fsumloc"], fn: "max", label: "Max", unit: "fps", group: "Flows/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_flows_per_sec" },
     ]
   },
   {
@@ -942,138 +866,138 @@ export const metricList = [
   {
     label: 'Unique Route Prefixes Source',
     options: [
-      {"value":"avg_src_route_prefix","column":"f_hll(inet_src_route_prefix,0.0001)","fn":"average","label":"Average","unit":"unique_src_route_prefix","group":"Unique Route Prefixes Source","origLabel":"Average","sample_rate":1,"name":"avg_src_route_prefix","raw":true},
-      {"value":"p95th_src_route_prefix","column":"f_hll(inet_src_route_prefix,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_src_route_prefix","group":"Unique Route Prefixes Source","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_src_route_prefix","raw":true},
-      {"value":"p99th_src_route_prefix","column":"f_hll(inet_src_route_prefix,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_src_route_prefix","group":"Unique Route Prefixes Source","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_src_route_prefix","raw":true},
-      {"value":"max_src_route_prefix","column":"f_hll(inet_src_route_prefix,0.0001)","fn":"max","label":"Max","unit":"unique_src_route_prefix","group":"Unique Route Prefixes Source","origLabel":"Max","sample_rate":1,"name":"max_src_route_prefix","raw":true}
+      { "value": "avg_src_route_prefix", "column": "f_hll(inet_src_route_prefix,0.0001)", "fn": "average", "label": "Average", "unit": "unique_src_route_prefix", "group": "Unique Route Prefixes Source", "origLabel": "Average", "sample_rate": 1, "name": "avg_src_route_prefix", "raw": true },
+      { "value": "p95th_src_route_prefix", "column": "f_hll(inet_src_route_prefix,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_src_route_prefix", "group": "Unique Route Prefixes Source", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_src_route_prefix", "raw": true },
+      { "value": "p99th_src_route_prefix", "column": "f_hll(inet_src_route_prefix,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_src_route_prefix", "group": "Unique Route Prefixes Source", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_src_route_prefix", "raw": true },
+      { "value": "max_src_route_prefix", "column": "f_hll(inet_src_route_prefix,0.0001)", "fn": "max", "label": "Max", "unit": "unique_src_route_prefix", "group": "Unique Route Prefixes Source", "origLabel": "Max", "sample_rate": 1, "name": "max_src_route_prefix", "raw": true }
     ]
   },
   {
     label: 'Unique Route Prefixes Destination',
     options: [
-      {"value":"avg_dst_route_prefix","column":"f_hll(inet_dst_route_prefix,0.0001)","fn":"average","label":"Average","unit":"unique_dst_route_prefix","group":"Unique Route Prefixes Destination","origLabel":"Average","sample_rate":1,"name":"avg_dst_route_prefix","raw":true},
-      {"value":"p95th_dst_route_prefix","column":"f_hll(inet_dst_route_prefix,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_dst_route_prefix","group":"Unique Route Prefixes Destination","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_dst_route_prefix","raw":true},
-      {"value":"p99th_dst_route_prefix","column":"f_hll(inet_dst_route_prefix,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_dst_route_prefix","group":"Unique Route Prefixes Destination","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_dst_route_prefix","raw":true},
-      {"value":"max_dst_route_prefix","column":"f_hll(inet_dst_route_prefix,0.0001)","fn":"max","label":"Max","unit":"unique_dst_route_prefix","group":"Unique Route Prefixes Destination","origLabel":"Max","sample_rate":1,"name":"max_dst_route_prefix","raw":true}
+      { "value": "avg_dst_route_prefix", "column": "f_hll(inet_dst_route_prefix,0.0001)", "fn": "average", "label": "Average", "unit": "unique_dst_route_prefix", "group": "Unique Route Prefixes Destination", "origLabel": "Average", "sample_rate": 1, "name": "avg_dst_route_prefix", "raw": true },
+      { "value": "p95th_dst_route_prefix", "column": "f_hll(inet_dst_route_prefix,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_dst_route_prefix", "group": "Unique Route Prefixes Destination", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_dst_route_prefix", "raw": true },
+      { "value": "p99th_dst_route_prefix", "column": "f_hll(inet_dst_route_prefix,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_dst_route_prefix", "group": "Unique Route Prefixes Destination", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_dst_route_prefix", "raw": true },
+      { "value": "max_dst_route_prefix", "column": "f_hll(inet_dst_route_prefix,0.0001)", "fn": "max", "label": "Max", "unit": "unique_dst_route_prefix", "group": "Unique Route Prefixes Destination", "origLabel": "Max", "sample_rate": 1, "name": "max_dst_route_prefix", "raw": true }
     ]
   },
   {
     label: 'Unique Ports Source',
     options: [
-      {"value":"avg_src_port","column":"f_hll(l4_src_port.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_src_port","group":"Unique Ports Source","origLabel":"Average","sample_rate":1,"name":"avg_src_port","raw":true},
-      {"value":"p95th_src_port","column":"f_hll(l4_src_port.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_src_port","group":"Unique Ports Source","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_src_port","raw":true},
-      {"value":"p99th_src_port","column":"f_hll(l4_src_port.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_src_port","group":"Unique Ports Source","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_src_port","raw":true},
-      {"value":"max_src_port","column":"f_hll(l4_src_port.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_src_port","group":"Unique Ports Source","origLabel":"Max","sample_rate":1,"name":"max_src_port","raw":true}
+      { "value": "avg_src_port", "column": "f_hll(l4_src_port.agg0,0.0001)", "fn": "average", "label": "Average", "unit": "unique_src_port", "group": "Unique Ports Source", "origLabel": "Average", "sample_rate": 1, "name": "avg_src_port", "raw": true },
+      { "value": "p95th_src_port", "column": "f_hll(l4_src_port.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_src_port", "group": "Unique Ports Source", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_src_port", "raw": true },
+      { "value": "p99th_src_port", "column": "f_hll(l4_src_port.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_src_port", "group": "Unique Ports Source", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_src_port", "raw": true },
+      { "value": "max_src_port", "column": "f_hll(l4_src_port.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_src_port", "group": "Unique Ports Source", "origLabel": "Max", "sample_rate": 1, "name": "max_src_port", "raw": true }
     ]
   },
   {
     label: 'Unique Ports Destination',
     options: [
-      {"value":"avg_dst_port","column":"f_hll(l4_dst_port.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_dst_port","group":"Unique Ports Destination","origLabel":"Average","sample_rate":1,"name":"avg_dst_port","raw":true},
-      {"value":"p95th_dst_port","column":"f_hll(l4_dst_port.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_dst_port","group":"Unique Ports Destination","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_dst_port","raw":true},
-      {"value":"p99th_dst_port","column":"f_hll(l4_dst_port.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_dst_port","group":"Unique Ports Destination","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_dst_port","raw":true},
-      {"value":"max_dst_port","column":"f_hll(l4_dst_port.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_dst_port","group":"Unique Ports Destination","origLabel":"Max","sample_rate":1,"name":"max_dst_port","raw":true}
+      { "value": "avg_dst_port", "column": "f_hll(l4_dst_port.agg0,0.0001)", "fn": "average", "label": "Average", "unit": "unique_dst_port", "group": "Unique Ports Destination", "origLabel": "Average", "sample_rate": 1, "name": "avg_dst_port", "raw": true },
+      { "value": "p95th_dst_port", "column": "f_hll(l4_dst_port.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_dst_port", "group": "Unique Ports Destination", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_dst_port", "raw": true },
+      { "value": "p99th_dst_port", "column": "f_hll(l4_dst_port.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_dst_port", "group": "Unique Ports Destination", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_dst_port", "raw": true },
+      { "value": "max_dst_port", "column": "f_hll(l4_dst_port.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_dst_port", "group": "Unique Ports Destination", "origLabel": "Max", "sample_rate": 1, "name": "max_dst_port", "raw": true }
     ]
   },
   {
     label: 'Unique ASNs Source',
     options: [
-      {"value":"avg_src_as","column":"f_hll(src_as.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_src_as","group":"Unique ASNs Source","origLabel":"Average","sample_rate":1,"name":"avg_src_as","raw":true},
-      {"value":"p95th_src_as","column":"f_hll(src_as.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_src_as","group":"Unique ASNs Source","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_src_as","raw":true},
-      {"value":"p99th_src_as","column":"f_hll(src_as.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_src_as","group":"Unique ASNs Source","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_src_as","raw":true},
-      {"value":"max_src_as","column":"f_hll(src_as.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_src_as","group":"Unique ASNs Source","origLabel":"Max","sample_rate":1,"name":"max_src_as","raw":true}
+      { "value": "avg_src_as", "column": "f_hll(src_as.agg0,0.0001)", "fn": "average", "label": "Average", "unit": "unique_src_as", "group": "Unique ASNs Source", "origLabel": "Average", "sample_rate": 1, "name": "avg_src_as", "raw": true },
+      { "value": "p95th_src_as", "column": "f_hll(src_as.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_src_as", "group": "Unique ASNs Source", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_src_as", "raw": true },
+      { "value": "p99th_src_as", "column": "f_hll(src_as.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_src_as", "group": "Unique ASNs Source", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_src_as", "raw": true },
+      { "value": "max_src_as", "column": "f_hll(src_as.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_src_as", "group": "Unique ASNs Source", "origLabel": "Max", "sample_rate": 1, "name": "max_src_as", "raw": true }
     ]
   },
   {
     label: 'Unique ASNs Destination',
     options: [
-      {"value":"avg_dst_as","column":"f_hll(dst_as.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_dst_as","group":"Unique ASNs Destination","origLabel":"Average","sample_rate":1,"name":"avg_dst_as","raw":true},
-      {"value":"p95th_dst_as","column":"f_hll(dst_as.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_dst_as","group":"Unique ASNs Destination","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_dst_as","raw":true},
-      {"value":"p99th_dst_as","column":"f_hll(dst_as.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_dst_as","group":"Unique ASNs Destination","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_dst_as","raw":true},
-      {"value":"max_dst_as","column":"f_hll(dst_as.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_dst_as","group":"Unique ASNs Destination","origLabel":"Max","sample_rate":1,"name":"max_dst_as","raw":true}
+      { "value": "avg_dst_as", "column": "f_hll(dst_as.agg0,0.0001)", "fn": "average", "label": "Average", "unit": "unique_dst_as", "group": "Unique ASNs Destination", "origLabel": "Average", "sample_rate": 1, "name": "avg_dst_as", "raw": true },
+      { "value": "p95th_dst_as", "column": "f_hll(dst_as.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_dst_as", "group": "Unique ASNs Destination", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_dst_as", "raw": true },
+      { "value": "p99th_dst_as", "column": "f_hll(dst_as.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_dst_as", "group": "Unique ASNs Destination", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_dst_as", "raw": true },
+      { "value": "max_dst_as", "column": "f_hll(dst_as.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_dst_as", "group": "Unique ASNs Destination", "origLabel": "Max", "sample_rate": 1, "name": "max_dst_as", "raw": true }
     ]
   },
   {
     label: 'Unique ASNs Next Hop Destination',
     options: [
-      {"value":"avg_dst_nexthop_as","column":"f_hll(dst_nexthop_as.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_dst_nexthop_asn","group":"Unique ASNs Next Hop Destination","origLabel":"Average","sample_rate":1,"name":"avg_dst_nexthop_as","raw":true},
-      {"value":"p95th_dst_nexthop_as","column":"f_hll(dst_nexthop_as.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_dst_nexthop_asn","group":"Unique ASNs Next Hop Destination","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_dst_nexthop_as","raw":true},
-      {"value":"p99th_dst_nexthop_as","column":"f_hll(dst_nexthop_as.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_dst_nexthop_asn","group":"Unique ASNs Next Hop Destination","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_dst_nexthop_as","raw":true},
-      {"value":"max_dst_nexthop_as","column":"f_hll(dst_nexthop_as.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_dst_nexthop_asn","group":"Unique ASNs Next Hop Destination","origLabel":"Max","sample_rate":1,"name":"max_dst_nexthop_as","raw":true}
+      { "value": "avg_dst_nexthop_as", "column": "f_hll(dst_nexthop_as.agg0,0.0001)", "fn": "average", "label": "Average", "unit": "unique_dst_nexthop_asn", "group": "Unique ASNs Next Hop Destination", "origLabel": "Average", "sample_rate": 1, "name": "avg_dst_nexthop_as", "raw": true },
+      { "value": "p95th_dst_nexthop_as", "column": "f_hll(dst_nexthop_as.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_dst_nexthop_asn", "group": "Unique ASNs Next Hop Destination", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_dst_nexthop_as", "raw": true },
+      { "value": "p99th_dst_nexthop_as", "column": "f_hll(dst_nexthop_as.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_dst_nexthop_asn", "group": "Unique ASNs Next Hop Destination", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_dst_nexthop_as", "raw": true },
+      { "value": "max_dst_nexthop_as", "column": "f_hll(dst_nexthop_as.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_dst_nexthop_asn", "group": "Unique ASNs Next Hop Destination", "origLabel": "Max", "sample_rate": 1, "name": "max_dst_nexthop_as", "raw": true }
     ]
   },
   {
     label: 'Unique Countries Source',
     options: [
-      {"value":"avg_src_countries","column":"f_hll(src_geo.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_src_geo","group":"Unique Countries Source","origLabel":"Average","sample_rate":1,"name":"avg_src_countries","raw":true},
-      {"value":"p95th_src_countries","column":"f_hll(src_geo.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_src_geo","group":"Unique Countries Source","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_src_countries","raw":true},
-      {"value":"p99th_src_countries","column":"f_hll(src_geo.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_src_geo","group":"Unique Countries Source","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_src_countries","raw":true},
-      {"value":"max_src_countries","column":"f_hll(src_geo.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_src_geo","group":"Unique Countries Source","origLabel":"Max","sample_rate":1,"name":"max_src_countries","raw":true}
+      { "value": "avg_src_countries", "column": "f_hll(src_geo.agg0,0.0001)", "fn": "average", "label": "Average", "unit": "unique_src_geo", "group": "Unique Countries Source", "origLabel": "Average", "sample_rate": 1, "name": "avg_src_countries", "raw": true },
+      { "value": "p95th_src_countries", "column": "f_hll(src_geo.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_src_geo", "group": "Unique Countries Source", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_src_countries", "raw": true },
+      { "value": "p99th_src_countries", "column": "f_hll(src_geo.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_src_geo", "group": "Unique Countries Source", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_src_countries", "raw": true },
+      { "value": "max_src_countries", "column": "f_hll(src_geo.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_src_geo", "group": "Unique Countries Source", "origLabel": "Max", "sample_rate": 1, "name": "max_src_countries", "raw": true }
     ]
   },
   {
     label: 'Unique Countries Destination',
     options: [
-      {"value":"avg_dst_countries","column":"f_hll(dst_geo.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_dst_geo","group":"Unique Countries Destination","origLabel":"Average","sample_rate":1,"name":"avg_dst_countries","raw":true},
-      {"value":"p95th_dst_countries","column":"f_hll(dst_geo.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_dst_geo","group":"Unique Countries Destination","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_dst_countries","raw":true},
-      {"value":"p99th_dst_countries","column":"f_hll(dst_geo.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_dst_geo","group":"Unique Countries Destination","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_dst_countries","raw":true},
-      {"value":"max_dst_countries","column":"f_hll(dst_geo.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_dst_geo","group":"Unique Countries Destination","origLabel":"Max","sample_rate":1,"name":"max_dst_countries","raw":true}
+      { "value": "avg_dst_countries", "column": "f_hll(dst_geo.agg0,0.0001)", "fn": "average", "label": "Average", "unit": "unique_dst_geo", "group": "Unique Countries Destination", "origLabel": "Average", "sample_rate": 1, "name": "avg_dst_countries", "raw": true },
+      { "value": "p95th_dst_countries", "column": "f_hll(dst_geo.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_dst_geo", "group": "Unique Countries Destination", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_dst_countries", "raw": true },
+      { "value": "p99th_dst_countries", "column": "f_hll(dst_geo.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_dst_geo", "group": "Unique Countries Destination", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_dst_countries", "raw": true },
+      { "value": "max_dst_countries", "column": "f_hll(dst_geo.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_dst_geo", "group": "Unique Countries Destination", "origLabel": "Max", "sample_rate": 1, "name": "max_dst_countries", "raw": true }
     ]
   },
   {
     label: 'Unique Regions Source',
     options: [
-      {"value":"avg_src_regions","column":"f_hll(src_geo_region.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_src_geo_region","group":"Unique Regions Source","origLabel":"Average","sample_rate":1,"name":"avg_src_regions","raw":true},
-      {"value":"p95th_src_regions","column":"f_hll(src_geo_region.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_src_geo_region","group":"Unique Regions Source","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_src_regions","raw":true},
-      {"value":"p99th_src_regions","column":"f_hll(src_geo_region.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_src_geo_region","group":"Unique Regions Source","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_src_regions","raw":true},
-      {"value":"max_src_regions","column":"f_hll(src_geo_region.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_src_geo_region","group":"Unique Regions Source","origLabel":"Max","sample_rate":1,"name":"max_src_regions","raw":true}
+      { "value": "avg_src_regions", "column": "f_hll(src_geo_region.agg0,0.0001)", "fn": "average", "label": "Average", "unit": "unique_src_geo_region", "group": "Unique Regions Source", "origLabel": "Average", "sample_rate": 1, "name": "avg_src_regions", "raw": true },
+      { "value": "p95th_src_regions", "column": "f_hll(src_geo_region.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_src_geo_region", "group": "Unique Regions Source", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_src_regions", "raw": true },
+      { "value": "p99th_src_regions", "column": "f_hll(src_geo_region.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_src_geo_region", "group": "Unique Regions Source", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_src_regions", "raw": true },
+      { "value": "max_src_regions", "column": "f_hll(src_geo_region.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_src_geo_region", "group": "Unique Regions Source", "origLabel": "Max", "sample_rate": 1, "name": "max_src_regions", "raw": true }
     ]
   },
   {
     label: 'Unique Regions Destination',
     options: [
-      {"value":"avg_dst_regions","column":"f_hll(dst_geo_region.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_dst_geo_region","group":"Unique Regions Destination","origLabel":"Average","sample_rate":1,"name":"avg_dst_regions","raw":true},
-      {"value":"p95th_dst_regions","column":"f_hll(dst_geo_region.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_dst_geo_region","group":"Unique Regions Destination","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_dst_regions","raw":true},
-      {"value":"p99th_dst_regions","column":"f_hll(dst_geo_region.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_dst_geo_region","group":"Unique Regions Destination","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_dst_regions","raw":true},
-      {"value":"max_dst_regions","column":"f_hll(dst_geo_region.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_dst_geo_region","group":"Unique Regions Destination","origLabel":"Max","sample_rate":1,"name":"max_dst_regions","raw":true}
+      { "value": "avg_dst_regions", "column": "f_hll(dst_geo_region.agg0,0.0001)", "fn": "average", "label": "Average", "unit": "unique_dst_geo_region", "group": "Unique Regions Destination", "origLabel": "Average", "sample_rate": 1, "name": "avg_dst_regions", "raw": true },
+      { "value": "p95th_dst_regions", "column": "f_hll(dst_geo_region.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_dst_geo_region", "group": "Unique Regions Destination", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_dst_regions", "raw": true },
+      { "value": "p99th_dst_regions", "column": "f_hll(dst_geo_region.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_dst_geo_region", "group": "Unique Regions Destination", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_dst_regions", "raw": true },
+      { "value": "max_dst_regions", "column": "f_hll(dst_geo_region.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_dst_geo_region", "group": "Unique Regions Destination", "origLabel": "Max", "sample_rate": 1, "name": "max_dst_regions", "raw": true }
     ]
   },
   {
     label: 'Unique Cities Source',
     options: [
-      {"value":"avg_src_cities","column":"f_hll(src_geo_city.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_src_geo_city","group":"Unique Cities Source","origLabel":"Average","sample_rate":1,"name":"avg_src_cities","raw":true},
-      {"value":"p95th_src_cities","column":"f_hll(src_geo_city.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_src_geo_city","group":"Unique Cities Source","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_src_cities","raw":true},
-      {"value":"p99th_src_cities","column":"f_hll(src_geo_city.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_src_geo_city","group":"Unique Cities Source","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_src_cities","raw":true},
-      {"value":"max_src_cities","column":"f_hll(src_geo_city.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_src_geo_city","group":"Unique Cities Source","origLabel":"Max","sample_rate":1,"name":"max_src_cities","raw":true}
+      { "value": "avg_src_cities", "column": "f_hll(src_geo_city.agg0,0.0001)", "fn": "average", "label": "Average", "unit": "unique_src_geo_city", "group": "Unique Cities Source", "origLabel": "Average", "sample_rate": 1, "name": "avg_src_cities", "raw": true },
+      { "value": "p95th_src_cities", "column": "f_hll(src_geo_city.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_src_geo_city", "group": "Unique Cities Source", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_src_cities", "raw": true },
+      { "value": "p99th_src_cities", "column": "f_hll(src_geo_city.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_src_geo_city", "group": "Unique Cities Source", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_src_cities", "raw": true },
+      { "value": "max_src_cities", "column": "f_hll(src_geo_city.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_src_geo_city", "group": "Unique Cities Source", "origLabel": "Max", "sample_rate": 1, "name": "max_src_cities", "raw": true }
     ]
   },
   {
     label: 'Unique Cities Destination',
     options: [
-      {"value":"avg_dst_cities","column":"f_hll(dst_geo_city.agg0,0.0001)","fn":"average","label":"Average","unit":"unique_dst_geo_city","group":"Unique Cities Destination","origLabel":"Average","sample_rate":1,"name":"avg_dst_cities","raw":true},
-      {"value":"p95th_dst_cities","column":"f_hll(dst_geo_city.agg0,0.0001)","fn":"percentile","rank":95,"label":"95th Percentile","unit":"unique_dst_geo_city","group":"Unique Cities Destination","origLabel":"95th Percentile","sample_rate":1,"name":"p95th_dst_cities","raw":true},
-      {"value":"p99th_dst_cities","column":"f_hll(dst_geo_city.agg0,0.0001)","fn":"percentile","rank":99,"label":"99th Percentile","unit":"unique_dst_geo_city","group":"Unique Cities Destination","origLabel":"99th Percentile","sample_rate":1,"name":"p99th_dst_cities","raw":true},
-      {"value":"max_dst_cities","column":"f_hll(dst_geo_city.agg0,0.0001)","fn":"max","label":"Max","unit":"unique_dst_geo_city","group":"Unique Cities Destination","origLabel":"Max","sample_rate":1,"name":"max_dst_cities","raw":true}
+      { "value": "avg_dst_cities", "column": "f_hll(dst_geo_city.agg0,0.0001)", "fn": "average", "label": "Average", "unit": "unique_dst_geo_city", "group": "Unique Cities Destination", "origLabel": "Average", "sample_rate": 1, "name": "avg_dst_cities", "raw": true },
+      { "value": "p95th_dst_cities", "column": "f_hll(dst_geo_city.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_dst_geo_city", "group": "Unique Cities Destination", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_dst_cities", "raw": true },
+      { "value": "p99th_dst_cities", "column": "f_hll(dst_geo_city.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_dst_geo_city", "group": "Unique Cities Destination", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_dst_cities", "raw": true },
+      { "value": "max_dst_cities", "column": "f_hll(dst_geo_city.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_dst_geo_city", "group": "Unique Cities Destination", "origLabel": "Max", "sample_rate": 1, "name": "max_dst_cities", "raw": true }
     ]
   },
   {
     label: 'Sample Rate Max',
     options: [
-      {"value":"avg_max_sample_rate","column":"f_max_sample_rate","fn":"average","label":"Average","unit":"max_sample_rate","group":"Sample Rate Max","origLabel":"Average","sample_rate":0.01,"name":"avg_max_sample_rate","raw":true},
-      {"value":"p95th_max_sample_rate","column":"f_max_sample_rate","fn":"percentile","rank":95,"label":"95th Percentile","unit":"max_sample_rate","group":"Sample Rate Max","origLabel":"95th Percentile","sample_rate":0.01,"name":"p95th_max_sample_rate","raw":true},
-      {"value":"p99th_max_sample_rate","column":"f_max_sample_rate","fn":"percentile","rank":99,"label":"99th Percentile","unit":"max_sample_rate","group":"Sample Rate Max","origLabel":"99th Percentile","sample_rate":0.01,"name":"p99th_max_sample_rate","raw":true},
-      {"value":"max_max_sample_rate","column":"f_max_sample_rate","fn":"max","label":"Max","unit":"max_sample_rate","group":"Sample Rate Max","origLabel":"Max","sample_rate":0.01,"name":"max_max_sample_rate","raw":true}
+      { "value": "avg_max_sample_rate", "column": "f_max_sample_rate", "fn": "average", "label": "Average", "unit": "max_sample_rate", "group": "Sample Rate Max", "origLabel": "Average", "sample_rate": 0.01, "name": "avg_max_sample_rate", "raw": true },
+      { "value": "p95th_max_sample_rate", "column": "f_max_sample_rate", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "max_sample_rate", "group": "Sample Rate Max", "origLabel": "95th Percentile", "sample_rate": 0.01, "name": "p95th_max_sample_rate", "raw": true },
+      { "value": "p99th_max_sample_rate", "column": "f_max_sample_rate", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "max_sample_rate", "group": "Sample Rate Max", "origLabel": "99th Percentile", "sample_rate": 0.01, "name": "p99th_max_sample_rate", "raw": true },
+      { "value": "max_max_sample_rate", "column": "f_max_sample_rate", "fn": "max", "label": "Max", "unit": "max_sample_rate", "group": "Sample Rate Max", "origLabel": "Max", "sample_rate": 0.01, "name": "max_max_sample_rate", "raw": true }
     ]
   },
   {
     label: 'Sample Rate Average',
     options: [
-      {"value":"avg_avg_sample_rate","column":"f_avg_sample_rate","fn":"average","label":"Average","unit":"avg_sample_rate","group":"Sample Rate Average","origLabel":"Average","sample_rate":0.01,"name":"avg_avg_sample_rate","raw":true},
-      {"value":"p95th_avg_sample_rate","column":"f_avg_sample_rate","fn":"percentile","rank":95,"label":"95th Percentile","unit":"avg_sample_rate","group":"Sample Rate Average","origLabel":"95th Percentile","sample_rate":0.01,"name":"p95th_avg_sample_rate","raw":true},
-      {"value":"p99th_avg_sample_rate","column":"f_avg_sample_rate","fn":"percentile","rank":99,"label":"99th Percentile","unit":"avg_sample_rate","group":"Sample Rate Average","origLabel":"99th Percentile","sample_rate":0.01,"name":"p99th_avg_sample_rate","raw":true},
-      {"value":"max_avg_sample_rate","column":"f_avg_sample_rate","fn":"max","label":"Max","unit":"avg_sample_rate","group":"Sample Rate Average","origLabel":"Max","sample_rate":0.01,"name":"max_avg_sample_rate","raw":true}
+      { "value": "avg_avg_sample_rate", "column": "f_avg_sample_rate", "fn": "average", "label": "Average", "unit": "avg_sample_rate", "group": "Sample Rate Average", "origLabel": "Average", "sample_rate": 0.01, "name": "avg_avg_sample_rate", "raw": true },
+      { "value": "p95th_avg_sample_rate", "column": "f_avg_sample_rate", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "avg_sample_rate", "group": "Sample Rate Average", "origLabel": "95th Percentile", "sample_rate": 0.01, "name": "p95th_avg_sample_rate", "raw": true },
+      { "value": "p99th_avg_sample_rate", "column": "f_avg_sample_rate", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "avg_sample_rate", "group": "Sample Rate Average", "origLabel": "99th Percentile", "sample_rate": 0.01, "name": "p99th_avg_sample_rate", "raw": true },
+      { "value": "max_avg_sample_rate", "column": "f_avg_sample_rate", "fn": "max", "label": "Max", "unit": "avg_sample_rate", "group": "Sample Rate Average", "origLabel": "Max", "sample_rate": 0.01, "name": "max_avg_sample_rate", "raw": true }
     ]
   }
 ];
 
-export const allMetricOptions = flattenMetricOptions(metricList);
+export const allMetricOptions = flattenMetricOptions(metricNestedList);
