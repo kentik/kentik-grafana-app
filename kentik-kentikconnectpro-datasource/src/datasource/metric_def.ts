@@ -1,16 +1,6 @@
 
 export type TransformFunction = (value: number, row: any, rangeSeconds: number) => number;
 export type Dimension = { text: string; value: string; field: string };
-// export type Metric = {
-//   text: string;
-//   value: string;
-//   field: string;
-//   outsort: string;
-//   gfUnit: string;
-//   gfAxisLabel: string;
-//   transform?: TransformFunction;
-//   tableFields: Array<{ text: string; field: string; metric: string; transform?: TransformFunction }>;
-// };
 
 export type Metric = {
   value: string;
@@ -417,7 +407,6 @@ export const dimensionList: Dimension[] = [
   { text: 'Destination HTTP Referrer', value: 'kflow_http_referer', field: 'kflow_http_referer' },
   { text: 'Destination HTTP User Agent', value: 'kflow_http_ua', field: 'kflow_http_ua' },
   { text: 'Connection ID', value: 'connection_id', field: 'connection_id' },
-
   { text: 'Source Kubernetes Pod Name', value: 'kt_k8s_src_pod_name', field: 'kt_k8s_src_pod_name' },
   { text: 'Source Kubernetes Pod Namespace', value: 'kt_k8s_src_pod_ns', field: 'kt_k8s_src_pod_ns' },
   { text: 'Source Kubernetes Workload Name', value: 'kt_k8s_src_load_name', field: 'kt_k8s_src_load_name' },
@@ -676,83 +665,6 @@ export const dimensionList: Dimension[] = [
 
 ];
 
-// function toBitsPerSecond(value: number, row: any): number {
-//   return (value * 8) / row.i_duration;
-// }
-
-// function toPerSecondRate(value: number, row: any): number {
-//   return value / row.i_duration;
-// }
-
-// function totalToAvgPerSecond(value: number, row: any, rangeSeconds: number): number {
-//   return value / rangeSeconds;
-// }
-
-// function totalToBitsPerSecond(value: number, row: any, rangeSeconds: number): number {
-//   return (value * 8) / rangeSeconds;
-// }
-
-// export const metricList: Metric[] = [
-//   {
-//     text: 'Bits/s',
-//     value: 'bytes',
-//     field: 'f_sum_both_bytes',
-//     outsort: 'avg_both',
-//     gfUnit: 'bps',
-//     gfAxisLabel: 'Bits/s',
-//     transform: toBitsPerSecond,
-//     tableFields: [
-//       { text: 'Avg', field: 'avg_both', metric: 'bps', transform: totalToBitsPerSecond },
-//       { text: '95th Percentile', field: 'p95th_both', metric: 'bps' },
-//       { text: 'Max', field: 'max_both', metric: 'bps' },
-//     ],
-//   },
-//   {
-//     text: 'Packets/s',
-//     value: 'packets',
-//     field: 'f_sum_both_pkts',
-//     outsort: 'avg_both',
-//     gfUnit: 'pps',
-//     gfAxisLabel: 'Packets/s',
-//     transform: toPerSecondRate,
-//     tableFields: [
-//       { text: 'Avg', field: 'avg_both', metric: 'pps', transform: totalToAvgPerSecond },
-//       { text: '95th Percentile', field: 'p95th_both', metric: 'pps' },
-//       { text: 'Max', field: 'max_both', metric: 'pps' },
-//     ],
-//   },
-//   {
-//     text: 'Unique Src IPs',
-//     value: 'unique_src_ip',
-//     field: 'f_hll(inet_src_addr,0.0001)',
-//     outsort: 'avg_ips',
-//     gfUnit: 'short',
-//     gfAxisLabel: 'Unique Src IPs',
-//     tableFields: [
-//       { text: 'Average', field: 'avg_ips', metric: 'none' },
-//       { text: 'p95th', field: 'p95th_ips', metric: 'none' },
-//       { text: 'Max', field: 'max_ips', metric: 'none' },
-//       { text: 'p95th mbps', field: 'p95th_bits_per_sec', metric: 'bps' },
-//       { text: 'p95th pps', field: 'p95th_pkts_per_sec', metric: 'pps' },
-//     ],
-//   },
-//   {
-//     text: 'Unique Dst IPs',
-//     value: 'unique_dst_ip',
-//     field: 'f_hll(inet_dst_addr,0.0001)',
-//     outsort: 'avg_ips',
-//     gfUnit: 'short',
-//     gfAxisLabel: 'Unique Dst IPs',
-//     tableFields: [
-//       { text: 'Average', field: 'avg_ips', metric: 'none' },
-//       { text: 'p95th', field: 'p95th_ips', metric: 'none' },
-//       { text: 'Max', field: 'max_ips', metric: 'none' },
-//       { text: 'p95th mbps', field: 'p95th_bits_per_sec', metric: 'bps' },
-//       { text: 'p95th pps', field: 'p95th_pkts_per_sec', metric: 'pps' },
-//     ],
-//   },
-// ];
-
 export const filterFieldList: FilterField[] = [
   { text: 'Source City', field: 'src_geo_city' },
   { text: 'Source Region', field: 'src_geo_region' },
@@ -798,33 +710,32 @@ export const filterFieldList: FilterField[] = [
   { text: 'TOS/Diffserv', field: 'tos' },
 ];
 
-
 export const metricNestedList = [
   {
     label: 'Bits/s',
     options: [
-      { value: "avg_bits_per_sec", column: "f_sum_both_bytes", fn: "average", label: "Average", unit: "bytes", group: "Bits/s", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_bits_per_sec", tableField: { text: 'Avg', field: 'avg_bits_per_sec', metric: 'bps', } },
-      { value: "p95th_bits_per_sec", column: "f_sum_both_bytes", fn: "percentile", label: "95th Percentile", rank: 95, unit: "bytes", group: "Bits/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_bits_per_sec", tableField: { text: '95th Percentile', field: 'p95th_bits_per_sec', metric: 'bps' } },
-      { value: "p99th_bits_per_sec", column: "f_sum_both_bytes", fn: "percentile", label: "99th Percentile", rank: 99, unit: "bytes", group: "Bits/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_bits_per_sec", tableField: { text: '95th Percentile', field: 'p99th_bits_per_sec', metric: 'bps' } },
-      { value: "max_bits_per_sec", column: "f_sum_both_bytes", fn: "max", label: "Max", unit: "bytes", group: "Bits/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_bits_per_sec", tableField: { text: 'Max', field: 'max_bits_per_sec', metric: 'bps' } } ,
+      { value: "avg_bits_per_sec", column: "f_sum_both_bytes", fn: "average", label: "Average", unit: "bytes", group: "Bits/s", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_bits_per_sec" },
+      { value: "p95th_bits_per_sec", column: "f_sum_both_bytes", fn: "percentile", label: "95th Percentile", rank: 95, unit: "bytes", group: "Bits/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_bits_per_sec" },
+      { value: "p99th_bits_per_sec", column: "f_sum_both_bytes", fn: "percentile", label: "99th Percentile", rank: 99, unit: "bytes", group: "Bits/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_bits_per_sec" },
+      { value: "max_bits_per_sec", column: "f_sum_both_bytes", fn: "max", label: "Max", unit: "bytes", group: "Bits/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_bits_per_sec",} ,
     ]
   },
   {
     label: 'Packets/s',
     options: [
-      { value: "avg_pkts_per_sec", column: "f_sum_both_pkts", fn: "average", label: "Average", unit: "packets", group: "Packets/s", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_pkts_per_sec" },
+      { value: "avg_pkts_per_sec", column: "f_sum_both_pkts", fn: "average", label: "Average", unit: "packets", group: "Packets/s", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_pkts_per_sec"},
       { value: "p95th_pkts_per_sec", column: "f_sum_both_pkts", fn: "percentile", rank: 95, label: "95th Percentile", unit: "packets", group: "Packets/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_pkts_per_sec" },
       { value: "p99th_pkts_per_sec", column: "f_sum_both_pkts", fn: "percentile", rank: 99, label: "99th Percentile", unit: "packets", group: "Packets/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_pkts_per_sec" },
-      { value: "max_pkts_per_sec", column: "f_sum_both_pkts", fn: "max", label: "Max", unit: "packets", group: "Packets/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_pkts_per_sec" },
+      { value: "max_pkts_per_sec", column: "f_sum_both_pkts", fn: "max", label: "Max", unit: "packets", group: "Packets/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_pkts_per_sec",},
     ]
   },
   {
     label: 'Flows/s',
     options: [
       { value: "avg_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat", "f_fsumloc"], fn: "average", label: "Average", unit: "fps", group: "Flows/s", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_flows_per_sec" },
-      { value: "p95th_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat", "f_fsumloc"], fn: "percentile", rank: 95, label: "95th Percentile", unit: "fps", group: "Flows/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_flows_per_sec" },
-      { value: "p99th_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat", "f_fsumloc"], fn: "percentile", rank: 99, label: "99th Percentile", unit: "fps", group: "Flows/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_flows_per_sec" },
-      { value: "max_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat", "f_fsumloc"], fn: "max", label: "Max", unit: "fps", group: "Flows/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_flows_per_sec" },
+      { value: "p95th_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat", "f_fsumloc"], fn: "percentile", rank: 95, label: "95th Percentile", unit: "fps", group: "Flows/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_flows_per_sec", },
+      { value: "p99th_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat", "f_fsumloc"], fn: "percentile", rank: 99, label: "99th Percentile", unit: "fps", group: "Flows/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_flows_per_sec", },
+      { value: "max_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat", "f_fsumloc"], fn: "max", label: "Max", unit: "fps", group: "Flows/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_flows_per_sec", },
     ]
   },
   {

@@ -264,6 +264,15 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     return alias;
   }
 
+  inferMetricFromUnit(unit: string): 'bps' | 'pps' | 'fps' | 'none' {
+    switch (unit) {
+      case 'bytes': return 'bps';
+      case 'packets': return 'pps';
+      case 'fps': return 'fps';
+      default: return 'none';
+    }
+  }
+
   processTableData(bucketData: any[], dimensionDefs: any[], metricDefs: any[]) {
     const seriesColumn = {
       name: 'Series name',
@@ -277,11 +286,11 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
       values: [] as string[],
     };
   
-    const metricColumns = metricDefs.map((def: any) => ({
-      name: def.tableField.text,
+    const metricColumns = metricDefs.map((def: Metric) => ({
+      name: def.value,
       type: FieldType.number,
       values: [] as number[],
-      config: { unit: def.tableField.metric },
+      config: { unit: this.inferMetricFromUnit(def.unit) },
     }));
   
     const allDimensionNames = dimensionDefs.map(d => d.text).join(', ');
@@ -291,7 +300,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
       dimensionColumn.values.push(allDimensionNames); 
   
       metricDefs.forEach((metricDef, i) => {
-        let val = row[metricDef.tableField.field];
+        let val = row[metricDef.value];
         if (_.isString(val)) val = parseFloat(val);
         metricColumns[i].values.push(val);
       });
