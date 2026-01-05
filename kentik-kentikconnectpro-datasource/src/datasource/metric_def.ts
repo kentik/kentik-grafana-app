@@ -717,16 +717,16 @@ export const metricNestedList = [
       { value: "avg_bits_per_sec", column: "f_sum_both_bytes", fn: "average", label: "Average", unit: "bytes", group: "Bits/s", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_bits_per_sec" },
       { value: "p95th_bits_per_sec", column: "f_sum_both_bytes", fn: "percentile", label: "95th Percentile", rank: 95, unit: "bytes", group: "Bits/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_bits_per_sec" },
       { value: "p99th_bits_per_sec", column: "f_sum_both_bytes", fn: "percentile", label: "99th Percentile", rank: 99, unit: "bytes", group: "Bits/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_bits_per_sec" },
-      { value: "max_bits_per_sec", column: "f_sum_both_bytes", fn: "max", label: "Max", unit: "bytes", group: "Bits/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_bits_per_sec",} ,
+      { value: "max_bits_per_sec", column: "f_sum_both_bytes", fn: "max", label: "Max", unit: "bytes", group: "Bits/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_bits_per_sec", },
     ]
   },
   {
     label: 'Packets/s',
     options: [
-      { value: "avg_pkts_per_sec", column: "f_sum_both_pkts", fn: "average", label: "Average", unit: "packets", group: "Packets/s", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_pkts_per_sec"},
+      { value: "avg_pkts_per_sec", column: "f_sum_both_pkts", fn: "average", label: "Average", unit: "packets", group: "Packets/s", origLabel: "Average", sample_rate: 1, raw: true, name: "avg_pkts_per_sec" },
       { value: "p95th_pkts_per_sec", column: "f_sum_both_pkts", fn: "percentile", rank: 95, label: "95th Percentile", unit: "packets", group: "Packets/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_pkts_per_sec" },
       { value: "p99th_pkts_per_sec", column: "f_sum_both_pkts", fn: "percentile", rank: 99, label: "99th Percentile", unit: "packets", group: "Packets/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_pkts_per_sec" },
-      { value: "max_pkts_per_sec", column: "f_sum_both_pkts", fn: "max", label: "Max", unit: "packets", group: "Packets/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_pkts_per_sec",},
+      { value: "max_pkts_per_sec", column: "f_sum_both_pkts", fn: "max", label: "Max", unit: "packets", group: "Packets/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_pkts_per_sec", },
     ]
   },
   {
@@ -908,7 +908,48 @@ export const metricNestedList = [
       { "value": "p99th_avg_sample_rate", "column": "f_avg_sample_rate", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "avg_sample_rate", "group": "Sample Rate Average", "origLabel": "99th Percentile", "sample_rate": 0.01, "name": "p99th_avg_sample_rate", "raw": true },
       { "value": "max_avg_sample_rate", "column": "f_avg_sample_rate", "fn": "max", "label": "Max", "unit": "avg_sample_rate", "group": "Sample Rate Average", "origLabel": "Max", "sample_rate": 0.01, "name": "max_avg_sample_rate", "raw": true }
     ]
+  },
+  { 
+    label: 'Cisco Meraki Out Bytes', 
+    options: [
+      { value: 'avg_ktsubtype__meraki__INT64_00', column: 'f_sum_int64_00', fn: 'average', label: 'Average', unit: 'ktsubtype__meraki__INT64_00', fix: 0, group: 'Cisco Meraki Out Bytes', origLabel: 'Average', sample_rate: 1, raw: true, name: 'avg_ktsubtype__meraki__INT64_00' }, 
+      { value: 'p95th_ktsubtype__meraki__INT64_00', column: 'f_sum_int64_00', fn: 'percentile', label: '95th Percentile', rank: 95, unit: 'ktsubtype__meraki__INT64_00', fix: 0, group: 'Cisco Meraki Out Bytes', origLabel: '95th Percentile', sample_rate: 1, name: 'p95th_ktsubtype__meraki__INT64_00' }, 
+      { value: 'max_ktsubtype__meraki__INT64_00', column: 'f_sum_int64_00', fn: 'max', label: 'Max', unit: 'ktsubtype__meraki__INT64_00', fix: 0, group: 'Cisco Meraki Out Bytes', origLabel: 'Max', sample_rate: 1, name: 'max_ktsubtype__meraki__INT64_00' }
+    ] 
+  },
+  { 
+    label: 'Cisco Meraki Out Packets', 
+    options: [
+      { value: 'avg_ktsubtype__meraki__INT64_01', column: 'f_sum_int64_01', fn: 'average', label: 'Average', unit: 'ktsubtype__meraki__INT64_01', fix: 0, group: 'Cisco Meraki Out Packets', origLabel: 'Average', sample_rate: 1, name: 'avg_ktsubtype__meraki__INT64_01' }, 
+      { value: 'max_ktsubtype__meraki__INT64_01', column: 'f_sum_int64_01', fn: 'max', label: 'Max', unit: 'ktsubtype__meraki__INT64_01', fix: 0, group: 'Cisco Meraki Out Packets', origLabel: 'Max', sample_rate: 1, name: 'max_ktsubtype__meraki__INT64_01' }, 
+      { value: 'p95th_ktsubtype__meraki__INT64_01', column: 'f_sum_int64_01', fn: 'percentile', label: '95th Percentile', rank: 95, unit: 'ktsubtype__meraki__INT64_01', fix: 0, group: 'Cisco Meraki Out Packets', origLabel: '95th Percentile', sample_rate: 1, name: 'p95th_ktsubtype__meraki__INT64_01' }
+    ] 
+  },
+  { 
+    label: 'Silver Peak EdgeConnect Network To Server Delay', 
+    options: [
+      { value: 'avg_ktsubtype__silverpeak__INT02', column: 'f_sum_int02', fn: 'average', label: 'Average', unit: 'ktsubtype__silverpeak__INT02', fix: 0, group: 'Silver Peak EdgeConnect Network To Server Delay', origLabel: 'Average', sample_rate: 1, name: 'avg_ktsubtype__silverpeak__INT02' }, 
+      { value: 'p95th_ktsubtype__silverpeak__INT02', column: 'f_sum_int02', fn: 'percentile', label: '95th Percentile', rank: 95, unit: 'ktsubtype__silverpeak__INT02', fix: 0, group: 'Silver Peak EdgeConnect Network To Server Delay', origLabel: '95th Percentile', sample_rate: 1, name: 'p95th_ktsubtype__silverpeak__INT02' }, 
+      { value: 'max_ktsubtype__silverpeak__INT02', column: 'f_sum_int02', fn: 'max', label: 'Max', unit: 'ktsubtype__silverpeak__INT02', fix: 0, group: 'Silver Peak EdgeConnect Network To Server Delay', origLabel: 'Max', sample_rate: 1, name: 'max_ktsubtype__silverpeak__INT02' }
+    ] 
+  },
+  { 
+    label: 'Silver Peak EdgeConnect Network To Client Delay', 
+    options: [
+      { value: 'avg_ktsubtype__silverpeak__INT03', column: 'f_sum_int03', fn: 'average', label: 'Average', unit: 'ktsubtype__silverpeak__INT03', fix: 0, group: 'Silver Peak EdgeConnect Network To Client Delay', origLabel: 'Average', sample_rate: 1, name: 'avg_ktsubtype__silverpeak__INT03' }, 
+      { value: 'p95th_ktsubtype__silverpeak__INT03', column: 'f_sum_int03', fn: 'percentile', label: '95th Percentile', rank: 95, unit: 'ktsubtype__silverpeak__INT03', fix: 0, group: 'Silver Peak EdgeConnect Network To Client Delay', origLabel: '95th Percentile', sample_rate: 1, name: 'p95th_ktsubtype__silverpeak__INT03' }, 
+      { value: 'max_ktsubtype__silverpeak__INT03', column: 'f_sum_int03', fn: 'max', label: 'Max', unit: 'ktsubtype__silverpeak__INT03', fix: 0, group: 'Silver Peak EdgeConnect Network To Client Delay', origLabel: 'Max', sample_rate: 1, name: 'max_ktsubtype__silverpeak__INT03' }
+    ] 
+  },
+  { 
+    label: 'Silver Peak EdgeConnect Client To Server Response Delay', 
+    options: [
+      { value: 'avg_ktsubtype__silverpeak__INT04', column: 'f_sum_int04', fn: 'average', label: 'Average', unit: 'ktsubtype__silverpeak__INT04', fix: 0, group: 'Silver Peak EdgeConnect Client To Server Response Delay', origLabel: 'Average', sample_rate: 1, name: 'avg_ktsubtype__silverpeak__INT04' },
+      { value: 'p95th_ktsubtype__silverpeak__INT04', column: 'f_sum_int04', fn: 'percentile', label: '95th Percentile', rank: 95, unit: 'ktsubtype__silverpeak__INT04', fix: 0, group: 'Silver Peak EdgeConnect Client To Server Response Delay', origLabel: '95th Percentile', sample_rate: 1, name: 'p95th_ktsubtype__silverpeak__INT04' }, 
+      { value: 'max_ktsubtype__silverpeak__INT04', column: 'f_sum_int04', fn: 'max', label: 'Max', unit: 'ktsubtype__silverpeak__INT04', fix: 0, group: 'Silver Peak EdgeConnect Client To Server Response Delay', origLabel: 'Max', sample_rate: 1, name: 'max_ktsubtype__silverpeak__INT04' }
+    ] 
   }
 ];
+
 
 export const allMetricOptions = flattenMetricOptions(metricNestedList);
