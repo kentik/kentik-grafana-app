@@ -47,7 +47,7 @@ describe('Kentik Query Builder', () => {
   describe('When building topXData query', () => {
     beforeEach(() => {
       ctx.query_options = {
-        metric: 'bytes',
+        metric: 'max_bits_per_sec,p99th_bits_per_sec',
         dimension: 'src_geo_region,traffic,top_flow',
         deviceNames: 'cat2_demo',
         siteNames: 'site1,site2,site3',
@@ -57,28 +57,22 @@ describe('Kentik Query Builder', () => {
       };
     });
 
-    it('should build proper topXData query when all sites selected' , () => {
+    it('should build proper topXData query when all sites selected', () => {
       ctx.query_options.siteNames = ALL_SITES_LABEL;
       const topXDataQuery = queryBuilder.buildTopXdataQuery(ctx.query_options);
       expect(topXDataQuery).toEqual(expect.objectContaining({ device_site: null }));
     });
 
-    it('should build proper topXData query when no sites selected' , () => {
+    it('should build proper topXData query when no sites selected', () => {
       ctx.query_options.siteNames = null;
       const topXDataQuery = queryBuilder.buildTopXdataQuery(ctx.query_options);
       expect(topXDataQuery).toEqual(expect.objectContaining({ device_site: null }));
     });
 
     it('should build proper topXData query', (done) => {
-      const expectedQuery = {
-        dimension: ['src_geo_region', 'traffic', 'top_flow'],
-        metric: ['bytes'],
-        device_name: ['cat2_demo'],
-        device_site: ['site1', 'site2', 'site3'],
-        outsort: 'avg_both',
-        time_format: 'UTC',
-        ending_time: '1970-01-01 01:00:00',
-        starting_time: '1970-01-01 00:00:00',
+      const expectedQuery =  {
+        dimension: [ 'src_geo_region', 'traffic', 'top_flow' ],
+        metric: [ 'bytes' ],
         matrixBy: [],
         cidr: 32,
         cidr6: 128,
@@ -86,210 +80,80 @@ describe('Kentik Query Builder', () => {
         depth: 100,
         fastData: 'Auto',
         lookback_seconds: 0,
-        filters_obj: {
-          connector: 'All',
-          filterGroups: [],
-        },
-        aggregateTypes: ['avg_both', 'p95th_both', 'max_both'],
+        time_format: 'UTC',
+        starting_time: '1970-01-01 00:00:00',
+        ending_time: '1970-01-01 01:00:00',
+        device_name: [ 'cat2_demo' ],
+        outsort: 'p99th_bits_per_sec',
         aggregates: [
           {
-            name: 'avg_both',
-            column: 'f_sum_both_bytes',
-            fn: 'average',
-            raw: true,
-            sample_rate: 1,
-          },
-          {
-            name: 'p95th_both',
+            value: 'p99th_bits_per_sec',
             column: 'f_sum_both_bytes',
             fn: 'percentile',
-            rank: 95,
+            label: '99th Percentile',
+            rank: 99,
+            unit: 'bytes',
+            group: 'Bits/s',
+            origLabel: '99th Percentile',
             sample_rate: 1,
+            raw: true,
+            name: 'p99th_bits_per_sec'
           },
           {
-            name: 'max_both',
+            value: 'max_bits_per_sec',
             column: 'f_sum_both_bytes',
             fn: 'max',
+            label: 'Max',
+            unit: 'bytes',
+            group: 'Bits/s',
+            origLabel: 'Max',
             sample_rate: 1,
-          },
+            raw: true,
+            name: 'max_bits_per_sec'
+          }
         ],
-      };
+        filters: { connector: 'All', filterGroups: [] },
+        saved_filters: undefined,
+        hostname_lookup: undefined,
+        device_site: [ 'site1', 'site2', 'site3' ],
+        aggregateTypes: [ 'p99th_bits_per_sec', 'max_bits_per_sec' ]
+      }
 
       const topXDataQuery = queryBuilder.buildTopXdataQuery(ctx.query_options);
       expect(topXDataQuery).toEqual(expectedQuery);
       done();
     });
 
-    it('should build proper Bits/s query', (done) => {
-      ctx.query_options.metric = 'bytes';
+    it('should correctly derive metric, aggregates, aggregateTypes and outsort', () => {
+      ctx.query_options.metric = 'avg_bits_per_sec,max_pkts_per_sec';
 
-      const expectedQuery = {
-        dimension: ['src_geo_region', 'traffic', 'top_flow'],
-        aggregates: [
-          {
-            name: 'avg_both',
-            column: 'f_sum_both_bytes',
+      const query = queryBuilder.buildTopXdataQuery(ctx.query_options);
+
+      expect(query.metric).toEqual(['bytes', 'packets']);
+      expect(query.aggregates).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            value: 'avg_bits_per_sec',
             fn: 'average',
-            raw: true,
-            sample_rate: 1,
-          },
-          {
-            name: 'p95th_both',
-            column: 'f_sum_both_bytes',
-            fn: 'percentile',
-            rank: 95,
-            sample_rate: 1,
-          },
-          {
-            name: 'max_both',
-            column: 'f_sum_both_bytes',
+            unit: 'bytes',
+            name: 'avg_bits_per_sec',
+          }),
+          expect.objectContaining({
+            value: 'max_pkts_per_sec',
             fn: 'max',
-            sample_rate: 1,
-          },
-        ],
-      };
+            unit: 'packets',
+            name: 'max_pkts_per_sec',
+          }),
+        ])
+      );
 
-      const topXDataQuery = queryBuilder.buildTopXdataQuery(ctx.query_options);
-      expect(topXDataQuery.dimension).toEqual(expectedQuery.dimension);
-      expect(topXDataQuery.aggregates).toEqual(expectedQuery.aggregates);
-      done();
+      expect(query.aggregateTypes).toEqual([
+        'avg_bits_per_sec',
+        'max_pkts_per_sec',
+      ]);
+
+      expect(query.outsort).toBe('avg_bits_per_sec');
     });
 
-    it('should build proper Packets/s query', (done) => {
-      ctx.query_options.metric = 'packets';
-
-      const expectedQuery = {
-        dimension: ['src_geo_region', 'traffic', 'top_flow'],
-        aggregates: [
-          {
-            name: 'avg_both',
-            column: 'f_sum_both_pkts',
-            fn: 'average',
-            raw: true,
-            sample_rate: 1,
-          },
-          {
-            name: 'p95th_both',
-            column: 'f_sum_both_pkts',
-            fn: 'percentile',
-            rank: 95,
-            sample_rate: 1,
-          },
-          {
-            name: 'max_both',
-            column: 'f_sum_both_pkts',
-            fn: 'max',
-            sample_rate: 1,
-          },
-        ],
-      };
-
-      const topXDataQuery = queryBuilder.buildTopXdataQuery(ctx.query_options);
-      expect(topXDataQuery.dimension).toEqual(expectedQuery.dimension);
-      expect(topXDataQuery.aggregates).toEqual(expectedQuery.aggregates);
-      done();
-    });
-
-    it('should build proper Unique Src IPs query', (done) => {
-      ctx.query_options.metric = 'unique_src_ip';
-
-      const expectedQuery = {
-        metric: ['unique_src_ip'],
-        dimension: ['src_geo_region', 'traffic', 'top_flow'],
-        aggregates: [
-          {
-            name: 'avg_ips',
-            column: 'f_hll(inet_src_addr,0.0001)',
-            fn: 'average',
-            raw: true,
-            sample_rate: 1,
-          },
-          {
-            name: 'p95th_ips',
-            column: 'f_hll(inet_src_addr,0.0001)',
-            fn: 'percentile',
-            rank: 95,
-            sample_rate: 1,
-          },
-          {
-            name: 'max_ips',
-            column: 'f_hll(inet_src_addr,0.0001)',
-            fn: 'max',
-            sample_rate: 1,
-            raw: true,
-          },
-          {
-            name: 'p95th_bits_per_sec',
-            column: 'f_sum_both_bytes',
-            fn: 'percentile',
-            rank: 95,
-            sample_rate: 1,
-          },
-          {
-            name: 'p95th_pkts_per_sec',
-            column: 'f_sum_both_pkts',
-            fn: 'percentile',
-            rank: 95,
-            sample_rate: 1,
-          },
-        ],
-      };
-
-      const topXDataQuery = queryBuilder.buildTopXdataQuery(ctx.query_options);
-      expect(topXDataQuery.dimension).toEqual(expectedQuery.dimension);
-      expect(topXDataQuery.aggregates).toEqual(expectedQuery.aggregates);
-      done();
-    });
-
-    it('should build proper Unique Dst IPs query', (done) => {
-      ctx.query_options.metric = 'unique_dst_ip';
-
-      const expectedQuery = {
-        metric: ['unique_dst_ip'],
-        dimension: ['src_geo_region', 'traffic', 'top_flow'],
-        aggregates: [
-          {
-            name: 'avg_ips',
-            column: 'f_hll(inet_dst_addr,0.0001)',
-            fn: 'average',
-            raw: true,
-            sample_rate: 1,
-          },
-          {
-            name: 'p95th_ips',
-            column: 'f_hll(inet_dst_addr,0.0001)',
-            fn: 'percentile',
-            rank: 95,
-            sample_rate: 1,
-          },
-          {
-            name: 'max_ips',
-            column: 'f_hll(inet_dst_addr,0.0001)',
-            fn: 'max',
-            sample_rate: 1,
-            raw: true,
-          },
-          {
-            name: 'p95th_bits_per_sec',
-            column: 'f_sum_both_bytes',
-            fn: 'percentile',
-            rank: 95,
-            sample_rate: 1,
-          },
-          {
-            name: 'p95th_pkts_per_sec',
-            column: 'f_sum_both_pkts',
-            fn: 'percentile',
-            rank: 95,
-            sample_rate: 1,
-          },
-        ],
-      };
-
-      const topXDataQuery = queryBuilder.buildTopXdataQuery(ctx.query_options);
-      expect(topXDataQuery.dimension).toEqual(expectedQuery.dimension);
-      expect(topXDataQuery.aggregates).toEqual(expectedQuery.aggregates);
-      done();
-    });
   });
 });

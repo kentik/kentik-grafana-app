@@ -99,7 +99,7 @@ function formatFilters(kentikFilterGroups: any[]) {
 }
 
 function buildTopXdataQuery(options: any, panelId?: string) {
-  const metricArray = options.metric.split(',')
+  const metricArray = options.metric.split(',');
   const metricDefs = allMetricOptions.filter(opt => metricArray.includes(opt.value));
 
   if (_.isEmpty(metricDefs)) {
