@@ -1,115 +1,149 @@
-# Grafana data source plugin template
+# 1. Introduction
 
-This template is a starting point for building a Data Source Plugin for Grafana.
+Kentik Connect Pro is a datasource plugin for Grafana. It allows users to query the Kentik API and visualize data on Grafana dashboards. The plugin is available under Datasources.
+After installing and adding the plugin as a new datasource, the user must provide authentication details: email and API token. Once saved, the plugin automatically verifies whether the authentication is valid.
 
-## What are Grafana data source plugins?
+# 2. Changes and new features
 
-Grafana supports a wide range of data sources, including Prometheus, MySQL, and even Datadog. There’s a good chance you can already visualize metrics from the systems you have set up. In some cases, though, you already have an in-house metrics solution that you’d like to add to your Grafana dashboards. Grafana Data Source Plugins enables integrating such solutions with Grafana.
+## 2.1 API Update from v5 to v6
 
-## Getting started
+The API endpoints have been updated for:
 
-### Frontend
+* devices
+* sites
+* users
+* custom dimensions
+* saved filters
 
-1. Install dependencies
+## 2.2 Cache implementation (localForage)
 
-   ```bash
-   npm install
+A caching mechanism using localForage has been introduced. The cache applies to both dashboard query results and the API endpoints:
+
+* devices
+* sites
+* saved filters
+* custom dimensions
+
+Cache refresh frequency is based on the query time range and follows the previous logic:
+
+* Range > 1 month → refresh every 1 hour
+* Range > 1 day and ≤ 1 month → refresh every 15 minutes
+* Range ≤ 1 day → refresh every 5 minutes
+
+Thanks to caching, the query builder and dashboards load much faster after page reloads when cached data is available.
+
+## 2.3 Visualization depth
+
+A new configuration field named Visualization depth has been added, defining the number of returned results.
+
+* type: numeric value
+* default value: 8
+
+## 2.4 Label name changes
+
+* Unit → Metric
+* Metric → Dimensions
+
+## 2.5 Multi-Select support
+
+Multi-selection has been added for:
+
+* sites
+* devices
+* dimensions (maximum 8)
+
+If a user selects 8 dimensions, the following message appears: Max 8 dimensions allowed, and all options are disabled. When the user unselect some dimension, all options are enabled again.
+
+## 2.6 Drilldown for graphs and tables
+
+A drilldown feature has been added. Using the endpoint:
+
+```
+/api/v5/query/url
+```
+
+The plugin generates a drilldown link, which is attached to the returned data. Users can find this link in the tooltip.
+
+## 2.7. Aliases
+
+A single query containing multiple aggregates and aggregateTypes is now split into multiple individual queries.
+
+Each generated query contains exactly one aggregate and one corresponding aggregateType.
+
+This ensures that each aggregate is processed independently and produces its own time series.
+
+### Alias Behavior
+
+#### Default Alias (no user-defined alias)
+
+If the user does not provide a custom alias, the system automatically appends the aggregate name to the generated series label.
+
+#### Custom Alias (user-defined)
+
+When the user specifies an alias, two types of substitutions are supported:
+
+* $col
+  Replaced with the name of the aggregate used in the current query.
+
+* $tag_*
+  Replaced with values from the fields returned in the series data.
+
+If a referenced field does not exist in the data, the placeholder is left unchanged.
+
+## 2.8. New metrics and dimensions
+
+New metrics and dimensions added to the query builder.
+
+# 3. Running the plugin (development mode)
+
+The plugin is located on the plugin-v12 branch.
+
+## 3.1 Steps to run:
+
+* Switch to the plugin-v12 branch.
+* Inside the kentik-kentikconnectpro-datasource folder, install dependencies:
+
+  ```
+  npm install
+  ```
+* Start the development server:
+
+  ```
+  npm run dev
+  ```
+* In a separate terminal, in the same folder, start Docker services:
+
+  ```
+  docker compose up
+  ```
+
+* Run the tests:
+
    ```
-
-2. Build plugin in development mode and run in watch mode
-
-   ```bash
-   npm run dev
-   ```
-
-3. Build plugin in production mode
-
-   ```bash
-   npm run build
-   ```
-
-4. Run the tests (using Jest)
-
-   ```bash
-   # Runs the tests and watches for changes, requires git init first
    npm run test
-
-   # Exits after running all the tests
-   npm run test:ci
    ```
 
-5. Spin up a Grafana instance and run the plugin inside it (using Docker)
+## 3.2. Accessing Grafana
 
-   ```bash
-   npm run server
-   ```
+Grafana should be available at:
 
-6. Run the E2E tests (using Playwright)
+```
+http://localhost:3000
+```
 
-   ```bash
-   # Spins up a Grafana instance first that we tests against
-   npm run server
+## 3.3 Required Node.js version
 
-   # If you wish to start a certain Grafana version. If not specified will use latest by default
-   GRAFANA_VERSION=11.3.0 npm run server
+The recommended Node.js version is: v22.17.0
 
-   # Starts the tests
-   npm run e2e
-   ```
+Older Node versions caused issues with Web Crypto (WCS), ESM module compatibility, and Grafana toolchain dependencies. Node 22 ensures full compatibility with the plugin toolchain and prevents build/runtime errors.
 
-7. Run the linter
+# 4. Summary
 
-   ```bash
-   npm run lint
+The plugin provides improved performance through caching, updated API v6 support, enhanced configuration options, and drilldown functionality. The development version is easy to run locally and compatible with modern Node.js and Grafana versions.
 
-   # or
-
-   npm run lint:fix
-   ```
 
 # Distributing your plugin
 
 When distributing a Grafana plugin either within the community or privately the plugin must be signed so the Grafana application can verify its authenticity. This can be done with the `@grafana/sign-plugin` package.
 
 _Note: It's not necessary to sign a plugin during development. The docker development environment that is scaffolded with `@grafana/create-plugin` caters for running the plugin without a signature._
-
-## Initial steps
-
-Before signing a plugin please read the Grafana [plugin publishing and signing criteria](https://grafana.com/legal/plugins/#plugin-publishing-and-signing-criteria) documentation carefully.
-
-`@grafana/create-plugin` has added the necessary commands and workflows to make signing and distributing a plugin via the grafana plugins catalog as straightforward as possible.
-
-Before signing a plugin for the first time please consult the Grafana [plugin signature levels](https://grafana.com/legal/plugins/#what-are-the-different-classifications-of-plugins) documentation to understand the differences between the types of signature level.
-
-1. Create a [Grafana Cloud account](https://grafana.com/signup).
-2. Make sure that the first part of the plugin ID matches the slug of your Grafana Cloud account.
-   - _You can find the plugin ID in the `plugin.json` file inside your plugin directory. For example, if your account slug is `acmecorp`, you need to prefix the plugin ID with `acmecorp-`._
-3. Create a Grafana Cloud API key with the `PluginPublisher` role.
-4. Keep a record of this API key as it will be required for signing a plugin
-
-## Signing a plugin
-
-### Using Github actions release workflow
-
-If the plugin is using the github actions supplied with `@grafana/create-plugin` signing a plugin is included out of the box. The [release workflow](./.github/workflows/release.yml) can prepare everything to make submitting your plugin to Grafana as easy as possible. Before being able to sign the plugin however a secret needs adding to the Github repository.
-
-1. Please navigate to "settings > secrets > actions" within your repo to create secrets.
-2. Click "New repository secret"
-3. Name the secret "GRAFANA_API_KEY"
-4. Paste your Grafana Cloud API key in the Secret field
-5. Click "Add secret"
-
-#### Push a version tag
-
-To trigger the workflow we need to push a version tag to github. This can be achieved with the following steps:
-
-1. Run `npm version <major|minor|patch>`
-2. Run `git push origin main --follow-tags`
-
-## Learn more
-
-Below you can find source code for existing app plugins and other related documentation.
-
-- [Basic data source plugin example](https://github.com/grafana/grafana-plugin-examples/tree/master/examples/datasource-basic#readme)
-- [`plugin.json` documentation](https://grafana.com/developers/plugin-tools/reference/plugin-json)
-- [How to sign a plugin?](https://grafana.com/developers/plugin-tools/publish-a-plugin/sign-a-plugin)
