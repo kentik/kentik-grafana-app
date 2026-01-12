@@ -274,7 +274,7 @@
           "type": "query"
         },
         {
-          "current": {"value": "Traffic", "text": "Traffic"},
+          "current": {"value": "InterfaceID_src", "text": "Source Interface"},
           "datasource": {"type": "kentikconnectpro-datasource"},
           "hide": 0,
           "includeAll": false,

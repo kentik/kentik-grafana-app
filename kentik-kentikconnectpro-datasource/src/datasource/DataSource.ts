@@ -325,7 +325,8 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   async metricFindQuery(query: any, target: any) {
     switch (query) {
       case 'dimensions()': {
-        return this._getExtendedDimensionList(dimensionList);
+        const result = await this._getExtendedDimensionList(dimensionList);
+        return result;
       }
       case 'metrics()': {
         return metricNestedList;

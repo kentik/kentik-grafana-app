@@ -118,7 +118,7 @@ export class KentikProxy {
       return cachedDevices;
     }
     const dataToCache = await this.kentikAPISrv.getDevices();
-    this.cache.setItem('devicesPromise', await this.kentikAPISrv.getDevices());
+    await this.cache.setItem('devicesPromise', await this.kentikAPISrv.getDevices());
     return dataToCache;
   }
 
@@ -128,7 +128,7 @@ export class KentikProxy {
       return cachedSites;
     }
     const dataToCache = await this.kentikAPISrv.getSites();
-    this.cache.setItem('sitesPromise', dataToCache);
+    await this.cache.setItem('sitesPromise', dataToCache);
     return dataToCache;
   }
 
@@ -145,7 +145,7 @@ export class KentikProxy {
     } else {
       const result = await this.kentikAPISrv.getFieldValues(field);
       ts = getUTCTimestamp();
-      this.cache.setItem(field, {
+      await this.cache.setItem(field, {
         ts: ts,
         value: result,
       });
@@ -154,26 +154,27 @@ export class KentikProxy {
     }
   }
 
-  // TODO to verify if it works correclty when customDimenstion endpoint will be ready
   async getCustomDimensions() {
     const customDimensionsField = 'customDimensions';
     if (!await this.cache.getItem(customDimensionsField)) {
       const customDimensions = await this.kentikAPISrv.getCustomDimensions();
-      this.cache.setItem(customDimensionsField, customDimensions.map((dimension: any) => ({
+      await this.cache.setItem(customDimensionsField, customDimensions.map((dimension: any) => ({
         values: this._getDimensionPopulatorsValues(dimension),
         text: `Custom ${dimension.description}`,
         value: dimension.name,
         field: dimension.name,
       })));
     }
-    return this.cache.getItem(customDimensionsField);
+    // console.log(await this.cache.getItem(customDimensionsField));
+    const cached = await this.cache.getItem(customDimensionsField);
+    return cached;
   }
 
   async getSavedFilters() {
     const savedFiltersField = 'savedFilters';
     if (!await this.cache.getItem(savedFiltersField)) {
       const savedFilters = await this.kentikAPISrv.getSavedFilters();
-      this.cache.setItem(savedFiltersField, _.map(savedFilters.filters, (filter) => ({
+      await this.cache.setItem(savedFiltersField, _.map(savedFilters.filters, (filter) => ({
         text: `Saved ${filter.filterName}`,
         field: filter.filterName,
         id: filter.id,
