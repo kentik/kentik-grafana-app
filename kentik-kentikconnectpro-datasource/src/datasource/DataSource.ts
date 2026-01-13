@@ -58,38 +58,24 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         _.defaults(target, DEFAULT_QUERY);
 
         const siteNames = typeof target.sites === 'string' ? this.templateSrv.replace(
-          //@ts-ignore
-          target.devices,
+          target.sites,
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
         ) : target.sites?.map(site => site.label).toString();
 
         const deviceNames = typeof target.devices === 'string' ? this.templateSrv.replace(
-          //@ts-ignore
           target.devices,
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
-        ) : target.devices?.map(site => site.label).toString();
+        ) : target.devices?.map(device => device.label).toString();
         
         const dimensionsNames = typeof target.dimension === 'string' ? this.templateSrv.replace(
-          //@ts-ignore
           target.dimension,
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
-        ) : target.dimension?.map(site => site.value).toString();
+        ) : target.dimension?.map(d => d.value).toString();
 
-        this.templateSrv.replace(siteNames, options.scopedVars);
-        
-        this.templateSrv.replace(
-          //@ts-ignore
-          deviceNames,
-          options.scopedVars,
-          this.interpolateDeviceField.bind(this)
-        );
-
-        console.log(target.metric);
-        const metrics = typeof target.metric === 'string' ? this.templateSrv.replace(
-          //@ts-ignore
+        const metricsNames = typeof target.metric === 'string' ? this.templateSrv.replace(
           target.metric,
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
@@ -120,16 +106,15 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           savedFiltersList
         );
         const filters = [...kentikFilterGroups.kentikFilters, ...queryCustomFilterGroups.kentikFilters];
-        //@ts-ignore
-        const dimension = this.templateSrv.replace(dimensionsNames);
+       
         const queryOptions = {
-          deviceNames: _.isArray(deviceNames) ? deviceNames.map((device) => device.label).toString() : deviceNames,
+          deviceNames: deviceNames,
           range: {
             from: options.range.from,
             to: options.range.to,
           },
-          dimension: _.isArray(dimension) ? dimension.map((dimension) => dimension.value).toString() : dimension,
-          metric: _.isArray(metrics) ? metrics.map((metric) => metric.value).toString() : metrics,
+          dimension: dimensionsNames,
+          metric: metricsNames,
           kentikFilterGroups: filters,
           kentikSavedFilters: kentikFilterGroups.savedFilters,
           hostnameLookup: this.templateSrv.replace(target.hostnameLookup),
