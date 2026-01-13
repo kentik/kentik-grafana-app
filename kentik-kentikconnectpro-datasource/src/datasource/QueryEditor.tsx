@@ -227,7 +227,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 
   const onTopXBlur = () => {
     const query = _.cloneDeep(props.query);
-    if (!query.topx) {
+    if (!query.topx || _.toNumber(query.topx) <= 0) {
       query.topx = DEFAULT_TOPX;
       props.onChange(query);
     }
@@ -432,7 +432,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         </Field>
         <Field label="Visualization depth">
           <Input
-            type="text"
+            type="number"
             width={19.5}
             value={props.query.topx}
             onChange={(e) => onOptionChange('topx', e.currentTarget.value)}
