@@ -99,8 +99,8 @@ function formatFilters(kentikFilterGroups: any[]) {
 }
 
 function buildTopXdataQuery(options: any, panelId?: string) {
-  const metricArray = options.metric.split(',');
-  const metricDefs = allMetricOptions.filter(opt => metricArray.includes(opt.value));
+  const metricArray = options.metric?.split(',');
+  const metricDefs = allMetricOptions.filter(opt => metricArray?.includes(opt.value));
 
   if (_.isEmpty(metricDefs)) {
     throw new Error('Query error: Metric field is required');
@@ -128,7 +128,7 @@ function buildTopXdataQuery(options: any, panelId?: string) {
     filters: formatFilters(options.kentikFilterGroups),
     saved_filters: options.kentikSavedFilters,
     hostname_lookup: options.hostnameLookup,
-    device_site: isAllSitesSelected ? null : options.siteNames.split(','),
+    device_site: isAllSitesSelected ? null : options.siteNames?.split(','),
     aggregateTypes: metricDefs.map((agg: any) => agg.name),
   };
 

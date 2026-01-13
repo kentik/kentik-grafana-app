@@ -56,21 +56,44 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
       _.filter(options.targets, (target) => !target.hide),
       async (target, i) => {
         _.defaults(target, DEFAULT_QUERY);
-        const siteNames = target.sites?.map(site => site.label).toString();
-        this.templateSrv.replace(siteNames, options.scopedVars);
-        const deviceNames = this.templateSrv.replace(
+
+        const siteNames = typeof target.sites === 'string' ? this.templateSrv.replace(
           //@ts-ignore
           target.devices,
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
+        ) : target.sites?.map(site => site.label).toString();
+
+        const deviceNames = typeof target.devices === 'string' ? this.templateSrv.replace(
+          //@ts-ignore
+          target.devices,
+          options.scopedVars,
+          this.interpolateDeviceField.bind(this)
+        ) : target.devices?.map(site => site.label).toString();
+        
+        const dimensionsNames = typeof target.dimension === 'string' ? this.templateSrv.replace(
+          //@ts-ignore
+          target.dimension,
+          options.scopedVars,
+          this.interpolateDeviceField.bind(this)
+        ) : target.dimension?.map(site => site.value).toString();
+
+        this.templateSrv.replace(siteNames, options.scopedVars);
+        
+        this.templateSrv.replace(
+          //@ts-ignore
+          deviceNames,
+          options.scopedVars,
+          this.interpolateDeviceField.bind(this)
         );
 
-        const metrics = this.templateSrv.replace(
+        console.log(target.metric);
+        const metrics = typeof target.metric === 'string' ? this.templateSrv.replace(
           //@ts-ignore
           target.metric,
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
-        );
+        ) : target.metric?.map(m => m.value).toString();
 
         const queryCustomFilters = _.map(
           _.filter(
@@ -98,7 +121,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         );
         const filters = [...kentikFilterGroups.kentikFilters, ...queryCustomFilterGroups.kentikFilters];
         //@ts-ignore
-        const dimension = this.templateSrv.replace(target.dimension);
+        const dimension = this.templateSrv.replace(dimensionsNames);
         const queryOptions = {
           deviceNames: _.isArray(deviceNames) ? deviceNames.map((device) => device.label).toString() : deviceNames,
           range: {
@@ -173,14 +196,14 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     const extendedDimensionsList = await this._getExtendedDimensionList(dimensionList);
     const dimensionDefs = _.filter(
       extendedDimensionsList,
-      item => query.dimension.includes(item.value)
+      item => query.dimension?.includes(item.value)
     );
 
     if (_.isEmpty(dimensionDefs)) {
       throw new Error('Query error: Dimension field is required');
     }
 
-    const metricDefs = allMetricOptions.filter(opt => query.aggregateTypes.includes(opt.value));;
+    const metricDefs = allMetricOptions.filter(opt => query.aggregateTypes?.includes(opt.value));;
 
     if (!metricDefs) {
       throw new Error('Query error: Metric field is required');
@@ -319,7 +342,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   }
 
   private isAllSitesSelected(target: any) {
-    return target.sites.map((site: any) => site.label).includes(ALL_SITES_LABEL);
+    return target.sites.map((site: any) => site.label)?.includes(ALL_SITES_LABEL);
   }
 
   async metricFindQuery(query: any, target: any) {
@@ -338,7 +361,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         let devices = await this.kentik.getDevices();
         if (!_.isEmpty(target.sites) && !this.isAllSitesSelected(target)) {
           const siteLabales = target.sites.map((site: any) => site.label);
-          devices = _.filter(devices, (device) => siteLabales.includes(device.site.siteName));
+          devices = _.filter(devices, (device) => siteLabales?.includes(device.site.siteName));
         }
         return devices.map((device: any) => {
           return { text: device.deviceName, value: device.deviceName };
