@@ -16,10 +16,12 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   datasourceType: string;
   kentik: any;
   templateSrv: TemplateSrv;
+  private initialRun: boolean;
 
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
     super(instanceSettings);
     this.datasourceType = instanceSettings.type;
+    this.initialRun = true;
 
     // `arguments[1]` is a hack used by `datasource.test.ts`
     const kentikApi = new KentikAPI(arguments[1] || getBackendSrv(), instanceSettings.uid);
@@ -40,7 +42,40 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     return value.join(',');
   }
 
+  private isQueryTargetEmpty = (target: any): boolean => {
+    const targetObligatoryItems = ['sites', 'devices', 'dimension', 'metric'];
+
+    const isTargetEmpty = targetObligatoryItems.some((item) => {
+      const targetItem = target[item];
+
+      return Array.isArray(targetItem) && targetItem.length === 0;
+    });
+
+    return isTargetEmpty;
+  }
+
+  private isQueryTargetsEmpty = (options: DataQueryRequest<Query>): boolean => {
+    const {targets} = options;
+
+    if (!targets || targets.length === 0) {
+      return true;
+    }
+
+    const areTargetsEmpty = targets.every((target) => this.isQueryTargetEmpty(target));
+
+    return areTargetsEmpty;
+
+  }
+
   async query(options: DataQueryRequest<Query>): Promise<DataQueryResponse> {
+    if (this.initialRun === true && this.isQueryTargetsEmpty(options)) {
+      this.initialRun = false;
+
+      return Promise.resolve({data: []})
+    }
+
+    this.initialRun = false;
+
     if (!options.targets || options.targets.length === 0) {
       return Promise.resolve({ data: [] });
     }
@@ -68,7 +103,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
         ) : target.devices?.map(device => device.label).toString();
-        
+
         const dimensionsNames = typeof target.dimension === 'string' ? this.templateSrv.replace(
           target.dimension,
           options.scopedVars,
@@ -106,7 +141,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           savedFiltersList
         );
         const filters = [...kentikFilterGroups.kentikFilters, ...queryCustomFilterGroups.kentikFilters];
-       
+
         const queryOptions = {
           deviceNames: deviceNames,
           range: {
@@ -121,7 +156,8 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           siteNames: siteNames,
           topx: target.topx,
         };
-        const query = queryBuilder.buildTopXdataQuery(queryOptions, options.panelPluginId);
+
+        let query = queryBuilder.buildTopXdataQuery(queryOptions, options.panelPluginId);;
 
         // table mode
         if (target.mode === 'table') {
@@ -133,7 +169,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
             topXData.data,
             topXData.url
           );
-        
+
           return processed;
         }
 
@@ -143,16 +179,16 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         for (const singleAgg of query.aggregates) {
           const perAggQuery = {
             ...query,
-            aggregates: [singleAgg], 
+            aggregates: [singleAgg],
             aggregateTypes: [singleAgg.name],
             outsort: singleAgg.name,
           };
-        
+
           const topXData = await this.kentik.invokeTopXDataQuery(perAggQuery);
           const processed = await this.processResponse(
             perAggQuery,
             target.mode,
-            { ...target, aggregate: singleAgg },
+            {...target, aggregate: singleAgg},
             topXData.data,
             topXData.url
           );
@@ -161,6 +197,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         }
 
         return _.flatten(allAggResults);
+
       }
     );
 
