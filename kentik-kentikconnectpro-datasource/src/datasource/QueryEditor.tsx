@@ -1,6 +1,6 @@
 import { ALL_SITES_LABEL, DataSource } from './DataSource';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
-import { Stack, Input, Button, Field, Label, Combobox, ComboboxOption, MultiSelect } from '@grafana/ui';
+import { Stack, Input, Button, Field, Label, Combobox, ComboboxOption, MultiSelect, FieldValidationMessage } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
 import { DataQuery } from '@grafana/schema';
 import React, { useEffect, useState } from 'react';
@@ -77,7 +77,13 @@ const HOSTNAME_LOOKUP_CHOICES = [
   { value: 'disabled', text: 'Disabled' },
 ];
 
+const FIELDS_VALIDATION_MESSAGES = {
+  EMPTY: 'Field cannot be empty',
+}
+
 const MAX_DIMENSIONS = 8;
+
+const OBLIGATORY_FIELDS_NAMES = ['sites', 'devices', 'dimension', 'metric'];
 
 export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
   _.defaults(props.query, DEFAULT_QUERY);
@@ -103,6 +109,12 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     isLoading: true,
     isDevicesLoading: true,
   });
+  const [errorState, setErrorState] = useState<Record<string, string>>({
+    sites: '',
+    devices: '',
+    dimension: '',
+    metric: ''
+  })
 
   useEffect(() => {
     const init = async () => {
@@ -128,6 +140,75 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     init();
     // eslint-disable-next-line
   }, []);
+
+  const getEmptyFieldsNames = (query: any): string[] => {
+    const emptyFields = OBLIGATORY_FIELDS_NAMES.filter((name) => {
+      const currentField = query[name];
+
+      if (currentField === undefined || currentField === null) {
+        return true;
+      }
+
+      if (Array.isArray(currentField) && currentField.length === 0) {
+        return true;
+      }
+
+      return false;
+    })
+
+    return emptyFields;
+  }
+
+  // todo
+  const isQueryValid = (query: any): boolean => {
+    const emptyFields = getEmptyFieldsNames(query);
+
+    if (emptyFields.length === 0) {
+      // clear messages
+      setErrorState(oldState => {
+        const keys = Object.keys(oldState);
+
+        const newState = keys.reduce((acc, item) => {
+          acc[item] = '';
+
+          return acc;
+        }, {} as Record<string, string>);
+
+        return newState;
+      })
+
+      return true;
+    }
+    const message = FIELDS_VALIDATION_MESSAGES.EMPTY;
+
+    const errorMessages: Record<string, string> = {};
+
+    OBLIGATORY_FIELDS_NAMES.forEach((fieldName: string) => {
+      if (emptyFields.includes(fieldName)) {
+        errorMessages[fieldName] = message;
+      } else if (errorState[fieldName] === message || errorState[fieldName] === '') {
+        errorMessages[fieldName] = '';
+      }
+    });
+
+
+    setErrorState((oldState) => ({...oldState, ...errorMessages}))
+
+    return false;
+  }
+
+  const onRunQuery = (queryValid?: boolean): void => {
+    if (queryValid === false) {
+      return;
+    }
+
+    props.onRunQuery();
+  }
+
+  // todo typing
+  const onQueryChange = (query: any): void => {
+    props.onChange(query)
+  }
 
   const variableExists = (variableName: string): boolean => {
     const templateSrv = getTemplateSrv();
@@ -199,52 +280,65 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     const query: Query = _.cloneDeep(props.query);
     // @ts-ignore
     query[field] = option.value;
-    props.onChange(query);
-    props.onRunQuery();
+
+    onQueryChange(query);
+    const queryValid = isQueryValid(query);
+    onRunQuery(queryValid);
   };
 
   const onOptionChange = (field: keyof Query, value: string) => {
     const query = _.cloneDeep(props.query);
     //@ts-ignore
     query[field] = value;
-    props.onChange(query);
+
+    onQueryChange(query);
+    isQueryValid(query)
   };
 
   const onDeviceSelect = (value: SelectableValue[]) => {
     const query: Query = _.cloneDeep(props.query);
     // @ts-ignore
     query['devices'] = value;
-    props.onChange(query);
+
+    onQueryChange(query);
+    isQueryValid(query)
   }
 
   const onMetricSelect = (value: SelectableValue[]) => {
     const query: Query = _.cloneDeep(props.query);
     // @ts-ignore
     query['metric'] = value;
-    props.onChange(query);
-    props.onRunQuery();
+
+    onQueryChange(query);
+    const queryValid = isQueryValid(query);
+    onRunQuery(queryValid);
   }
 
   const onTopXBlur = () => {
     const query = _.cloneDeep(props.query);
+    let queryValid = false;
     if (!query.topx || _.toNumber(query.topx) <= 0) {
       query.topx = DEFAULT_TOPX;
-      props.onChange(query);
+      onQueryChange(query);
+      queryValid = isQueryValid(query);
     }
-    props.onRunQuery();
+    onRunQuery(queryValid);
   };
 
   const onDimensionSelect = (value: SelectableValue[]) => {
     const query: Query = _.cloneDeep(props.query);
     // @ts-ignore
     query['dimension'] = value;
-    props.onChange(query);
+
+    onQueryChange(query);
     const dimensionLimitReached = query.dimension?.length >= MAX_DIMENSIONS;
     setState({
       ...state,
       dimensions: state.dimensions.map((dimension: SelectableValue) => ({ ...dimension, isDisabled: dimensionLimitReached })),
     });
-    props.onRunQuery();
+
+    const queryValid = isQueryValid(query);
+    onRunQuery(queryValid);
   }
 
   const onConjuctionOperatorSelect = (option: ComboboxOption<string>) => {
@@ -255,8 +349,10 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     for (let filter of customFilters) {
       filter.conjunctionOperator = option.value;
     }
-    props.onChange({ ...props.query, conjunctionOperator: option.value as ConjunctionOperator, customFilters });
-    props.onRunQuery();
+
+    onQueryChange({ ...props.query, conjunctionOperator: option.value as ConjunctionOperator, customFilters });
+    const queryValid = isQueryValid(props.query);
+    onRunQuery(queryValid);
   };
 
   const onFilterOptionSelect = async (
@@ -278,7 +374,9 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         tagValues: stateValues,
       });
     }
-    props.onChange({ ...props.query, customFilters });
+
+    onQueryChange({ ...props.query, customFilters });
+
     if (field === 'keySegment') {
       const tagValues = await fetchTagValues(customFilters[filterIdx].keySegment as string);
       const stateValues = _.cloneDeep(state.tagValues);
@@ -288,7 +386,8 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         tagValues: stateValues,
       });
     } else {
-      props.onRunQuery();
+      const queryValid = isQueryValid(props.query);
+      onRunQuery(queryValid);
     }
   };
 
@@ -299,22 +398,25 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       valueSegment: null,
       conjunctionOperator: 'AND',
     };
-    props.onChange({ ...props.query, customFilters: [...props.query.customFilters, defaultFilter] });
+
+    onQueryChange({ ...props.query, customFilters: [...props.query.customFilters, defaultFilter] });
   };
 
   const onDeleteFilterButtonClick = (filterIdx: number) => {
-    props.onChange({
+    onQueryChange({
       ...props.query,
       customFilters: props.query.customFilters.filter((filter: any, idx: number) => idx !== filterIdx),
     });
-    props.onRunQuery();
+    const queryValid = isQueryValid(props.query);
+    onRunQuery(queryValid);
   };
 
-  const onSitesSelect = async (value: SelectableValue<string>[]) => {
+  const onSitesSelect = async (value: Array<SelectableValue<string>>) => {
     const query: Query = _.cloneDeep(props.query);
     query['sites'] = value;
     query.devices = [];
-    props.onChange(query);
+
+    onQueryChange(query);
 
     setState({
       ...state,
@@ -329,6 +431,13 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       isDevicesLoading: false,
       devices,
     });
+    isQueryValid(query)
+  }
+
+  const onTextInputBlur = (): void => {
+    const queryValid = isQueryValid(props.query);
+
+    onRunQuery(queryValid);
   }
 
   return (
@@ -347,7 +456,8 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         </Field>
       </Stack>
       <Stack direction="row">
-        <Field label="Sites">
+        <Field label={<><span>Sites <span style={{color: 'red'}}>*</span></span></>}>
+          <>
           <MultiSelect
             placeholder={state.isLoading ? 'Loading...' : ALL_SITES_LABEL}
             value={props.query.sites || []}
@@ -357,8 +467,11 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
             hideSelectedOptions={false}
             onChange={(value) => onSitesSelect(value)}
           />
+            {errorState.sites && <FieldValidationMessage>{errorState.sites}</FieldValidationMessage>}
+          </>
         </Field>
-        <Field label="Devices">
+        <Field label={<><span>Devices <span style={{color: 'red'}}>*</span></span></>}>
+          <>
           <MultiSelect
             placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
             disabled={state.isLoading}
@@ -368,10 +481,12 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
             hideSelectedOptions={false}
             onChange={(value) => onDeviceSelect(value)}
           />
+          {errorState.devices && <FieldValidationMessage>{errorState.devices}</FieldValidationMessage>}
+          </>
         </Field>
       </Stack>
       <Stack direction="row">
-        <Field label="Dimensions">
+        <Field label={<><span>Dimensions <span style={{color: 'red'}}>*</span></span></>}>
           <>
             <MultiSelect
               placeholder={'Select...'}
@@ -383,9 +498,11 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
               onChange={(value) => onDimensionSelect(value)}
             />
             {props.query.dimension?.length >= MAX_DIMENSIONS && <div style={{ width: '150px' }}>Max {MAX_DIMENSIONS} dimensions allowed.</div>}
+            {errorState.dimension && <FieldValidationMessage>{errorState.dimension}</FieldValidationMessage>}
           </>
         </Field>
-        <Field label="Metric">
+        <Field label={<><span>Metric <span style={{color: 'red'}}>*</span></span></>}>
+          <>
           <MultiSelect
             placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
             disabled={state.isLoading}
@@ -398,6 +515,8 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
             hideSelectedOptions={false}
             onChange={(value) => onMetricSelect(value)}
           />
+            {errorState.metric && <FieldValidationMessage>{errorState.metric}</FieldValidationMessage>}
+          </>
         </Field>
       </Stack>
       <Stack direction="row">
@@ -415,8 +534,8 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
             type="text"
             width={19.5}
             value={props.query.prefix}
-            onChange={(e) => props.onChange({ ...props.query, prefix: e.currentTarget.value })}
-            onBlur={props.onRunQuery}
+            onChange={(e) => onQueryChange({ ...props.query, prefix: e.currentTarget.value })}
+            onBlur={onTextInputBlur}
             placeholder='Type...'
           />
         </Field>
@@ -425,8 +544,8 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
             type="text"
             width={19.5}
             value={props.query.aliasBy}
-            onChange={(e) => props.onChange({ ...props.query, aliasBy: e.currentTarget.value })}
-            onBlur={props.onRunQuery}
+            onChange={(e) => onQueryChange({ ...props.query, aliasBy: e.currentTarget.value })}
+            onBlur={onTextInputBlur}
             placeholder='Type...'
           />
         </Field>
