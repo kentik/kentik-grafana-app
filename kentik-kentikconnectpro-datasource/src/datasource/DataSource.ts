@@ -48,6 +48,10 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     const isTargetEmpty = targetObligatoryItems.some((item) => {
       const targetItem = target[item];
 
+      if (targetItem === null || targetItem === undefined) {
+        return true;
+      }
+
       return Array.isArray(targetItem) && targetItem.length === 0;
     });
 
