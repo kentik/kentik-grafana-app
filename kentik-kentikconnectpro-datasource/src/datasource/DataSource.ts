@@ -350,7 +350,9 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   
       metricDefs.forEach((metricDef, i) => {
         let val = row[metricDef.value];
-        if (_.isString(val)) val = parseFloat(val);
+        if (_.isString(val)) {
+          val = parseFloat(val);
+        }
         metricColumns[i].values.push(val);
       });
     });
