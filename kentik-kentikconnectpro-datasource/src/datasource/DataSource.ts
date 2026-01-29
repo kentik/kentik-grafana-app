@@ -16,7 +16,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   datasourceType: string;
   kentik: any;
   templateSrv: TemplateSrv;
-  private initialRun: boolean;
+  initialRun: boolean;
 
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
     super(instanceSettings);
@@ -460,6 +460,20 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     } else {
       return [];
     }
+  }
+
+  async getCustomDimensions() {
+    const customDimensions = await this.kentik.getCustomDimensions();
+
+    const comboboxCustomDimensionOptions = customDimensions.map((customDimension: {text: string, value: string, field: string}) => {
+      return {
+        label: customDimension.text,
+        value: `$${customDimension.field}`,
+        originalValue: customDimension.field
+      };
+    })
+
+    return comboboxCustomDimensionOptions;
   }
 
   private async _getExtendedDimensionList(list: any[]) {

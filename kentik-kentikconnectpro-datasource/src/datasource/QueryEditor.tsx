@@ -24,6 +24,10 @@ export interface Query extends DataQuery {
 type Options = {};
 type QueryEditorComponentProps = QueryEditorProps<DataSource, Query, Options>;
 
+interface AliasByComboboxOption<T extends string | number = string> extends ComboboxOption {
+  originalValue?: T;
+}
+
 export type CustomFilter = {
   conjunctionOperator: string;
   operatorSegment: string;
@@ -108,6 +112,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     operators: getOperators(),
     isLoading: true,
     isDevicesLoading: true,
+    customDimensions: [] as Array<AliasByComboboxOption<string>>
   });
   const [errorState, setErrorState] = useState<Record<string, string>>({
     sites: '',
@@ -118,12 +123,13 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 
   useEffect(() => {
     const init = async () => {
-      const [sites, devices, dimensions, metrics, tagKeys] = await Promise.all([
+      const [sites, devices, dimensions, metrics, tagKeys, customDimensions] = await Promise.all([
         fetchSites(),
         fetchDevices(),
         fetchDimensions(),
         fetchMetrics(),
         fetchTagKeys(),
+        fetchCustomDimensions()
       ]);
 
       setState({
@@ -135,6 +141,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         tagKeys,
         isLoading: false,
         isDevicesLoading: false,
+        customDimensions
       });
     };
     init();
@@ -251,6 +258,12 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     return getOptions('metrics()', '$metric');
   };
 
+  const fetchCustomDimensions = async () => {
+    const customDimensionsOptions = await props.datasource.getCustomDimensions();
+
+    return customDimensionsOptions;
+  }
+
   const getFormattedVariables = (): QueryItem[] => {
     const templateSrv = getTemplateSrv();
     const variables = _.map(templateSrv.getVariables(), (variable) => `$${variable.name}`);
@@ -339,6 +352,17 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 
     const queryValid = isQueryValid(query);
     onRunQuery(queryValid);
+  }
+
+  const onAliasByChange = (option: AliasByComboboxOption<string> | null): void => {
+    if (option === null) {
+      onQueryChange({...props.query, aliasBy: ''})
+    } else {
+      onQueryChange({...props.query, aliasBy: option.originalValue});
+    }
+
+    // check if valid
+    onRunQuery()
   }
 
   const onConjuctionOperatorSelect = (option: ComboboxOption<string>) => {
@@ -440,6 +464,15 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     onRunQuery(queryValid);
   }
 
+  useEffect(() => {
+    return () => {
+      props.datasource.initialRun = true;
+    }
+  }, []);
+
+  // computed values
+  const aliasByValue = props.query.aliasBy ? `$${props.query.aliasBy}` : '';
+
   return (
     <Stack direction="column">
       <Stack direction="row">
@@ -540,13 +573,13 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
           />
         </Field>
         <Field label="Alias by">
-          <Input
-            type="text"
+          <Combobox
+            placeholder={'Type...'}
+            value={aliasByValue}
+            options={state.customDimensions}
             width={19.5}
-            value={props.query.aliasBy}
-            onChange={(e) => onQueryChange({ ...props.query, aliasBy: e.currentTarget.value })}
-            onBlur={onTextInputBlur}
-            placeholder='Type...'
+            onChange={onAliasByChange}
+            isClearable={true}
           />
         </Field>
         <Field label="Visualization depth">
