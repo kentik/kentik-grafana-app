@@ -33,6 +33,11 @@ export function flattenMetricOptions(
 
 export type FilterField = { text: string; field: string; unequatable?: boolean };
 
+export enum METRIC_TYPE {
+  RATE = 'RATE',
+  COUNTER = 'COUNTER'
+}
+
 export const dimensionList: Dimension[] = [
   { text: 'Source Interface', value: 'InterfaceID_src', field: 'InterfaceID_src' },
   { text: 'Source Connectivity Type', value: 'i_src_connect_type_name', field: 'i_src_connect_type_name' },
@@ -718,7 +723,8 @@ export const metricNestedList = [
       { value: "p95th_bits_per_sec", column: "f_sum_both_bytes", fn: "percentile", label: "95th Percentile", rank: 95, unit: "bytes", group: "Bits/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_bits_per_sec" },
       { value: "p99th_bits_per_sec", column: "f_sum_both_bytes", fn: "percentile", label: "99th Percentile", rank: 99, unit: "bytes", group: "Bits/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_bits_per_sec" },
       { value: "max_bits_per_sec", column: "f_sum_both_bytes", fn: "max", label: "Max", unit: "bytes", group: "Bits/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_bits_per_sec", },
-    ]
+    ],
+    type: METRIC_TYPE.RATE
   },
   {
     label: 'Packets/s',
@@ -727,7 +733,8 @@ export const metricNestedList = [
       { value: "p95th_pkts_per_sec", column: "f_sum_both_pkts", fn: "percentile", rank: 95, label: "95th Percentile", unit: "packets", group: "Packets/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_pkts_per_sec" },
       { value: "p99th_pkts_per_sec", column: "f_sum_both_pkts", fn: "percentile", rank: 99, label: "99th Percentile", unit: "packets", group: "Packets/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_pkts_per_sec" },
       { value: "max_pkts_per_sec", column: "f_sum_both_pkts", fn: "max", label: "Max", unit: "packets", group: "Packets/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_pkts_per_sec", },
-    ]
+    ],
+    type: METRIC_TYPE.RATE
   },
   {
     label: 'Flows/s',
@@ -736,7 +743,8 @@ export const metricNestedList = [
       { value: "p95th_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat", "f_fsumloc"], fn: "percentile", rank: 95, label: "95th Percentile", unit: "fps", group: "Flows/s", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_flows_per_sec", },
       { value: "p99th_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat", "f_fsumloc"], fn: "percentile", rank: 99, label: "99th Percentile", unit: "fps", group: "Flows/s", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_flows_per_sec", },
       { value: "max_flows_per_sec", column: "trautocount", columnPrefixes: ["f_fumlat", "f_fsumloc"], fn: "max", label: "Max", unit: "fps", group: "Flows/s", origLabel: "Max", sample_rate: 1, raw: true, name: "max_flows_per_sec", },
-    ]
+    ],
+    type: METRIC_TYPE.RATE
   },
   {
     label: 'Unique IPs Source IPs Unique Count',
@@ -745,7 +753,8 @@ export const metricNestedList = [
       { value: "p95th_src_ip", column: "f_hll(inet_src_addr,0.0001)", fn: "percentile", rank: 95, label: "95th Percentile", unit: "unique_src_ip", group: "Unique IPs Source IPs Unique Count", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_src_ip" },
       { value: "p99th_src_ip", column: "f_hll(inet_src_addr,0.0001)", fn: "percentile", rank: 99, label: "99th Percentile", unit: "unique_src_ip", group: "Unique IPs Source IPs Unique Count", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_src_ip" },
       { value: "max_src_ip", column: "f_hll(inet_src_addr,0.0001)", fn: "max", label: "Max", unit: "unique_src_ip", group: "Unique IPs Source IPs Unique Count", origLabel: "Max", sample_rate: 1, raw: true, name: "max_src_ip" },
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Unique IPs Source IPs Bitrate Per IP',
@@ -754,7 +763,8 @@ export const metricNestedList = [
       { value: "p95th_bytes_per_src_ip", column: "bytes_per_src_ip", fn: "percentile", rank: 95, label: "95th Percentile", unit: "bytes_per_src_ip", group: "Unique IPs Source IPs Bitrate Per IP", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_bytes_per_src_ip" },
       { value: "p99th_bytes_per_src_ip", column: "bytes_per_src_ip", fn: "percentile", rank: 99, label: "99th Percentile", unit: "bytes_per_src_ip", group: "Unique IPs Source IPs Bitrate Per IP", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_bytes_per_src_ip" },
       { value: "max_bytes_per_src_ip", column: "bytes_per_src_ip", fn: "max", label: "Max", unit: "bytes_per_src_ip", group: "Unique IPs Source IPs Bitrate Per IP", origLabel: "Max", sample_rate: 1, raw: true, name: "max_bytes_per_src_ip" },
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Unique IPs Destination IPs Unique Count',
@@ -763,7 +773,8 @@ export const metricNestedList = [
       { value: "p95th_dst_ip", column: "f_hll(inet_dst_addr,0.0001)", fn: "percentile", rank: 95, label: "95th Percentile", unit: "unique_dst_ip", group: "Unique IPs Destination IPs Unique Count", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_dst_ip" },
       { value: "p99th_dst_ip", column: "f_hll(inet_dst_addr,0.0001)", fn: "percentile", rank: 99, label: "99th Percentile", unit: "unique_dst_ip", group: "Unique IPs Destination IPs Unique Count", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_dst_ip" },
       { value: "max_dst_ip", column: "f_hll(inet_dst_addr,0.0001)", fn: "max", label: "Max", unit: "unique_dst_ip", group: "Unique IPs Destination IPs Unique Count", origLabel: "Max", sample_rate: 1, raw: true, name: "max_dst_ip" },
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Unique IPs Destination IPs Bitrate Per IP',
@@ -772,7 +783,8 @@ export const metricNestedList = [
       { value: "p95th_bytes_per_dst_ip", column: "bytes_per_dst_ip", fn: "percentile", rank: 95, label: "95th Percentile", unit: "bytes_per_dst_ip", group: "Unique IPs Destination IPs Bitrate Per IP", origLabel: "95th Percentile", sample_rate: 1, raw: true, name: "p95th_bytes_per_dst_ip" },
       { value: "p99th_bytes_per_dst_ip", column: "bytes_per_dst_ip", fn: "percentile", rank: 99, label: "99th Percentile", unit: "bytes_per_dst_ip", group: "Unique IPs Destination IPs Bitrate Per IP", origLabel: "99th Percentile", sample_rate: 1, raw: true, name: "p99th_bytes_per_dst_ip" },
       { value: "max_bytes_per_dst_ip", column: "bytes_per_dst_ip", fn: "max", label: "Max", unit: "bytes_per_dst_ip", group: "Unique IPs Destination IPs Bitrate Per IP", origLabel: "Max", sample_rate: 1, raw: true, name: "max_bytes_per_dst_ip" },
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Unique Route Prefixes Source',
@@ -781,7 +793,8 @@ export const metricNestedList = [
       { "value": "p95th_src_route_prefix", "column": "f_hll(inet_src_route_prefix,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_src_route_prefix", "group": "Unique Route Prefixes Source", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_src_route_prefix", "raw": true },
       { "value": "p99th_src_route_prefix", "column": "f_hll(inet_src_route_prefix,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_src_route_prefix", "group": "Unique Route Prefixes Source", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_src_route_prefix", "raw": true },
       { "value": "max_src_route_prefix", "column": "f_hll(inet_src_route_prefix,0.0001)", "fn": "max", "label": "Max", "unit": "unique_src_route_prefix", "group": "Unique Route Prefixes Source", "origLabel": "Max", "sample_rate": 1, "name": "max_src_route_prefix", "raw": true }
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Unique Route Prefixes Destination',
@@ -790,7 +803,8 @@ export const metricNestedList = [
       { "value": "p95th_dst_route_prefix", "column": "f_hll(inet_dst_route_prefix,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_dst_route_prefix", "group": "Unique Route Prefixes Destination", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_dst_route_prefix", "raw": true },
       { "value": "p99th_dst_route_prefix", "column": "f_hll(inet_dst_route_prefix,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_dst_route_prefix", "group": "Unique Route Prefixes Destination", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_dst_route_prefix", "raw": true },
       { "value": "max_dst_route_prefix", "column": "f_hll(inet_dst_route_prefix,0.0001)", "fn": "max", "label": "Max", "unit": "unique_dst_route_prefix", "group": "Unique Route Prefixes Destination", "origLabel": "Max", "sample_rate": 1, "name": "max_dst_route_prefix", "raw": true }
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Unique Ports Source',
@@ -799,7 +813,8 @@ export const metricNestedList = [
       { "value": "p95th_src_port", "column": "f_hll(l4_src_port.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_src_port", "group": "Unique Ports Source", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_src_port", "raw": true },
       { "value": "p99th_src_port", "column": "f_hll(l4_src_port.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_src_port", "group": "Unique Ports Source", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_src_port", "raw": true },
       { "value": "max_src_port", "column": "f_hll(l4_src_port.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_src_port", "group": "Unique Ports Source", "origLabel": "Max", "sample_rate": 1, "name": "max_src_port", "raw": true }
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Unique Ports Destination',
@@ -808,7 +823,8 @@ export const metricNestedList = [
       { "value": "p95th_dst_port", "column": "f_hll(l4_dst_port.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_dst_port", "group": "Unique Ports Destination", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_dst_port", "raw": true },
       { "value": "p99th_dst_port", "column": "f_hll(l4_dst_port.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_dst_port", "group": "Unique Ports Destination", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_dst_port", "raw": true },
       { "value": "max_dst_port", "column": "f_hll(l4_dst_port.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_dst_port", "group": "Unique Ports Destination", "origLabel": "Max", "sample_rate": 1, "name": "max_dst_port", "raw": true }
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Unique ASNs Source',
@@ -817,7 +833,8 @@ export const metricNestedList = [
       { "value": "p95th_src_as", "column": "f_hll(src_as.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_src_as", "group": "Unique ASNs Source", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_src_as", "raw": true },
       { "value": "p99th_src_as", "column": "f_hll(src_as.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_src_as", "group": "Unique ASNs Source", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_src_as", "raw": true },
       { "value": "max_src_as", "column": "f_hll(src_as.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_src_as", "group": "Unique ASNs Source", "origLabel": "Max", "sample_rate": 1, "name": "max_src_as", "raw": true }
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Unique ASNs Destination',
@@ -826,7 +843,8 @@ export const metricNestedList = [
       { "value": "p95th_dst_as", "column": "f_hll(dst_as.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_dst_as", "group": "Unique ASNs Destination", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_dst_as", "raw": true },
       { "value": "p99th_dst_as", "column": "f_hll(dst_as.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_dst_as", "group": "Unique ASNs Destination", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_dst_as", "raw": true },
       { "value": "max_dst_as", "column": "f_hll(dst_as.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_dst_as", "group": "Unique ASNs Destination", "origLabel": "Max", "sample_rate": 1, "name": "max_dst_as", "raw": true }
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Unique ASNs Next Hop Destination',
@@ -835,7 +853,8 @@ export const metricNestedList = [
       { "value": "p95th_dst_nexthop_as", "column": "f_hll(dst_nexthop_as.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_dst_nexthop_asn", "group": "Unique ASNs Next Hop Destination", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_dst_nexthop_as", "raw": true },
       { "value": "p99th_dst_nexthop_as", "column": "f_hll(dst_nexthop_as.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_dst_nexthop_asn", "group": "Unique ASNs Next Hop Destination", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_dst_nexthop_as", "raw": true },
       { "value": "max_dst_nexthop_as", "column": "f_hll(dst_nexthop_as.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_dst_nexthop_asn", "group": "Unique ASNs Next Hop Destination", "origLabel": "Max", "sample_rate": 1, "name": "max_dst_nexthop_as", "raw": true }
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Unique Countries Source',
@@ -844,7 +863,8 @@ export const metricNestedList = [
       { "value": "p95th_src_countries", "column": "f_hll(src_geo.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_src_geo", "group": "Unique Countries Source", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_src_countries", "raw": true },
       { "value": "p99th_src_countries", "column": "f_hll(src_geo.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_src_geo", "group": "Unique Countries Source", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_src_countries", "raw": true },
       { "value": "max_src_countries", "column": "f_hll(src_geo.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_src_geo", "group": "Unique Countries Source", "origLabel": "Max", "sample_rate": 1, "name": "max_src_countries", "raw": true }
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Unique Countries Destination',
@@ -853,7 +873,8 @@ export const metricNestedList = [
       { "value": "p95th_dst_countries", "column": "f_hll(dst_geo.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_dst_geo", "group": "Unique Countries Destination", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_dst_countries", "raw": true },
       { "value": "p99th_dst_countries", "column": "f_hll(dst_geo.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_dst_geo", "group": "Unique Countries Destination", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_dst_countries", "raw": true },
       { "value": "max_dst_countries", "column": "f_hll(dst_geo.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_dst_geo", "group": "Unique Countries Destination", "origLabel": "Max", "sample_rate": 1, "name": "max_dst_countries", "raw": true }
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Unique Regions Source',
@@ -862,7 +883,8 @@ export const metricNestedList = [
       { "value": "p95th_src_regions", "column": "f_hll(src_geo_region.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_src_geo_region", "group": "Unique Regions Source", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_src_regions", "raw": true },
       { "value": "p99th_src_regions", "column": "f_hll(src_geo_region.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_src_geo_region", "group": "Unique Regions Source", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_src_regions", "raw": true },
       { "value": "max_src_regions", "column": "f_hll(src_geo_region.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_src_geo_region", "group": "Unique Regions Source", "origLabel": "Max", "sample_rate": 1, "name": "max_src_regions", "raw": true }
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Unique Regions Destination',
@@ -871,7 +893,8 @@ export const metricNestedList = [
       { "value": "p95th_dst_regions", "column": "f_hll(dst_geo_region.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_dst_geo_region", "group": "Unique Regions Destination", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_dst_regions", "raw": true },
       { "value": "p99th_dst_regions", "column": "f_hll(dst_geo_region.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_dst_geo_region", "group": "Unique Regions Destination", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_dst_regions", "raw": true },
       { "value": "max_dst_regions", "column": "f_hll(dst_geo_region.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_dst_geo_region", "group": "Unique Regions Destination", "origLabel": "Max", "sample_rate": 1, "name": "max_dst_regions", "raw": true }
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Unique Cities Source',
@@ -880,7 +903,8 @@ export const metricNestedList = [
       { "value": "p95th_src_cities", "column": "f_hll(src_geo_city.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_src_geo_city", "group": "Unique Cities Source", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_src_cities", "raw": true },
       { "value": "p99th_src_cities", "column": "f_hll(src_geo_city.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_src_geo_city", "group": "Unique Cities Source", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_src_cities", "raw": true },
       { "value": "max_src_cities", "column": "f_hll(src_geo_city.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_src_geo_city", "group": "Unique Cities Source", "origLabel": "Max", "sample_rate": 1, "name": "max_src_cities", "raw": true }
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Unique Cities Destination',
@@ -889,7 +913,8 @@ export const metricNestedList = [
       { "value": "p95th_dst_cities", "column": "f_hll(dst_geo_city.agg0,0.0001)", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "unique_dst_geo_city", "group": "Unique Cities Destination", "origLabel": "95th Percentile", "sample_rate": 1, "name": "p95th_dst_cities", "raw": true },
       { "value": "p99th_dst_cities", "column": "f_hll(dst_geo_city.agg0,0.0001)", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "unique_dst_geo_city", "group": "Unique Cities Destination", "origLabel": "99th Percentile", "sample_rate": 1, "name": "p99th_dst_cities", "raw": true },
       { "value": "max_dst_cities", "column": "f_hll(dst_geo_city.agg0,0.0001)", "fn": "max", "label": "Max", "unit": "unique_dst_geo_city", "group": "Unique Cities Destination", "origLabel": "Max", "sample_rate": 1, "name": "max_dst_cities", "raw": true }
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Sample Rate Max',
@@ -898,7 +923,8 @@ export const metricNestedList = [
       { "value": "p95th_max_sample_rate", "column": "f_max_sample_rate", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "max_sample_rate", "group": "Sample Rate Max", "origLabel": "95th Percentile", "sample_rate": 0.01, "name": "p95th_max_sample_rate", "raw": true },
       { "value": "p99th_max_sample_rate", "column": "f_max_sample_rate", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "max_sample_rate", "group": "Sample Rate Max", "origLabel": "99th Percentile", "sample_rate": 0.01, "name": "p99th_max_sample_rate", "raw": true },
       { "value": "max_max_sample_rate", "column": "f_max_sample_rate", "fn": "max", "label": "Max", "unit": "max_sample_rate", "group": "Sample Rate Max", "origLabel": "Max", "sample_rate": 0.01, "name": "max_max_sample_rate", "raw": true }
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   {
     label: 'Sample Rate Average',
@@ -907,7 +933,8 @@ export const metricNestedList = [
       { "value": "p95th_avg_sample_rate", "column": "f_avg_sample_rate", "fn": "percentile", "rank": 95, "label": "95th Percentile", "unit": "avg_sample_rate", "group": "Sample Rate Average", "origLabel": "95th Percentile", "sample_rate": 0.01, "name": "p95th_avg_sample_rate", "raw": true },
       { "value": "p99th_avg_sample_rate", "column": "f_avg_sample_rate", "fn": "percentile", "rank": 99, "label": "99th Percentile", "unit": "avg_sample_rate", "group": "Sample Rate Average", "origLabel": "99th Percentile", "sample_rate": 0.01, "name": "p99th_avg_sample_rate", "raw": true },
       { "value": "max_avg_sample_rate", "column": "f_avg_sample_rate", "fn": "max", "label": "Max", "unit": "avg_sample_rate", "group": "Sample Rate Average", "origLabel": "Max", "sample_rate": 0.01, "name": "max_avg_sample_rate", "raw": true }
-    ]
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   { 
     label: 'Cisco Meraki Out Bytes', 
@@ -915,7 +942,8 @@ export const metricNestedList = [
       { value: 'avg_ktsubtype__meraki__INT64_00', column: 'f_sum_int64_00', fn: 'average', label: 'Average', unit: 'ktsubtype__meraki__INT64_00', fix: 0, group: 'Cisco Meraki Out Bytes', origLabel: 'Average', sample_rate: 1, raw: true, name: 'avg_ktsubtype__meraki__INT64_00' }, 
       { value: 'p95th_ktsubtype__meraki__INT64_00', column: 'f_sum_int64_00', fn: 'percentile', label: '95th Percentile', rank: 95, unit: 'ktsubtype__meraki__INT64_00', fix: 0, group: 'Cisco Meraki Out Bytes', origLabel: '95th Percentile', sample_rate: 1, name: 'p95th_ktsubtype__meraki__INT64_00' }, 
       { value: 'max_ktsubtype__meraki__INT64_00', column: 'f_sum_int64_00', fn: 'max', label: 'Max', unit: 'ktsubtype__meraki__INT64_00', fix: 0, group: 'Cisco Meraki Out Bytes', origLabel: 'Max', sample_rate: 1, name: 'max_ktsubtype__meraki__INT64_00' }
-    ] 
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   { 
     label: 'Cisco Meraki Out Packets', 
@@ -923,7 +951,8 @@ export const metricNestedList = [
       { value: 'avg_ktsubtype__meraki__INT64_01', column: 'f_sum_int64_01', fn: 'average', label: 'Average', unit: 'ktsubtype__meraki__INT64_01', fix: 0, group: 'Cisco Meraki Out Packets', origLabel: 'Average', sample_rate: 1, name: 'avg_ktsubtype__meraki__INT64_01' }, 
       { value: 'max_ktsubtype__meraki__INT64_01', column: 'f_sum_int64_01', fn: 'max', label: 'Max', unit: 'ktsubtype__meraki__INT64_01', fix: 0, group: 'Cisco Meraki Out Packets', origLabel: 'Max', sample_rate: 1, name: 'max_ktsubtype__meraki__INT64_01' }, 
       { value: 'p95th_ktsubtype__meraki__INT64_01', column: 'f_sum_int64_01', fn: 'percentile', label: '95th Percentile', rank: 95, unit: 'ktsubtype__meraki__INT64_01', fix: 0, group: 'Cisco Meraki Out Packets', origLabel: '95th Percentile', sample_rate: 1, name: 'p95th_ktsubtype__meraki__INT64_01' }
-    ] 
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   { 
     label: 'Silver Peak EdgeConnect Network To Server Delay', 
@@ -931,7 +960,8 @@ export const metricNestedList = [
       { value: 'avg_ktsubtype__silverpeak__INT02', column: 'f_sum_int02', fn: 'average', label: 'Average', unit: 'ktsubtype__silverpeak__INT02', fix: 0, group: 'Silver Peak EdgeConnect Network To Server Delay', origLabel: 'Average', sample_rate: 1, name: 'avg_ktsubtype__silverpeak__INT02' }, 
       { value: 'p95th_ktsubtype__silverpeak__INT02', column: 'f_sum_int02', fn: 'percentile', label: '95th Percentile', rank: 95, unit: 'ktsubtype__silverpeak__INT02', fix: 0, group: 'Silver Peak EdgeConnect Network To Server Delay', origLabel: '95th Percentile', sample_rate: 1, name: 'p95th_ktsubtype__silverpeak__INT02' }, 
       { value: 'max_ktsubtype__silverpeak__INT02', column: 'f_sum_int02', fn: 'max', label: 'Max', unit: 'ktsubtype__silverpeak__INT02', fix: 0, group: 'Silver Peak EdgeConnect Network To Server Delay', origLabel: 'Max', sample_rate: 1, name: 'max_ktsubtype__silverpeak__INT02' }
-    ] 
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   { 
     label: 'Silver Peak EdgeConnect Network To Client Delay', 
@@ -939,7 +969,8 @@ export const metricNestedList = [
       { value: 'avg_ktsubtype__silverpeak__INT03', column: 'f_sum_int03', fn: 'average', label: 'Average', unit: 'ktsubtype__silverpeak__INT03', fix: 0, group: 'Silver Peak EdgeConnect Network To Client Delay', origLabel: 'Average', sample_rate: 1, name: 'avg_ktsubtype__silverpeak__INT03' }, 
       { value: 'p95th_ktsubtype__silverpeak__INT03', column: 'f_sum_int03', fn: 'percentile', label: '95th Percentile', rank: 95, unit: 'ktsubtype__silverpeak__INT03', fix: 0, group: 'Silver Peak EdgeConnect Network To Client Delay', origLabel: '95th Percentile', sample_rate: 1, name: 'p95th_ktsubtype__silverpeak__INT03' }, 
       { value: 'max_ktsubtype__silverpeak__INT03', column: 'f_sum_int03', fn: 'max', label: 'Max', unit: 'ktsubtype__silverpeak__INT03', fix: 0, group: 'Silver Peak EdgeConnect Network To Client Delay', origLabel: 'Max', sample_rate: 1, name: 'max_ktsubtype__silverpeak__INT03' }
-    ] 
+    ],
+    type: METRIC_TYPE.COUNTER
   },
   { 
     label: 'Silver Peak EdgeConnect Client To Server Response Delay', 
@@ -947,7 +978,8 @@ export const metricNestedList = [
       { value: 'avg_ktsubtype__silverpeak__INT04', column: 'f_sum_int04', fn: 'average', label: 'Average', unit: 'ktsubtype__silverpeak__INT04', fix: 0, group: 'Silver Peak EdgeConnect Client To Server Response Delay', origLabel: 'Average', sample_rate: 1, name: 'avg_ktsubtype__silverpeak__INT04' },
       { value: 'p95th_ktsubtype__silverpeak__INT04', column: 'f_sum_int04', fn: 'percentile', label: '95th Percentile', rank: 95, unit: 'ktsubtype__silverpeak__INT04', fix: 0, group: 'Silver Peak EdgeConnect Client To Server Response Delay', origLabel: '95th Percentile', sample_rate: 1, name: 'p95th_ktsubtype__silverpeak__INT04' }, 
       { value: 'max_ktsubtype__silverpeak__INT04', column: 'f_sum_int04', fn: 'max', label: 'Max', unit: 'ktsubtype__silverpeak__INT04', fix: 0, group: 'Silver Peak EdgeConnect Client To Server Response Delay', origLabel: 'Max', sample_rate: 1, name: 'max_ktsubtype__silverpeak__INT04' }
-    ] 
+    ],
+    type: METRIC_TYPE.COUNTER
   }
 ];
 

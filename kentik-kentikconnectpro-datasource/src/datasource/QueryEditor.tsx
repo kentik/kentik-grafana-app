@@ -6,6 +6,30 @@ import { DataQuery } from '@grafana/schema';
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 
+function getMetricType(metrics: SelectableValue[], selectedMetric: SelectableValue): METRIC_TYPE | undefined {
+  if (selectedMetric === undefined) {
+    return undefined;
+  }
+
+  const metricType = metrics.find((metric) => {
+    return metric.label === selectedMetric.group
+  });
+
+  return metricType?.type;
+}
+
+function excludeContraryMetricTypes(metrics: SelectableValue[], currentMetrics: SelectableValue[]) {
+  const metricType = getMetricType(metrics, currentMetrics[0]);
+
+  if (metricType === undefined) {
+    return metrics;
+  }
+
+  return metrics.filter((metric) => {
+    return metric.type === metricType;
+  })
+}
+
 export interface Query extends DataQuery {
   mode: DataMode;
   sites: SelectableValue[];
@@ -212,7 +236,6 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     props.onRunQuery();
   }
 
-  // todo typing
   const onQueryChange = (query: any): void => {
     props.onChange(query)
   }
@@ -361,7 +384,6 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       onQueryChange({...props.query, aliasBy: option.originalValue});
     }
 
-    // check if valid
     onRunQuery()
   }
 
@@ -472,6 +494,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 
   // computed values
   const aliasByValue = props.query.aliasBy ? `$${props.query.aliasBy}` : '';
+  const filteredMetrics = excludeContraryMetricTypes(state.metrics, props.query.metric)
 
   return (
     <Stack direction="column">
@@ -543,7 +566,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
             components={{
               MultiValueLabel,
             }}
-            options={state.metrics}
+            options={filteredMetrics}
             width={40}
             hideSelectedOptions={false}
             onChange={(value) => onMetricSelect(value)}
@@ -653,6 +676,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 };
 
 import { components, MultiValueProps } from 'react-select';
+import { METRIC_TYPE } from './metric_def';
 
 const MultiValueLabel = (props: MultiValueProps<any>) => {
   const { label, group } = props.data;
