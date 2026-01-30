@@ -19,6 +19,10 @@ function getMetricType(metrics: SelectableValue[], selectedMetric: SelectableVal
 }
 
 function excludeContraryMetricTypes(metrics: SelectableValue[], currentMetrics: SelectableValue[]) {
+  if (currentMetrics === undefined || currentMetrics === null || currentMetrics.length === 0) {
+    return metrics;
+  }
+
   const metricType = getMetricType(metrics, currentMetrics[0]);
 
   if (metricType === undefined) {

@@ -102,9 +102,23 @@ function buildTopXdataQuery(options: any, panelId?: string) {
   const metricArray = options.metric?.split(',');
   const metricDefs = allMetricOptions.filter(opt => metricArray?.includes(opt.value));
 
+  if (_.isEmpty(options.siteNames)) {
+    throw new Error('Query error: Sites field is required');
+  }
+
+  if (_.isEmpty(options.deviceNames)) {
+    throw new Error('Query error: Devices field is required');
+  }
+
+  if (_.isEmpty(options.dimension)) {
+    throw new Error('Query error: Dimensions field is required');
+  }
+
   if (_.isEmpty(metricDefs)) {
     throw new Error('Query error: Metric field is required');
   }
+
+
   const startingTime = options.range.from.utc().format(KENTIK_TIME_FORMAT);
   const endingTime = options.range.to.utc().format(KENTIK_TIME_FORMAT);
   const isAllSitesSelected = options.siteNames?.split(',').includes(ALL_SITES_LABEL) || _.isEmpty(options.siteNames);
