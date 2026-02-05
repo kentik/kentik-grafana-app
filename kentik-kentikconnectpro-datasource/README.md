@@ -1,149 +1,97 @@
-# 1. Introduction
+# Kentik Connect Pro for Grafana
 
-Kentik Connect Pro is a datasource plugin for Grafana. It allows users to query the Kentik API and visualize data on Grafana dashboards. The plugin is available under Datasources.
-After installing and adding the plugin as a new datasource, the user must provide authentication details: email and API token. Once saved, the plugin automatically verifies whether the authentication is valid.
+Kentik Connect Pro allows you to query the Kentik API and visualize network traffic data directly in Grafana. It leverages the power of **Kentik Detect** to provide real-time, Internet-scale ingest and querying of network data including flow records (NetFlow, IPFIX, sFlow), BGP, GeoIP, and SNMP.
 
-# 2. Changes and new features
+The plugin provides instant access to the **Kentik Data Engine (KDE)**, enabling you to seamlessly integrate network activity metrics into your Grafana dashboards with improved performance and flexibility.
 
-## 2.1 API Update from v5 to v6
+## Features
 
-The API endpoints have been updated for:
+* **Granular Visibility**: View traffic by time range, devices, sites, and over 30 source/destination dimensions.
+* **Multi-Select Support**: Select multiple sites, devices, and up to 8 dimensions simultaneously for complex queries.
+* **Smart Labeling**: Customize graph legends using the **Alias** and **Prefix** fields with intelligent autocomplete (e.g., `{{Source Interface}}` or `$tag_...`).
+* **Drilldown Workflows**: Automatically generates deep-link URLs to the Kentik Portal for detailed investigation of specific data points.
+* **High Performance**: Integrated caching ensures fast dashboard loading and responsive query building.
+* **Flexible Visualization**:
+  * Control the number of returned results with **Visualization Depth**.
+  * View Max, 95th percentile, and Average values in sortable tables.
 
-* devices
-* sites
-* users
-* custom dimensions
-* saved filters
+## Configuration
 
-## 2.2 Cache implementation (localForage)
+### Authentication
 
-A caching mechanism using localForage has been introduced. The cache applies to both dashboard query results and the API endpoints:
+To enable the datasource:
 
-* devices
-* sites
-* saved filters
-* custom dimensions
 
-Cache refresh frequency is based on the query time range and follows the previous logic:
+1. Navigate to **Data Sources** in Grafana.
+2. Add **Kentik Connect Pro**.
+3. Enter your Kentik **Email** and **API Token**.
+4. Click **Save & Test** to verify connectivity.
 
-* Range > 1 month → refresh every 1 hour
-* Range > 1 day and ≤ 1 month → refresh every 15 minutes
-* Range ≤ 1 day → refresh every 5 minutes
+### Terminology
 
-Thanks to caching, the query builder and dashboards load much faster after page reloads when cached data is available.
+* **Dimensions** (formerly Metric): Attributes used to segment data (e.g., Device, Site, Interface).
+* **Metric** (formerly Unit): The numerical value being measured (e.g., Bits/s, Packets/s).
 
-## 2.3 Visualization depth
+## External Dependencies
 
-A new configuration field named Visualization depth has been added, defining the number of returned results.
+* **Kentik Account**: An active Kentik account and API key are required.
+* **Device Registration**: Devices must be configured in Kentik Detect to appear in the plugin.
 
-* type: numeric value
-* default value: 8
+## Development
 
-## 2.4 Label name changes
+This project requires **Node.js v22.17.0** or higher and **Docker**.
 
-* Unit → Metric
-* Metric → Dimensions
+1.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-## 2.5 Multi-Select support
+2.  **Start the development server** (watch mode):
+    ```bash
+    npm run dev
+    ```
 
-Multi-selection has been added for:
+3.  **Run Grafana**:
+    In a separate terminal, start the Docker container:
+    ```bash
+    docker compose up
+    ```
 
-* sites
-* devices
-* dimensions (maximum 8)
+    Grafana will be accessible at `http://localhost:3000`.
 
-If a user selects 8 dimensions, the following message appears: Max 8 dimensions allowed, and all options are disabled. When the user unselect some dimension, all options are enabled again.
+4.  **Run Tests**:
+    ```bash
+    npm run test
+    ```
 
-## 2.6 Drilldown for graphs and tables
+## Build
+To produce a build of the plugin you will need Docker. If you want to build locally without Docker then you can reference the Dockerfile for the required dependencies.
 
-A drilldown feature has been added. Using the endpoint:
+To create a local package, use make:
 
-```
-/api/v5/query/url
-```
+*Note: you will need to have a Grafana API Key in order to create a build as the package is signed.*
 
-The plugin generates a drilldown link, which is attached to the returned data. Users can find this link in the tooltip.
-
-## 2.7. Aliases
-
-A single query containing multiple aggregates and aggregateTypes is now split into multiple individual queries.
-
-Each generated query contains exactly one aggregate and one corresponding aggregateType.
-
-This ensures that each aggregate is processed independently and produces its own time series.
-
-### Alias Behavior
-
-#### Default Alias (no user-defined alias)
-
-If the user does not provide a custom alias, the system automatically appends the aggregate name to the generated series label.
-
-#### Custom Alias (user-defined)
-
-When the user specifies an alias, two types of substitutions are supported:
-
-* $col
-  Replaced with the name of the aggregate used in the current query.
-
-* $tag_*
-  Replaced with values from the fields returned in the series data.
-
-If a referenced field does not exist in the data, the placeholder is left unchanged.
-
-## 2.8. New metrics and dimensions
-
-New metrics and dimensions added to the query builder.
-
-# 3. Running the plugin (development mode)
-
-The plugin is located on the plugin-v12 branch.
-
-## 3.1 Steps to run:
-
-* Switch to the plugin-v12 branch.
-* Inside the kentik-kentikconnectpro-datasource folder, install dependencies:
-
-  ```
-  npm install
-  ```
-* Start the development server:
-
-  ```
-  npm run dev
-  ```
-* In a separate terminal, in the same folder, start Docker services:
-
-  ```
-  docker compose up
-  ```
-
-* Run the tests:
-
-   ```
-   npm run test
-   ```
-
-## 3.2. Accessing Grafana
-
-Grafana should be available at:
-
-```
-http://localhost:3000
+```bash
+make GRAFANA_API_KEY=$GRAFANA_API_KEY
 ```
 
-## 3.3 Required Node.js version
+If the build succeeds, it will produce an archive named `kentik-connect-app-dev.zip`.
 
-The recommended Node.js version is: v22.17.0
+To specify a version, use the `VERSION` environment variable:
 
-Older Node versions caused issues with Web Crypto (WCS), ESM module compatibility, and Grafana toolchain dependencies. Node 22 ensures full compatibility with the plugin toolchain and prevents build/runtime errors.
+```bash
+make GRAFANA_API_KEY=$GRAFANA_API_KEY VERSION=1.5.0
+```
 
-# 4. Summary
+This will produce an archive named `kentik-connect-app-1.5.0.zip`.
 
-The plugin provides improved performance through caching, updated API v6 support, enhanced configuration options, and drilldown functionality. The development version is easy to run locally and compatible with modern Node.js and Grafana versions.
+To add extra signing arguments use the `SIGN_ARGS` environment variable. For example, to specify a private archive for use on the `https://grafana-test.kentiklabs.com` domain:
+
+```bash
+make GRAFANA_API_KEY=$GRAFANA_API_KEY SIGN_ARGS="--rootUrls https://grafana-test.kentiklabs.com"
+```
+
+## Useful links
+Grafana docs about Docker installation: https://docs.grafana.org/installation/docker/#installing-plugins-from-other-sources
 
 
-# Distributing your plugin
-
-When distributing a Grafana plugin either within the community or privately the plugin must be signed so the Grafana application can verify its authenticity. This can be done with the `@grafana/sign-plugin` package.
-
-_Note: It's not necessary to sign a plugin during development. The docker development environment that is scaffolded with `@grafana/create-plugin` caters for running the plugin without a signature._

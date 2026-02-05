@@ -77,7 +77,7 @@ describe('applyAliasPattern', () => {
 
     const result = ctx.ds.applyAliasPattern(series, query, target);
 
-    expect(result).toBe(' AS123 → AS456');
+    expect(result).toBe('AS123 → AS456');
   });
 
   it('replaces $col with aggregate name', () => {
@@ -88,7 +88,7 @@ describe('applyAliasPattern', () => {
 
     const result = ctx.ds.applyAliasPattern(series, query, target);
 
-    expect(result).toBe(' metric: bps');
+    expect(result).toBe('metric: bps');
   });
 
   it('adds prefix before alias', () => {
@@ -110,9 +110,70 @@ describe('applyAliasPattern', () => {
 
     const result = ctx.ds.applyAliasPattern(series, query, target);
 
-    expect(result).toBe(' $tag_missing');
+    expect(result).toBe('$tag_missing');
+  });
+
+  it('replaces {{property}} variables from series', () => {
+    const target = {
+      aliasBy: '{{src_as}} → {{dst_as}}',
+      prefix: '',
+    };
+
+    const result = ctx.ds.applyAliasPattern(series, query, target);
+
+    expect(result).toBe('AS123 → AS456');
+  });
+
+  it('supports mixed $tag_ and {{}} syntax', () => {
+    const target = {
+      aliasBy: '{{src_as}} in $tag_dst_as',
+      prefix: '',
+    };
+
+    const result = ctx.ds.applyAliasPattern(series, query, target);
+
+    expect(result).toBe('AS123 in AS456');
+  });
+
+  describe('Robustness', () => {
+    const robustQuery = {
+      dimension: ['InterfaceID_src', 'i_device_name'],
+      aggregates: [{ name: 'bps' }],
+      aggregateTypes: ['bps'],
+    };
+
+    it('should match by ID (case-insensitive)', () => {
+      const series = { interfaceid_src: 'eth1' };
+      const target = { aliasBy: '$tag_InterfaceID_src' };
+      expect(ctx.ds.applyAliasPattern(series, robustQuery, target)).toBe('eth1');
+    });
+
+    it('should match by Label using {{}}', () => {
+      const series = { InterfaceID_src: 'eth2' };
+      const target = { aliasBy: '{{Source Interface}}' };
+      expect(ctx.ds.applyAliasPattern(series, robustQuery, target)).toBe('eth2');
+    });
+
+    it('should extract from series.key using ID', () => {
+      const series = { key: 'eth3,router1' };
+      const target = { aliasBy: '$tag_InterfaceID_src' };
+      expect(ctx.ds.applyAliasPattern(series, robustQuery, target)).toBe('eth3');
+    });
+
+    it('should extract second dimension from series.key', () => {
+      const series = { key: 'eth5,router3' };
+      const target = { aliasBy: '$tag_i_device_name' };
+      expect(ctx.ds.applyAliasPattern(series, robustQuery, target)).toBe('router3');
+    });
+
+    it('should handle curly brace syntax {{tagName}} with labels', () => {
+      const series = { key: 'eth8,router6' };
+      const target = { aliasBy: '{{Source Interface}} on {{i_device_name}}' };
+      expect(ctx.ds.applyAliasPattern(series, robustQuery, target)).toBe('eth8 on router6');
+    });
   });
 });
+
 
 function createDatasourceInstance(ctx: any, data: any) {
   ctx.instanceSettings = {};

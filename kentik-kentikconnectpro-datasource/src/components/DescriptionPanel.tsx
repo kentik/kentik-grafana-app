@@ -20,16 +20,16 @@ export const DescriptionPanel: FC<Props> = (props) => {
     useEffect(() => {
         async function init() {
             const uid = await getKentikUid();
-            if (!uid) return;
+            if (!uid) { return; }
             const kentik = new KentikAPI(getBackendSrv(), uid);
             const devices = await kentik.getDevices();
-            setState({
-                ...state,
+            setState((s) => ({
+                ...s,
                 devices,
-            });
+            }));
         }
         init();
-    }, []);
+    }, [state.devices.length]);
 
     async function getKentikUid() {
         const dsList = await getDataSourceSrv().getList();

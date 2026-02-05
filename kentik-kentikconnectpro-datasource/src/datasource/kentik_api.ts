@@ -56,14 +56,21 @@ export class KentikAPI {
   }
 
   async getFieldValues(field: string): Promise<any> {
-    const query = `SELECT DISTINCT ${field} FROM all_devices ORDER BY ${field} ASC`;
-    return this.invokeSQLQuery(query);
+    const query = `SELECT DISTINCT ${field} FROM all_devices WHERE i_start_time >= now() - interval '24 hours' ORDER BY ${field} ASC LIMIT 1000`;
+    try {
+      return await this.invokeSQLQuery(query, true);
+    } catch (e: any) {
+      if (e.status === 403) {
+        return { rows: [] };
+      }
+      throw e;
+    }
   }
 
   async getCustomDimensions(): Promise<any[]> {
     try {
-      const resp = await this._get('/custom_dimensions/v202411alpha1');
-      return resp.dimensions;
+      const resp = await this._get('/custom_dimensions/v202411alpha1', false, true);
+      return Array.isArray(resp?.dimensions) ? resp.dimensions : [];
     } catch (e: any) {
       if (e.status === 403) {
         return [];
@@ -73,8 +80,15 @@ export class KentikAPI {
   }
 
   async getSavedFilters(): Promise<any> {
-    const data = await this._get('/saved-filters/v202501alpha1');
-    return data;
+    try {
+      const data = await this._get('/saved-filters/v202501alpha1', false, true);
+      return Array.isArray(data?.filters) ? data.filters : (Array.isArray(data) ? data : []);
+    } catch (e: any) {
+      if (e.status === 403) {
+        return [];
+      }
+      throw e;
+    }
   }
 
   async invokeTopXDataQuery(query: any): Promise<any> {
@@ -93,21 +107,21 @@ export class KentikAPI {
     return this._post('/api/v5/query/url', kentikV5Query);
   }
 
-  async invokeSQLQuery(query: any): Promise<any> {
+  async invokeSQLQuery(query: any, silentOnForbidden = false): Promise<any> {
     const data = {
       query: query,
     };
 
-    return this._post('/api/v5/query/sql', data);
+    return this._post('/api/v5/query/sql', data, silentOnForbidden);
   }
 
-  private async _get(url: string, requiresAdminLevel = false): Promise<any> {
+  private async _get(url: string, requiresAdminLevel = false, silentOnForbidden = false): Promise<any> {
     const requestFn = () =>
       lastValueFrom(
         this.backendSrv.fetch<any>({
           method: 'GET',
           url: this.baseUrl + url,
-          showErrorAlert: !requiresAdminLevel,
+          showErrorAlert: !requiresAdminLevel && !silentOnForbidden,
         })
       ).then(result => result.data
       );
@@ -119,16 +133,16 @@ export class KentikAPI {
           showAlert(error);
           return true;
         }
-        if (error.status !== 403 || requiresAdminLevel === false) {
-          showAlert(error);
+        if (error.status === 403 && (requiresAdminLevel || silentOnForbidden)) {
+          return false;
         }
-
+        showAlert(error);
         return false;
       }
     );
   }
 
-  private async _post(url: string, data: any): Promise<any> {
+  private async _post(url: string, data: any, silentOnForbidden = false): Promise<any> {
     try {
       const resp = await this.backendSrv.post(this.baseUrl + url, data);
 
@@ -138,6 +152,9 @@ export class KentikAPI {
         return [];
       }
     } catch (error: any) {
+      if (error.status === 403 && silentOnForbidden) {
+        throw error;
+      }
       showAlert(error);
       if (error.err) {
         throw error.err;

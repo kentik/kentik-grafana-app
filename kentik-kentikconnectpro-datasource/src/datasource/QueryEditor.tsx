@@ -3,8 +3,9 @@ import { QueryEditorProps, SelectableValue } from '@grafana/data';
 import { Stack, Input, Button, Field, Label, Combobox, ComboboxOption, MultiSelect, FieldValidationMessage } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
 import { DataQuery } from '@grafana/schema';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import _ from 'lodash';
+import { dimensionList, METRIC_TYPE } from './metric_def';
 
 function getMetricType(metrics: SelectableValue[], selectedMetric: SelectableValue): METRIC_TYPE | undefined {
   if (selectedMetric === undefined) {
@@ -140,7 +141,13 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     operators: getOperators(),
     isLoading: true,
     isDevicesLoading: true,
-    customDimensions: [] as Array<AliasByComboboxOption<string>>
+    customDimensions: [] as Array<AliasByComboboxOption<string>>,
+    aliasTagOptions: [] as Array<ComboboxOption<string>>,
+    // Alias autocomplete state
+    showAliasSuggestions: false,
+    aliasSuggestionFilter: '',
+    aliasCursorPosition: 0,
+    activeSuggestionField: null as 'aliasBy' | 'prefix' | null,
   });
   const [errorState, setErrorState] = useState<Record<string, string>>({
     sites: '',
@@ -151,30 +158,81 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 
   useEffect(() => {
     const init = async () => {
-      const [sites, devices, dimensions, metrics, tagKeys, customDimensions] = await Promise.all([
-        fetchSites(),
-        fetchDevices(),
-        fetchDimensions(),
-        fetchMetrics(),
-        fetchTagKeys(),
-        fetchCustomDimensions()
-      ]);
+      try {
+        const [sites, devices, dimensions, metrics, tagKeys, customDimensions] = await Promise.all([
+          fetchSites(),
+          fetchDevices(),
+          fetchDimensions(),
+          fetchMetrics(),
+          fetchTagKeys(),
+          fetchCustomDimensions()
+        ]);
 
-      setState({
-        ...state,
-        sites,
-        devices,
-        dimensions,
-        metrics,
-        tagKeys,
-        isLoading: false,
-        isDevicesLoading: false,
-        customDimensions
-      });
+        setState({
+          ...state,
+          sites,
+          devices,
+          dimensions,
+          metrics,
+          tagKeys,
+          isLoading: false,
+          isDevicesLoading: false,
+          customDimensions
+        });
+      } catch (error) {
+        console.error('Failed to initialize Query Editor:', error);
+        setState(s => ({ ...s, isLoading: false, isDevicesLoading: false }));
+      }
     };
     init();
     // eslint-disable-next-line
   }, []);
+
+  // Helper to ensure multi-select fields are always arrays of SelectableValues
+  const ensureArray = (value: any): SelectableValue[] => {
+    if (Array.isArray(value)) {
+      return value;
+    }
+    if (typeof value === 'string' && value.length > 0) {
+      return value.split(',').map(v => ({ value: v, label: v }));
+    }
+    return [];
+  };
+
+  // Update alias tag options when dimensions change - only show selected dimensions
+  useEffect(() => {
+    const selectedDimensions = ensureArray(props.query.dimension);
+    const selectedDimensionValues = selectedDimensions.map((d: SelectableValue<string>) => d.value);
+
+    // Filter standard dimensions to only those selected
+    const standardDimensionOptions: Array<ComboboxOption<string>> = dimensionList
+      .filter((dim) => selectedDimensionValues.includes(dim.value))
+      .map((dim) => ({
+        label: `${dim.text} ($tag_${dim.field})`,
+        value: `$tag_${dim.field}`,
+      }));
+
+    // Filter custom dimensions to only those selected
+    const customDimensionOptions: Array<ComboboxOption<string>> = (state.customDimensions || [])
+      .filter((dim: AliasByComboboxOption<string>) => selectedDimensionValues.includes(dim.originalValue))
+      .map((dim: AliasByComboboxOption<string>) => ({
+        label: `${dim.label} ($tag_${dim.originalValue})`,
+        value: `$tag_${dim.originalValue}`,
+      }));
+
+    // Add $col option for metric name
+    const metricOption: ComboboxOption<string> = {
+      label: 'Metric name ($col)',
+      value: '$col',
+    };
+
+    const aliasTagOptions = [metricOption, ...standardDimensionOptions, ...customDimensionOptions];
+
+    setState(prevState => ({
+      ...prevState,
+      aliasTagOptions
+    }));
+  }, [props.query.dimension, state.customDimensions]);
 
   const getEmptyFieldsNames = (query: any): string[] => {
     const emptyFields = OBLIGATORY_FIELDS_NAMES.filter((name) => {
@@ -227,7 +285,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     });
 
 
-    setErrorState((oldState) => ({...oldState, ...errorMessages}))
+    setErrorState((oldState) => ({ ...oldState, ...errorMessages }))
 
     return false;
   }
@@ -305,14 +363,6 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     return convertToComboboxOptions(_.concat(formattedVariables, items));
   };
 
-  const fetchTagValues = async (keySegment: string) => {
-    const values: QueryItem[] = await props.datasource.getTagValues({ key: keySegment });
-    const items: QueryItem[] = values.map((value) => ({ value: value.text, text: value.text }));
-
-    const formattedVariables = getFormattedVariables();
-    return convertToComboboxOptions(_.concat(formattedVariables, items));
-  };
-
   const onOptionSelect = async (field: keyof Query, option: ComboboxOption<string>) => {
     if (option.value === undefined) {
       return;
@@ -381,15 +431,171 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     onRunQuery(queryValid);
   }
 
-  const onAliasByChange = (option: AliasByComboboxOption<string> | null): void => {
-    if (option === null) {
-      onQueryChange({...props.query, aliasBy: ''})
-    } else {
-      onQueryChange({...props.query, aliasBy: option.originalValue});
+  const prefixInputRef = useRef<HTMLInputElement>(null);
+  const aliasInputRef = useRef<HTMLInputElement>(null);
+
+  // Find the current "$..." token being typed at cursor position
+  const findCurrentToken = (value: string, cursorPos: number): { token: string; start: number } | null => {
+    // Look backwards from cursor to find a $ that starts a token
+    let start = cursorPos - 1;
+    while (start >= 0 && value[start] !== '$' && value[start] !== ' ') {
+      start--;
     }
 
-    onRunQuery()
-  }
+    if (start >= 0 && value[start] === '$') {
+      const token = value.slice(start, cursorPos);
+      return { token, start };
+    }
+    return null;
+  };
+
+  const onAliasTextChange = (e: React.FormEvent<HTMLInputElement>, field: 'aliasBy' | 'prefix'): void => {
+    const newValue = e.currentTarget.value;
+    const cursorPos = e.currentTarget.selectionStart || newValue.length;
+
+    onQueryChange({ ...props.query, [field]: newValue });
+
+    // Check if user is typing a $ token
+    const tokenInfo = findCurrentToken(newValue, cursorPos);
+
+    if (tokenInfo) {
+      // Show suggestions filtered by what they've typed so far
+      setState(prev => ({
+        ...prev,
+        showAliasSuggestions: true,
+        aliasSuggestionFilter: tokenInfo.token.toLowerCase(),
+        aliasCursorPosition: cursorPos,
+        activeSuggestionField: field,
+      }));
+    } else {
+      // Hide suggestions
+      setState(prev => ({
+        ...prev,
+        showAliasSuggestions: false,
+        aliasSuggestionFilter: '',
+        activeSuggestionField: null,
+      }));
+    }
+  };
+
+  const onAliasKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (!state.showAliasSuggestions) {
+      return;
+    }
+
+    const filteredSuggestions = state.aliasTagOptions.filter(opt =>
+      opt.value?.toLowerCase().includes(state.aliasSuggestionFilter) ||
+      opt.label?.toLowerCase().includes(state.aliasSuggestionFilter)
+    );
+
+    if (e.key === 'Escape') {
+      setState(prev => ({ ...prev, showAliasSuggestions: false, activeSuggestionField: null }));
+      e.preventDefault();
+    } else if (e.key === 'Tab' && filteredSuggestions.length > 0) {
+      // Auto-complete with first suggestion on Tab
+      e.preventDefault();
+      onSelectAliasSuggestion(filteredSuggestions[0]);
+    }
+  };
+
+  const onSelectAliasSuggestion = (option: ComboboxOption<string>): void => {
+    if (!option.value || !state.activeSuggestionField) {
+      return;
+    }
+
+    const field = state.activeSuggestionField;
+    const input = field === 'prefix' ? prefixInputRef.current : aliasInputRef.current;
+    const currentValue = props.query[field] || '';
+    const cursorPos = input?.selectionStart || currentValue.length;
+
+    // Find the token being completed
+    const tokenInfo = findCurrentToken(currentValue, cursorPos);
+
+    let newValue: string;
+    if (tokenInfo) {
+      // Replace the partial token with the full value
+      newValue = currentValue.slice(0, tokenInfo.start) + option.value + currentValue.slice(cursorPos);
+    } else {
+      // Just append
+      newValue = currentValue + option.value;
+    }
+
+    onQueryChange({ ...props.query, [field]: newValue });
+    setState(prev => ({ ...prev, showAliasSuggestions: false, aliasSuggestionFilter: '', activeSuggestionField: null }));
+
+    // Focus back on input
+    setTimeout(() => {
+      if (input) {
+        input.focus();
+        const newCursorPos = (tokenInfo?.start || currentValue.length) + option.value.length;
+        input.setSelectionRange(newCursorPos, newCursorPos);
+      }
+    }, 0);
+  };
+
+  const onAliasTextBlur = (): void => {
+    // Delay hiding to allow click on suggestion
+    setTimeout(() => {
+      setState(prev => ({ ...prev, showAliasSuggestions: false, activeSuggestionField: null }));
+    }, 150);
+    onRunQuery();
+  };
+
+  const renderSuggestions = (field: 'prefix' | 'aliasBy') => {
+    if (!state.showAliasSuggestions || state.activeSuggestionField !== field) {
+      return null;
+    }
+
+    const filteredSuggestions = state.aliasTagOptions.filter(opt =>
+      opt.value?.toLowerCase().includes(state.aliasSuggestionFilter) ||
+      opt.label?.toLowerCase().includes(state.aliasSuggestionFilter)
+    );
+
+    return (
+      <div style={{
+        position: 'absolute',
+        top: '100%',
+        left: 0,
+        zIndex: 1000,
+        backgroundColor: 'var(--background-primary, #111)',
+        border: '1px solid var(--border-medium, #333)',
+        borderRadius: '4px',
+        maxHeight: '200px',
+        overflowY: 'auto',
+        minWidth: '300px',
+        boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+      }}>
+        {filteredSuggestions.map((opt, idx) => (
+          <div
+            key={opt.value || idx}
+            style={{
+              padding: '8px 12px',
+              cursor: 'pointer',
+              borderBottom: '1px solid var(--border-weak, #222)',
+            }}
+            onMouseDown={(e) => {
+              e.preventDefault(); // Prevent blur
+              onSelectAliasSuggestion(opt);
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLDivElement).style.backgroundColor = 'var(--background-secondary, #222)';
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLDivElement).style.backgroundColor = 'transparent';
+            }}
+          >
+            <div style={{ fontWeight: 500 }}>{opt.label}</div>
+            <div style={{ fontSize: '11px', opacity: 0.7 }}>{opt.value}</div>
+          </div>
+        ))}
+        {filteredSuggestions.length === 0 && (
+          <div style={{ padding: '8px 12px', opacity: 0.6 }}>
+            No matching tags. Select dimensions first.
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const onConjuctionOperatorSelect = (option: ComboboxOption<string>) => {
     if (_.isNil(option.value)) {
@@ -417,25 +623,17 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     customFilters[filterIdx][field] = option.value;
     if (field === 'keySegment') {
       customFilters[filterIdx].valueSegment = null;
-      const stateValues = _.cloneDeep(state.tagValues);
+      const stateValues = [...state.tagValues];
       stateValues[filterIdx] = undefined as any;
-      setState({
-        ...state,
+      setState((prev) => ({
+        ...prev,
         tagValues: stateValues,
-      });
+      }));
     }
 
     onQueryChange({ ...props.query, customFilters });
 
-    if (field === 'keySegment') {
-      const tagValues = await fetchTagValues(customFilters[filterIdx].keySegment as string);
-      const stateValues = _.cloneDeep(state.tagValues);
-      stateValues[filterIdx] = tagValues;
-      setState({
-        ...state,
-        tagValues: stateValues,
-      });
-    } else {
+    if (field !== 'keySegment') {
       const queryValid = isQueryValid(props.query);
       onRunQuery(queryValid);
     }
@@ -482,23 +680,16 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       devices,
     });
     isQueryValid(query)
-  }
-
-  const onTextInputBlur = (): void => {
-    const queryValid = isQueryValid(props.query);
-
-    onRunQuery(queryValid);
-  }
+  };
 
   useEffect(() => {
     return () => {
       props.datasource.initialRun = true;
-    }
-  }, []);
+    };
+  }, [props.datasource]);
 
   // computed values
-  const aliasByValue = props.query.aliasBy ? `$${props.query.aliasBy}` : '';
-  const filteredMetrics = excludeContraryMetricTypes(state.metrics, props.query.metric)
+  const filteredMetrics = excludeContraryMetricTypes(state.metrics, ensureArray(props.query.metric));
 
   return (
     <Stack direction="column">
@@ -515,71 +706,71 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
           />
         </Field>
       </Stack>
-      <Stack direction="row">
-        <Field label={<><span>Sites <span style={{color: 'red'}}>*</span></span></>}>
+      <Stack direction="row" gap={2} alignItems="flex-start">
+        <Field label={<><span>Sites <span style={{ color: 'red' }}>*</span></span></>}>
           <>
-          <MultiSelect
-            placeholder={state.isLoading ? 'Loading...' : ALL_SITES_LABEL}
-            value={props.query.sites || []}
-            disabled={state.isLoading}
-            options={state.isLoading ? [] : state.sites}
-            width={40}
-            hideSelectedOptions={false}
-            onChange={(value) => onSitesSelect(value)}
-          />
+            <MultiSelect
+              placeholder={state.isLoading ? 'Loading...' : ALL_SITES_LABEL}
+              value={ensureArray(props.query.sites)}
+              disabled={state.isLoading}
+              options={state.isLoading ? [] : state.sites}
+              width={40}
+              hideSelectedOptions={false}
+              onChange={(value) => onSitesSelect(value)}
+            />
             {errorState.sites && <FieldValidationMessage>{errorState.sites}</FieldValidationMessage>}
           </>
         </Field>
-        <Field label={<><span>Devices <span style={{color: 'red'}}>*</span></span></>}>
+        <Field label={<><span>Devices <span style={{ color: 'red' }}>*</span></span></>}>
           <>
-          <MultiSelect
-            placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
-            disabled={state.isLoading}
-            value={props.query.devices || []}
-            options={state.devices}
-            width={40}
-            hideSelectedOptions={false}
-            onChange={(value) => onDeviceSelect(value)}
-          />
-          {errorState.devices && <FieldValidationMessage>{errorState.devices}</FieldValidationMessage>}
+            <MultiSelect
+              placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
+              disabled={state.isLoading}
+              value={ensureArray(props.query.devices)}
+              options={state.devices}
+              width={40}
+              hideSelectedOptions={false}
+              onChange={(value) => onDeviceSelect(value)}
+            />
+            {errorState.devices && <FieldValidationMessage>{errorState.devices}</FieldValidationMessage>}
           </>
         </Field>
       </Stack>
-      <Stack direction="row">
-        <Field label={<><span>Dimensions <span style={{color: 'red'}}>*</span></span></>}>
+      <Stack direction="row" gap={2} alignItems="flex-start">
+        <Field label={<><span>Dimensions <span style={{ color: 'red' }}>*</span></span></>}>
           <>
             <MultiSelect
               placeholder={'Select...'}
               disabled={state.isLoading}
-              value={props.query.dimension}
+              value={ensureArray(props.query.dimension)}
               options={state.dimensions}
               width={40}
               hideSelectedOptions={false}
               onChange={(value) => onDimensionSelect(value)}
             />
-            {props.query.dimension?.length >= MAX_DIMENSIONS && <div style={{ width: '150px' }}>Max {MAX_DIMENSIONS} dimensions allowed.</div>}
+            {ensureArray(props.query.dimension).length >= MAX_DIMENSIONS && <div style={{ width: '150px' }}>Max {MAX_DIMENSIONS} dimensions allowed.</div>}
             {errorState.dimension && <FieldValidationMessage>{errorState.dimension}</FieldValidationMessage>}
           </>
         </Field>
-        <Field label={<><span>Metric <span style={{color: 'red'}}>*</span></span></>}>
+        <Field label={<><span>Metric <span style={{ color: 'red' }}>*</span></span></>}>
           <>
-          <MultiSelect
-            placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
-            disabled={state.isLoading}
-            value={props.query.metric}
-            components={{
-              MultiValueLabel,
-            }}
-            options={filteredMetrics}
-            width={40}
-            hideSelectedOptions={false}
-            onChange={(value) => onMetricSelect(value)}
-          />
+            <MultiSelect
+              placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
+              disabled={state.isLoading}
+              value={ensureArray(props.query.metric)}
+              components={{
+                MultiValueLabel,
+              }}
+              options={filteredMetrics}
+              width={40}
+              hideSelectedOptions={false}
+              onChange={(value) => onMetricSelect(value)}
+            />
             {errorState.metric && <FieldValidationMessage>{errorState.metric}</FieldValidationMessage>}
           </>
         </Field>
       </Stack>
-      <Stack direction="row">
+      <Stack direction="row" gap={2} alignItems="flex-start">
         <Field label="DNS Lookup">
           <Combobox
             value={props.query.hostnameLookup}
@@ -590,42 +781,52 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
           />
         </Field>
         <Field label="Prefix">
-          <Input
-            type="text"
-            width={19.5}
-            value={props.query.prefix}
-            onChange={(e) => onQueryChange({ ...props.query, prefix: e.currentTarget.value })}
-            onBlur={onTextInputBlur}
-            placeholder='Type...'
-          />
+          <div style={{ position: 'relative' }}>
+            <Input
+              ref={prefixInputRef}
+              type="text"
+              width={19.5}
+              value={props.query.prefix}
+              onChange={(e) => onAliasTextChange(e, 'prefix')}
+              onKeyDown={onAliasKeyDown}
+              onBlur={onAliasTextBlur}
+              placeholder='Type...'
+            />
+            {renderSuggestions('prefix')}
+          </div>
         </Field>
         <Field label="Alias by">
-          <Combobox
-            placeholder={'Type...'}
-            value={aliasByValue}
-            options={state.customDimensions}
-            width={19.5}
-            onChange={onAliasByChange}
-            isClearable={true}
-          />
+          <div style={{ position: 'relative' }}>
+            <Input
+              ref={aliasInputRef}
+              type="text"
+              width={50}
+              value={props.query.aliasBy || ''}
+              onChange={(e) => onAliasTextChange(e, 'aliasBy')}
+              onKeyDown={onAliasKeyDown}
+              onBlur={onAliasTextBlur}
+              placeholder='Type $ for suggestions, e.g., Traffic: $tag_src_ip'
+            />
+            {renderSuggestions('aliasBy')}
+          </div>
         </Field>
+      </Stack>
+      <Stack direction="row" gap={2} alignItems="flex-start">
         <Field label="Visualization depth">
           <Input
             type="number"
-            width={19.5}
+            width={12}
             value={props.query.topx}
             onChange={(e) => onOptionChange('topx', e.currentTarget.value)}
             onBlur={onTopXBlur}
             placeholder='Type...'
           />
         </Field>
-      </Stack>
-      <Stack direction="row">
         <Field label="Filters">
           <Button size="sm" icon="plus" variant="secondary" onClick={onAddFilterButtonClick} aria-label="filters-button"></Button>
         </Field>
         {props.query.customFilters.length > 1 && (
-          <Field label="">
+          <Field label="Conjunction">
             <Combobox
               value={props.query.conjunctionOperator}
               options={convertToComboboxOptions(CONJUNCTION_OPERATORS)}
@@ -637,42 +838,45 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         )}
       </Stack>
       {props.query.customFilters.map((filter: CustomFilter, filterIdx: number) => (
-        <Stack direction="row" key={`custom-filter-row-${filterIdx}`}>
-          <Combobox
-            value={filter.keySegment}
-            options={state.tagKeys}
-            width={20}
-            placeholder='Select...'
-            onChange={(option) => onFilterOptionSelect('keySegment', option, filterIdx)}
-          />
-          {!_.isNil(filter.keySegment) && (
-            <Stack direction="row">
-              <Combobox
-                value={filter.operatorSegment}
-                options={state.operators}
-                width={20}
-                placeholder='Select...'
-                onChange={(option) => onFilterOptionSelect('operatorSegment', option, filterIdx)}
-              />
+        <Stack direction="column" gap={0.5} key={`custom-filter-stack-${filterIdx}`}>
+          <div style={{ height: '8px' }} />
+          <Stack direction="row" gap={2} alignItems="center" key={`custom-filter-row-${filterIdx}`}>
+            <Combobox
+              value={filter.keySegment}
+              options={state.tagKeys}
+              width={20}
+              placeholder='Select...'
+              onChange={(option) => onFilterOptionSelect('keySegment', option, filterIdx)}
+            />
+            {!_.isNil(filter.keySegment) && (
+              <>
+                <Combobox
+                  value={filter.operatorSegment}
+                  options={state.operators}
+                  width={10}
+                  placeholder='Select...'
+                  onChange={(option) => onFilterOptionSelect('operatorSegment', option, filterIdx)}
+                />
 
-              <Combobox
-                placeholder={state.tagValues[filterIdx] === undefined ? 'Loading...' : 'Select...'}
-                disabled={state.tagValues[filterIdx] === undefined}
-                value={filter.valueSegment}
-                options={state.tagValues[filterIdx] ?? []}
-                width={20}
-                onChange={(option) => onFilterOptionSelect('valueSegment', option, filterIdx)}
-              />
-            </Stack>
-          )}
-          <Button
-            size="sm"
-            icon="trash-alt"
-            variant="secondary"
-            onClick={() => onDeleteFilterButtonClick(filterIdx)}
-            aria-label="trash-button"
-          ></Button>
-          {props.query.customFilters.length > 1 && <Label>{props.query.conjunctionOperator}</Label>}
+                <Input
+                  width={30}
+                  value={filter.valueSegment ?? ''}
+                  onChange={(e) => onFilterOptionSelect('valueSegment', { value: e.currentTarget.value, label: e.currentTarget.value }, filterIdx)}
+                  placeholder='Value'
+                />
+              </>
+            )}
+            <Button
+              size="sm"
+              icon="trash-alt"
+              variant="secondary"
+              onClick={() => onDeleteFilterButtonClick(filterIdx)}
+              aria-label="trash-button"
+            ></Button>
+            {props.query.customFilters.length > 1 && (
+              <Label style={{ marginBottom: 0 }}>{props.query.conjunctionOperator}</Label>
+            )}
+          </Stack>
         </Stack>
       ))}
     </Stack>
@@ -680,7 +884,6 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 };
 
 import { components, MultiValueProps } from 'react-select';
-import { METRIC_TYPE } from './metric_def';
 
 const MultiValueLabel = (props: MultiValueProps<any>) => {
   const { label, group } = props.data;

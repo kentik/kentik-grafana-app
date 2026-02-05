@@ -169,7 +169,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           const processed = await this.processResponse(
             query,
             target.mode,
-            target,
+            { ...target, scopedVars: options.scopedVars },
             topXData.data,
             topXData.url
           );
@@ -192,7 +192,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           const processed = await this.processResponse(
             perAggQuery,
             target.mode,
-            {...target, aggregate: singleAgg},
+            { ...target, aggregate: singleAgg, scopedVars: options.scopedVars },
             topXData.data,
             topXData.url
           );
@@ -292,25 +292,68 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   }
 
   applyAliasPattern(series: any, query: any, target: any): string {
-    const aggName = query.aggregates[0].name || query.aggregateTypes[0];
+    const aggName = query.aggregates[0]?.name || query.aggregateTypes?.[0] || '';
     const { aliasBy, prefix = '' } = target;
-  
-    if (!aliasBy) {
-      const alias = `${prefix} ${series.key} (${aggName})`;
-      return this.templateSrv.replace(alias, target.scopedVars);
-    }
 
-    let alias = aliasBy;
-    alias = aliasBy.replace(/\$tag_([a-zA-Z0-9_]+)/g, (match: string, tagName: string) => {
+    const replaceTag = (match: string, tagName: string) => {
+      // Find dimension if tagName is a label or an ID
+      const dim = dimensionList.find(
+        (d) =>
+          d.text.toLowerCase() === tagName.toLowerCase() ||
+          d.value.toLowerCase() === tagName.toLowerCase() ||
+          d.field.toLowerCase() === tagName.toLowerCase()
+      );
+      const effectiveTagName = dim ? dim.field : tagName;
+
+      // 1. Try exact match on series property (using original tagName or effective ID)
       if (!_.isNil(series[tagName])) {
         return series[tagName];
       }
+      if (effectiveTagName !== tagName && !_.isNil(series[effectiveTagName])) {
+        return series[effectiveTagName];
+      }
+
+      // 2. Try case-insensitive match on series properties for both names
+      const foundKey = Object.keys(series).find(
+        (key) => key.toLowerCase() === tagName.toLowerCase() || key.toLowerCase() === effectiveTagName.toLowerCase()
+      );
+      if (foundKey && !_.isNil(series[foundKey])) {
+        return series[foundKey];
+      }
+
+      // 3. Try extracting from series.key by dimension index (common for TopX)
+      if (query.dimension && Array.isArray(query.dimension)) {
+        const dimIndex = query.dimension.findIndex(
+          (d: string) => d.toLowerCase() === tagName.toLowerCase() || d.toLowerCase() === effectiveTagName.toLowerCase()
+        );
+        if (dimIndex !== -1 && series.key) {
+          const keyParts = series.key.split(',');
+          if (keyParts.length > dimIndex) {
+            return keyParts[dimIndex];
+          }
+        }
+      }
+
       return match;
-    });
-  
-    alias = alias.replace(/\$col/g, aggName);
-    alias = this.templateSrv.replace(`${prefix} ${alias}`);
-    return alias;
+    };
+
+    let result = '';
+    if (!aliasBy) {
+      const seriesKey = series.key || '';
+      const suffix = aggName ? ` (${aggName})` : '';
+      result = `${prefix} ${seriesKey}${suffix}`;
+    } else {
+      result = `${prefix} ${aliasBy}`;
+    }
+
+    // Apply substitutions to the entire resulting string
+    // $tag_ is restricted to non-whitespace to avoid greediness
+    // {{...}} supports spaces/dashes as it is explicitly delimited
+    result = result.replace(/\$tag_([a-zA-Z0-9_\.]+)/g, replaceTag);
+    result = result.replace(/\{\{([a-zA-Z0-9_\.\s\-]+)\}\}/g, replaceTag);
+    result = result.replace(/\$col/g, aggName);
+
+    return this.templateSrv.replace(result, target.scopedVars);
   }
 
   inferMetricFromUnit(unit: string): 'bps' | 'pps' | 'fps' | 'none' {
@@ -328,7 +371,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
       type: FieldType.string,
       values: [] as string[],
     };
-  
+
     const dimensionColumn = {
       name: 'Dimension',
       type: FieldType.string,
@@ -365,7 +408,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         ...metricColumns,
       ],
     };
-  
+
     return frame;
   }
 
@@ -433,20 +476,25 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
 
   async getTagKeys() {
     const initialList = await this._getExtendedDimensionList(filterFieldList);
-    const savedFilters = await this.kentik.getSavedFilters();
-    return _.concat(initialList, savedFilters);
+    const savedFiltersResp = await this.kentik.getSavedFilters();
+    const savedFilters = savedFiltersResp.filters || savedFiltersResp;
+    return _.concat(initialList, Array.isArray(savedFilters) ? savedFilters : []);
   }
 
   async getTagValues(options: any) {
     if (options) {
       let filter = _.find<FilterField>(filterFieldList, { text: options.key });
       if (filter === undefined) {
-        const savedFilters = await this.kentik.getSavedFilters();
-        filter = _.find(savedFilters, { text: options.key });
+        const savedFiltersResp = await this.kentik.getSavedFilters();
+        const savedFilters = savedFiltersResp.filters || savedFiltersResp;
+        filter = _.find(Array.isArray(savedFilters) ? savedFilters : [], { text: options.key });
         if (filter === undefined) {
           const customDimensions = await this.kentik.getCustomDimensions();
           const dimension: any = _.find(customDimensions, { text: options.key });
-          return dimension.values.map((value: any) => ({ text: value }));
+          if (dimension && dimension.values) {
+            return dimension.values.map((value: any) => ({ text: value }));
+          }
+          return [];
         } else {
           return [{ text: 'include' }, { text: 'exclude' }];
         }
@@ -465,7 +513,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   async getCustomDimensions() {
     const customDimensions = await this.kentik.getCustomDimensions();
 
-    const comboboxCustomDimensionOptions = customDimensions.map((customDimension: {text: string, value: string, field: string}) => {
+    const comboboxCustomDimensionOptions = customDimensions.map((customDimension: { text: string, value: string, field: string }) => {
       return {
         label: customDimension.text,
         value: `$${customDimension.field}`,

@@ -6,7 +6,33 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Dependency directories
 node_modules/
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+
+# IDE - VS Code
+.vscode/*
+!.vscode/extensions.json
+.history/
+*.code-workspace
+
+# IDE - IntelliJ
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Environment and Secrets
+.env
+.env.*
+.credentials
+*.pem
+*.key
 
 # yarn
 .yarn/cache
@@ -39,8 +65,5 @@ ci/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
-
-# Editor
-.idea
 
 .eslintcache

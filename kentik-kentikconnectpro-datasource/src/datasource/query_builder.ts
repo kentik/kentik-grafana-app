@@ -102,10 +102,6 @@ function buildTopXdataQuery(options: any, panelId?: string) {
   const metricArray = options.metric?.split(',');
   const metricDefs = allMetricOptions.filter(opt => metricArray?.includes(opt.value));
 
-  if (_.isEmpty(options.siteNames)) {
-    throw new Error('Query error: Sites field is required');
-  }
-
   if (_.isEmpty(options.deviceNames)) {
     throw new Error('Query error: Devices field is required');
   }
@@ -189,7 +185,9 @@ function convertToKentikFilterGroup(filters: any[], customDimensions: any[], sav
       const filterFieldDef = _.find<FilterField>(filterFieldListExtended, { text: filter.key });
       if (filterFieldDef === undefined) {
         const savedFilterDef = _.find(savedFiltersList, { text: filter.key });
-        savedFilters.push(convertToKentikSavedFilter(filter, savedFilterDef));
+        if (savedFilterDef) {
+          savedFilters.push(convertToKentikSavedFilter(filter, savedFilterDef));
+        }
       } else {
         kentikFilters.push(convertToKentikFilter(filter, filterFieldDef));
       }
