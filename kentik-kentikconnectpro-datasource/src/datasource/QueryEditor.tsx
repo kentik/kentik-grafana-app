@@ -451,7 +451,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 
   const onAliasMouseUp = (e: React.MouseEvent<HTMLInputElement>, field: 'aliasBy' | 'prefix') => {
     const cursorPos = e.currentTarget.selectionStart || 0;
-    const tokenInfo = findCurrentToken(props.query.aliasBy, cursorPos);
+    const tokenInfo = findCurrentToken(props.query[field], cursorPos);
     const isCursorAfterTokenStart = tokenInfo && (tokenInfo.start === cursorPos - 1);
 
     if (isCursorAfterTokenStart) {
