@@ -151,6 +151,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     aliasSuggestionFilter: '',
     aliasCursorPosition: 0,
     activeSuggestionField: null as 'aliasBy' | 'prefix' | null,
+    activeSuggestionIndex: 0,
   });
   const [errorState, setErrorState] = useState<Record<string, string>>({
     sites: '',
@@ -461,6 +462,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         aliasSuggestionFilter: tokenInfo.token.toLowerCase(),
         aliasCursorPosition: cursorPos,
         activeSuggestionField: field,
+        activeSuggestionIndex: 0,
       }));
     } else {
       setState(prev => ({
@@ -489,6 +491,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         aliasSuggestionFilter: tokenInfo.token.toLowerCase(),
         aliasCursorPosition: cursorPos,
         activeSuggestionField: field,
+        activeSuggestionIndex: 0,
       }));
     } else {
       // Hide suggestions
@@ -514,10 +517,27 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     if (e.key === 'Escape') {
       setState(prev => ({ ...prev, showAliasSuggestions: false, activeSuggestionField: null }));
       e.preventDefault();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setState(prev => ({
+        ...prev,
+        activeSuggestionIndex: Math.min(prev.activeSuggestionIndex + 1, filteredSuggestions.length - 1)
+      }));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setState(prev => ({
+        ...prev,
+        activeSuggestionIndex: Math.max(prev.activeSuggestionIndex - 1, 0)
+      }));
+    } else if (e.key === 'Enter') {
+      if (filteredSuggestions.length > 0) {
+        e.preventDefault();
+        onSelectAliasSuggestion(filteredSuggestions[state.activeSuggestionIndex]);
+      }
     } else if (e.key === 'Tab' && filteredSuggestions.length > 0) {
       // Auto-complete with first suggestion on Tab
       e.preventDefault();
-      onSelectAliasSuggestion(filteredSuggestions[0]);
+      onSelectAliasSuggestion(filteredSuggestions[state.activeSuggestionIndex]);
     }
   };
 
@@ -765,6 +785,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
               showAliasSuggestions={state.showAliasSuggestions}
               onSelectAliasSuggestion={onSelectAliasSuggestion}
               activeSuggestionField={state.activeSuggestionField}
+              activeSuggestionIndex={state.activeSuggestionIndex}
               aliasTagOptions={state.aliasTagOptions}
               aliasSuggestionFilter={state.aliasSuggestionFilter} />
           </div>
@@ -787,6 +808,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
               showAliasSuggestions={state.showAliasSuggestions}
               onSelectAliasSuggestion={onSelectAliasSuggestion}
               activeSuggestionField={state.activeSuggestionField}
+              activeSuggestionIndex={state.activeSuggestionIndex}
               aliasTagOptions={state.aliasTagOptions}
               aliasSuggestionFilter={state.aliasSuggestionFilter} />
           </div>
@@ -881,6 +903,7 @@ const MultiValueLabel = (props: MultiValueProps<any>) => {
 type DimensionsSuggestionComponentProps = {
   showAliasSuggestions: boolean;
   activeSuggestionField: string | null;
+  activeSuggestionIndex: number;
   aliasTagOptions: Array<ComboboxOption<string>>,
   onSelectAliasSuggestion: (opt: ComboboxOption<string>) => void,
   aliasSuggestionFilter: string,
@@ -889,7 +912,7 @@ type DimensionsSuggestionComponentProps = {
 
 const DimensionsSuggestionComponent = (props: DimensionsSuggestionComponentProps) => {
 
-  const { aliasSuggestionFilter, showAliasSuggestions, activeSuggestionField, aliasTagOptions, onSelectAliasSuggestion, field } = props;
+  const { aliasSuggestionFilter, showAliasSuggestions, activeSuggestionField, activeSuggestionIndex, aliasTagOptions, onSelectAliasSuggestion, field } = props;
   if (!showAliasSuggestions || activeSuggestionField !== field) {
     return null;
   }
@@ -920,6 +943,7 @@ const DimensionsSuggestionComponent = (props: DimensionsSuggestionComponentProps
             padding: '8px 12px',
             cursor: 'pointer',
             borderBottom: '1px solid var(--border-weak, #222)',
+            backgroundColor: idx === activeSuggestionIndex ? 'var(--background-secondary, #222)' : 'transparent',
           }}
           onMouseDown={(e) => {
             e.preventDefault(); // Prevent blur
