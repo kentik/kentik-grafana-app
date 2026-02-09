@@ -121,6 +121,9 @@ const OBLIGATORY_FIELDS_NAMES = ['sites', 'devices', 'dimension', 'metric'];
 export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
   _.defaults(props.query, DEFAULT_QUERY);
 
+  const prefixInputRef = useRef<HTMLInputElement>(null);
+  const aliasInputRef = useRef<HTMLInputElement>(null);
+
   const convertToComboboxOptions = (items: QueryItem[]): Array<ComboboxOption<string>> => {
     return _.map(items, (item: QueryItem) => ({ value: item.value, label: item.text }));
   };
@@ -431,9 +434,6 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     onRunQuery(queryValid);
   }
 
-  const prefixInputRef = useRef<HTMLInputElement>(null);
-  const aliasInputRef = useRef<HTMLInputElement>(null);
-
   // Find the current "$..." token being typed at cursor position
   const findCurrentToken = (value: string, cursorPos: number): { token: string; start: number } | null => {
     // Look backwards from cursor to find a $ that starts a token
@@ -448,6 +448,29 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     }
     return null;
   };
+
+  const onAliasMouseUp = (e: React.MouseEvent<HTMLInputElement>, field: 'aliasBy' | 'prefix') => {
+    const cursorPos = e.currentTarget.selectionStart || 0;
+    const tokenInfo = findCurrentToken(props.query.aliasBy, cursorPos);
+    const isCursorAfterTokenStart = tokenInfo && (tokenInfo.start === cursorPos - 1);
+
+    if (isCursorAfterTokenStart) {
+      setState(prev => ({
+        ...prev,
+        showAliasSuggestions: true,
+        aliasSuggestionFilter: tokenInfo.token.toLowerCase(),
+        aliasCursorPosition: cursorPos,
+        activeSuggestionField: field,
+      }));
+    } else {
+      setState(prev => ({
+        ...prev,
+        showAliasSuggestions: false,
+        aliasSuggestionFilter: '',
+        activeSuggestionField: null,
+      }));
+    }
+  }
 
   const onAliasTextChange = (e: React.FormEvent<HTMLInputElement>, field: 'aliasBy' | 'prefix'): void => {
     const newValue = e.currentTarget.value;
@@ -539,62 +562,6 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       setState(prev => ({ ...prev, showAliasSuggestions: false, activeSuggestionField: null }));
     }, 150);
     onRunQuery();
-  };
-
-  const renderSuggestions = (field: 'prefix' | 'aliasBy') => {
-    if (!state.showAliasSuggestions || state.activeSuggestionField !== field) {
-      return null;
-    }
-
-    const filteredSuggestions = state.aliasTagOptions.filter(opt =>
-      opt.value?.toLowerCase().includes(state.aliasSuggestionFilter) ||
-      opt.label?.toLowerCase().includes(state.aliasSuggestionFilter)
-    );
-
-    return (
-      <div style={{
-        position: 'absolute',
-        top: '100%',
-        left: 0,
-        zIndex: 1000,
-        backgroundColor: 'var(--background-primary, #111)',
-        border: '1px solid var(--border-medium, #333)',
-        borderRadius: '4px',
-        maxHeight: '200px',
-        overflowY: 'auto',
-        minWidth: '300px',
-        boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
-      }}>
-        {filteredSuggestions.map((opt, idx) => (
-          <div
-            key={opt.value || idx}
-            style={{
-              padding: '8px 12px',
-              cursor: 'pointer',
-              borderBottom: '1px solid var(--border-weak, #222)',
-            }}
-            onMouseDown={(e) => {
-              e.preventDefault(); // Prevent blur
-              onSelectAliasSuggestion(opt);
-            }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLDivElement).style.backgroundColor = 'var(--background-secondary, #222)';
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLDivElement).style.backgroundColor = 'transparent';
-            }}
-          >
-            <div style={{ fontWeight: 500 }}>{opt.label}</div>
-            <div style={{ fontSize: '11px', opacity: 0.7 }}>{opt.value}</div>
-          </div>
-        ))}
-        {filteredSuggestions.length === 0 && (
-          <div style={{ padding: '8px 12px', opacity: 0.6 }}>
-            No matching tags. Select dimensions first.
-          </div>
-        )}
-      </div>
-    );
   };
 
   const onConjuctionOperatorSelect = (option: ComboboxOption<string>) => {
@@ -791,8 +758,15 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
               onKeyDown={onAliasKeyDown}
               onBlur={onAliasTextBlur}
               placeholder='Type...'
+              onMouseUp={(e) => onAliasMouseUp(e, 'prefix')}
             />
-            {renderSuggestions('prefix')}
+            <DimensionsSuggestionComponent
+              field={'prefix'}
+              showAliasSuggestions={state.showAliasSuggestions}
+              onSelectAliasSuggestion={onSelectAliasSuggestion}
+              activeSuggestionField={state.activeSuggestionField}
+              aliasTagOptions={state.aliasTagOptions}
+              aliasSuggestionFilter={state.aliasSuggestionFilter} />
           </div>
         </Field>
         <Field label="Alias by">
@@ -805,9 +779,16 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
               onChange={(e) => onAliasTextChange(e, 'aliasBy')}
               onKeyDown={onAliasKeyDown}
               onBlur={onAliasTextBlur}
+              onMouseUp={(e) => onAliasMouseUp(e, 'aliasBy')}
               placeholder='Type $ for suggestions, e.g., Traffic: $tag_src_ip'
             />
-            {renderSuggestions('aliasBy')}
+            <DimensionsSuggestionComponent
+              field={'aliasBy'}
+              showAliasSuggestions={state.showAliasSuggestions}
+              onSelectAliasSuggestion={onSelectAliasSuggestion}
+              activeSuggestionField={state.activeSuggestionField}
+              aliasTagOptions={state.aliasTagOptions}
+              aliasSuggestionFilter={state.aliasSuggestionFilter} />
           </div>
         </Field>
       </Stack>
@@ -896,3 +877,70 @@ const MultiValueLabel = (props: MultiValueProps<any>) => {
     </components.MultiValueLabel>
   );
 };
+
+type DimensionsSuggestionComponentProps = {
+  showAliasSuggestions: boolean;
+  activeSuggestionField: string | null;
+  aliasTagOptions: Array<ComboboxOption<string>>,
+  onSelectAliasSuggestion: (opt: ComboboxOption<string>) => void,
+  aliasSuggestionFilter: string,
+  field: 'aliasBy' | 'prefix' | null,
+}
+
+const DimensionsSuggestionComponent = (props: DimensionsSuggestionComponentProps) => {
+
+  const { aliasSuggestionFilter, showAliasSuggestions, activeSuggestionField, aliasTagOptions, onSelectAliasSuggestion, field } = props;
+  if (!showAliasSuggestions || activeSuggestionField !== field) {
+    return null;
+  }
+
+  const filteredSuggestions = aliasTagOptions.filter(opt =>
+    opt.value?.toLowerCase().includes(aliasSuggestionFilter) ||
+    opt.label?.toLowerCase().includes(aliasSuggestionFilter)
+  );
+
+  return (
+    <div style={{
+      position: 'absolute',
+      top: '100%',
+      left: 0,
+      zIndex: 1000,
+      backgroundColor: 'var(--background-primary, #111)',
+      border: '1px solid var(--border-medium, #333)',
+      borderRadius: '4px',
+      maxHeight: '200px',
+      overflowY: 'auto',
+      minWidth: '300px',
+      boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+    }}>
+      {filteredSuggestions.map((opt, idx) => (
+        <div
+          key={opt.value || idx}
+          style={{
+            padding: '8px 12px',
+            cursor: 'pointer',
+            borderBottom: '1px solid var(--border-weak, #222)',
+          }}
+          onMouseDown={(e) => {
+            e.preventDefault(); // Prevent blur
+            onSelectAliasSuggestion(opt);
+          }}
+          onMouseEnter={(e) => {
+            (e.target as HTMLDivElement).style.backgroundColor = 'var(--background-secondary, #222)';
+          }}
+          onMouseLeave={(e) => {
+            (e.target as HTMLDivElement).style.backgroundColor = 'transparent';
+          }}
+        >
+          <div style={{ fontWeight: 500 }}>{opt.label}</div>
+          <div style={{ fontSize: '11px', opacity: 0.7 }}>{opt.value}</div>
+        </div>
+      ))}
+      {filteredSuggestions.length === 0 && (
+        <div style={{ padding: '8px 12px', opacity: 0.6 }}>
+          No matching tags. Select dimensions first.
+        </div>
+      )}
+    </div>
+  );
+}
