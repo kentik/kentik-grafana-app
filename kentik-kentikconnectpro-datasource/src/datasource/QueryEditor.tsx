@@ -318,9 +318,6 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     target?: any
   ): Promise<Array<ComboboxOption<string>>> => {
     let metrics: QueryItem[] = await props.datasource.metricFindQuery(query, target || props.query);
-    if (variableName === '$metric') {
-      return metrics;
-    }
     return convertToComboboxOptions(appendVariableIfExists(metrics, variableName));
   };
 

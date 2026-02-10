@@ -43,7 +43,8 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   }
 
   private isQueryTargetEmpty = (target: any): boolean => {
-    const targetObligatoryItems = ['sites', 'devices', 'dimension', 'metric'];
+    // 'sites' is not strictly required for query execution (defaults to All), so removing it avoids blocking initial load if empty.
+    const targetObligatoryItems = ['devices', 'dimension', 'metric'];
 
     const isTargetEmpty = targetObligatoryItems.some((item) => {
       const targetItem = target[item];
@@ -96,29 +97,29 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
       async (target, i) => {
         _.defaults(target, DEFAULT_QUERY);
 
-        const siteNames = typeof target.sites === 'string' ? this.templateSrv.replace(
-          target.sites,
+        const siteNames = this.templateSrv.replace(
+          (typeof target.sites === 'string' ? target.sites : (target.sites?.map((s: any) => s.value) || []).join(',')),
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
-        ) : target.sites?.map(site => site.label).toString();
+        );
 
-        const deviceNames = typeof target.devices === 'string' ? this.templateSrv.replace(
-          target.devices,
+        const deviceNames = this.templateSrv.replace(
+          (typeof target.devices === 'string' ? target.devices : (target.devices?.map((s: any) => s.value) || []).join(',')),
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
-        ) : target.devices?.map(device => device.label).toString();
+        );
 
-        const dimensionsNames = typeof target.dimension === 'string' ? this.templateSrv.replace(
-          target.dimension,
+        const dimensionsNames = this.templateSrv.replace(
+          (typeof target.dimension === 'string' ? target.dimension : (target.dimension?.map((s: any) => s.value) || []).join(',')),
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
-        ) : target.dimension?.map(d => d.value).toString();
+        );
 
-        const metricsNames = typeof target.metric === 'string' ? this.templateSrv.replace(
-          target.metric,
+        const metricsNames = this.templateSrv.replace(
+          (typeof target.metric === 'string' ? target.metric : (target.metric?.map((s: any) => s.value) || []).join(',')),
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
-        ) : target.metric?.map(m => m.value).toString();
+        );
 
         const queryCustomFilters = _.map(
           _.filter(
@@ -388,7 +389,14 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     const allDimensionNames = dimensionDefs.map(d => d.text).join(', ');
   
     _.forEach(bucketData, (row) => {
-      seriesColumn.values.push(row.key);
+      let seriesName = row.key;
+      if (dimensionDefs.length === 1) {
+        const def = dimensionDefs[0];
+        if ((def.field === 'IP_src' || def.field === 'IP_dst' || def.text.includes('IP/CIDR')) && row[def.field]) {
+          seriesName = row[def.field];
+        }
+      }
+      seriesColumn.values.push(seriesName);
       dimensionColumn.values.push(allDimensionNames); 
   
       metricDefs.forEach((metricDef, i) => {
@@ -412,41 +420,73 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     return frame;
   }
 
-  private isAllSitesSelected(target: any) {
-    return target.sites.map((site: any) => site.label)?.includes(ALL_SITES_LABEL);
-  }
+  async metricFindQuery(query: string, target?: any) {
+    const interpolatedQuery = this.templateSrv.replace(query, target?.scopedVars);
+    const queryParts = interpolatedQuery.match(/^(.*)\((.*)\)$/);
+    if (!queryParts || !queryParts[1]) {
+      throw new Error(`Invalid query syntax. Expected syntax: queryType()`);
+    }
 
-  async metricFindQuery(query: any, target: any) {
-    switch (query) {
-      case 'dimensions()': {
+    const queryType = queryParts[1];
+    switch (queryType) {
+      case 'dimensions': {
         const result = await this._getExtendedDimensionList(dimensionList);
         return result;
       }
-      case 'metrics()': {
+      case 'metrics': {
         return metricNestedList;
       }
-      case 'metricsOptions()': {
+      case 'metricsOptions': {
         return allMetricOptions;
       }
-      case 'devices()': {
+      case 'devices': {
         let devices = await this.kentik.getDevices();
-        if (!_.isEmpty(target.sites) && !this.isAllSitesSelected(target)) {
-          const siteLabales = target.sites.map((site: any) => site.label);
-          devices = _.filter(devices, (device) => siteLabales?.includes(device.site.siteName));
+
+        const sitesRaw = target?.sites;
+        const siteNames = this.templateSrv.replace(
+          (typeof sitesRaw === 'string' ? sitesRaw : (sitesRaw?.map((s: any) => s.value) || []).join(',')),
+          target?.scopedVars,
+          this.interpolateDeviceField.bind(this)
+        );
+
+        let filterSites: string[] = [];
+        // Only add UI sites if not "All Sites"
+        if (siteNames && siteNames !== ALL_SITES_LABEL) {
+           filterSites = siteNames.split(',');
         }
+
+        // Add sites from query arguments (e.g. devices($Site))
+        const args = queryParts[2];
+        if (args && args.trim().length > 0) {
+           const argSites = args.split(',').map(s => s.trim());
+           filterSites = _.concat(filterSites, argSites);
+        }
+
+        // Apply handling for All Sites if arguments are present but contain "All Sites" variable value?
+        // Standard Grafana: if variable is "All", it returns all values separated by comma (if formatted) or regex.
+        // If the user uses devices($Site) and $Site is "All", regex matching might be needed?
+        // But here we do exact match includes.
+        // If $Site uses "All" and "Include All option", and custom all value is empty?
+        
+        if (filterSites.length > 0 && !filterSites.includes(ALL_SITES_LABEL)) {
+           // Filter if we have specific sites and none of them is explicit "All Sites" 
+           // (though standard All usually expands to values)
+           devices = _.filter(devices, (device) => filterSites.includes(device.site.siteName));
+        }
+
         return devices.map((device: any) => {
           return { text: device.deviceName, value: device.deviceName };
         });
       }
-      case 'sites()': {
+      case 'sites': {
         const sites = await this.kentik.getSites();
         const res = sites.map((site: any) => {
-          return { text: site.title, value: site.title };
+          return { text: site.siteName, value: site.siteName };
         });
-        return [{ text: ALL_SITES_LABEL, value: null }, ...res];
+        return [{ text: ALL_SITES_LABEL, value: ALL_SITES_LABEL }, ...res];
       }
       default:
-        throw new Error(`Unknown query type: ${query}`);
+        throw new Error(`Unknown query type: ${queryType}`);
     }
   }
 
