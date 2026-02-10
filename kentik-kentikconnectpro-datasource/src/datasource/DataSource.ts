@@ -42,6 +42,21 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     return value.join(',');
   }
 
+  private getMultiSelectValues(value: any) {
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    if (Array.isArray(value)) {
+      return value
+        .map((s: any) => {
+          return s.value !== undefined ? s.value : s;
+        })
+        .join(',');
+    }
+    return '';
+  }
+
   private isQueryTargetEmpty = (target: any): boolean => {
     // 'sites' is not strictly required for query execution (defaults to All), so removing it avoids blocking initial load if empty.
     const targetObligatoryItems = ['devices', 'dimension', 'metric'];
@@ -98,25 +113,25 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         _.defaults(target, DEFAULT_QUERY);
 
         const siteNames = this.templateSrv.replace(
-          (typeof target.sites === 'string' ? target.sites : (target.sites?.map((s: any) => s.value) || []).join(',')),
+          this.getMultiSelectValues(target.sites),
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
         );
 
         const deviceNames = this.templateSrv.replace(
-          (typeof target.devices === 'string' ? target.devices : (target.devices?.map((s: any) => s.value) || []).join(',')),
+          this.getMultiSelectValues(target.devices),
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
         );
 
         const dimensionsNames = this.templateSrv.replace(
-          (typeof target.dimension === 'string' ? target.dimension : (target.dimension?.map((s: any) => s.value) || []).join(',')),
+          this.getMultiSelectValues(target.dimension),
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
         );
 
         const metricsNames = this.templateSrv.replace(
-          (typeof target.metric === 'string' ? target.metric : (target.metric?.map((s: any) => s.value) || []).join(',')),
+          this.getMultiSelectValues(target.metric),
           options.scopedVars,
           this.interpolateDeviceField.bind(this)
         );
@@ -342,9 +357,9 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     if (!aliasBy) {
       const seriesKey = series.key || '';
       const suffix = aggName ? ` (${aggName})` : '';
-      result = `${prefix} ${seriesKey}${suffix}`;
+      result = prefix ? `${prefix} ${seriesKey}${suffix}` : `${seriesKey}${suffix}`;
     } else {
-      result = `${prefix} ${aliasBy}`;
+      result = prefix ? `${prefix} ${aliasBy}` : aliasBy;
     }
 
     // Apply substitutions to the entire resulting string
@@ -367,17 +382,11 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   }
 
   processTableData(bucketData: any[], dimensionDefs: any[], metricDefs: any[]) {
-    const seriesColumn = {
-      name: 'Series name',
+    const dimensionColumns = dimensionDefs.map(def => ({
+      name: def.text,
       type: FieldType.string,
       values: [] as string[],
-    };
-
-    const dimensionColumn = {
-      name: 'Dimension',
-      type: FieldType.string,
-      values: [] as string[],
-    };
+    }));
   
     const metricColumns = metricDefs.map((def: Metric) => ({
       name: def.value,
@@ -386,18 +395,18 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
       config: { unit: this.inferMetricFromUnit(def.unit) },
     }));
   
-    const allDimensionNames = dimensionDefs.map(d => d.text).join(', ');
-  
     _.forEach(bucketData, (row) => {
-      let seriesName = row.key;
-      if (dimensionDefs.length === 1) {
-        const def = dimensionDefs[0];
-        if ((def.field === 'IP_src' || def.field === 'IP_dst' || def.text.includes('IP/CIDR')) && row[def.field]) {
-          seriesName = row[def.field];
+      dimensionDefs.forEach((def: any, i: number) => {
+        let val = row[def.field];
+
+        // Fallback to key if field is missing (e.g. for single dimension or unmapped fields)
+        if (val === undefined || val === null) {
+          if (dimensionDefs.length === 1 && row.key) {
+             val = row.key;
+          }
         }
-      }
-      seriesColumn.values.push(seriesName);
-      dimensionColumn.values.push(allDimensionNames); 
+        dimensionColumns[i].values.push(val);
+      });
   
       metricDefs.forEach((metricDef, i) => {
         let val = row[metricDef.value];
@@ -409,10 +418,8 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     });
   
     const frame: PartialDataFrame = {
-      name: 'Series by Dimension',
       fields: [
-        seriesColumn,
-        dimensionColumn,
+        ...dimensionColumns,
         ...metricColumns,
       ],
     };

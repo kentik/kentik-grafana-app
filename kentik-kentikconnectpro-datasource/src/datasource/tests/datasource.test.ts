@@ -172,6 +172,65 @@ describe('applyAliasPattern', () => {
       expect(ctx.ds.applyAliasPattern(series, robustQuery, target)).toBe('eth8 on router6');
     });
   });
+
+  describe('query method', () => {
+    it('Should correctly format dimensions when provided as array of strings', async () => {
+      const invokeSpy = jest.spyOn(ctx.ds.kentik, 'invokeTopXDataQuery');
+      invokeSpy.mockResolvedValue({ 
+        data: { results: [{ data: [] }] }, 
+        url: 'mock_url' 
+      });
+
+      const options: any = {
+        targets: [
+          {
+            metric: 'avg_bits_per_sec',
+            dimension: ['src_endpoint', 'dst_endpoint'], // Array of strings
+            devices: 'device1',
+          },
+        ],
+        range: {
+          from: { utc: () => ({ format: () => 'now-1h' }) },
+          to: { utc: () => ({ format: () => 'now' }) },
+        },
+        scopedVars: {},
+      };
+
+      await ctx.ds.query(options);
+
+      const calledQuery: any = invokeSpy.mock.calls[0][0];
+      expect(calledQuery.dimension).toEqual(['src_endpoint', 'dst_endpoint']);
+    });
+
+    it('Should correctly format dimensions when provided as array of objects', async () => {
+      const invokeSpy = jest.spyOn(ctx.ds.kentik, 'invokeTopXDataQuery');
+      invokeSpy.mockResolvedValue({ 
+        data: { results: [{ data: [] }] }, 
+        url: 'mock_url' 
+      });
+
+      const options: any = {
+        targets: [
+          {
+            metric: 'avg_bits_per_sec',
+            dimension: [{ value: 'src_endpoint' }, { value: 'dst_endpoint' }], // object[] format
+            devices: 'device1',
+            mode: 'graph',
+          }
+        ],
+        range: {
+          from: { utc: () => ({ format: () => 'now-1h' }) },
+          to: { utc: () => ({ format: () => 'now' }) },
+        },
+        scopedVars: {},
+      };
+
+      await ctx.ds.query(options);
+
+      const calledQuery: any = invokeSpy.mock.calls[0][0];
+      expect(calledQuery.dimension).toEqual(['src_endpoint', 'dst_endpoint']);
+    });
+  });
 });
 
 

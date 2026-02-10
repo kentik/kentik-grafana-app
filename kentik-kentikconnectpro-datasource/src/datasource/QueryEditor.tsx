@@ -5,35 +5,35 @@ import { getTemplateSrv } from '@grafana/runtime';
 import { DataQuery } from '@grafana/schema';
 import React, { useEffect, useState, useRef } from 'react';
 import _ from 'lodash';
-import { dimensionList, METRIC_TYPE } from './metric_def';
+import { dimensionList } from './metric_def';
 
-function getMetricType(metrics: SelectableValue[], selectedMetric: SelectableValue): METRIC_TYPE | undefined {
-  if (selectedMetric === undefined) {
-    return undefined;
-  }
+// function getMetricType(metrics: SelectableValue[], selectedMetric: SelectableValue): METRIC_TYPE | undefined {
+//   if (selectedMetric === undefined) {
+//     return undefined;
+//   }
 
-  const metricType = metrics.find((metric) => {
-    return metric.label === selectedMetric.group
-  });
+//   const metricType = metrics.find((metric) => {
+//     return metric.label === selectedMetric.group
+//   });
 
-  return metricType?.type;
-}
+//   return metricType?.type;
+// }
 
-function excludeContraryMetricTypes(metrics: SelectableValue[], currentMetrics: SelectableValue[]) {
-  if (currentMetrics === undefined || currentMetrics === null || currentMetrics.length === 0) {
-    return metrics;
-  }
+// function excludeContraryMetricTypes(metrics: SelectableValue[], currentMetrics: SelectableValue[]) {
+//   if (currentMetrics === undefined || currentMetrics === null || currentMetrics.length === 0) {
+//     return metrics;
+//   }
 
-  const metricType = getMetricType(metrics, currentMetrics[0]);
+//   const metricType = getMetricType(metrics, currentMetrics[0]);
 
-  if (metricType === undefined) {
-    return metrics;
-  }
+//   if (metricType === undefined) {
+//     return metrics;
+//   }
 
-  return metrics.filter((metric) => {
-    return metric.type === metricType;
-  })
-}
+//   return metrics.filter((metric) => {
+//     return metric.type === metricType;
+//   })
+// }
 
 export interface Query extends DataQuery {
   mode: DataMode;
@@ -115,6 +115,16 @@ const FIELDS_VALIDATION_MESSAGES = {
 }
 
 const MAX_DIMENSIONS = 8;
+
+// Helper to append a variable option if it exists in Grafana variables
+function appendVariableIfExists(options: QueryItem[], variableName: string): QueryItem[] {
+  const templateSrv = getTemplateSrv();
+  const variableExists = templateSrv.getVariables().some((v: any) => `$${v.name}` === variableName);
+  if (variableExists) {
+    return [{ value: variableName, text: variableName }, ...options];
+  }
+  return options;
+}
 
 const OBLIGATORY_FIELDS_NAMES = ['sites', 'devices', 'dimension', 'metric'];
 
@@ -216,6 +226,14 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         value: `$tag_${dim.field}`,
       }));
 
+    // Add options for variables selected in Dimensions
+    const variableDimensionOptions: Array<ComboboxOption<string>> = selectedDimensionValues
+      .filter((val): val is string => !!(val && val.startsWith('$')))
+      .map((val) => ({
+        label: val,
+        value: val,
+      }));
+
     // Filter custom dimensions to only those selected
     const customDimensionOptions: Array<ComboboxOption<string>> = (state.customDimensions || [])
       .filter((dim: AliasByComboboxOption<string>) => selectedDimensionValues.includes(dim.originalValue))
@@ -230,7 +248,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       value: '$col',
     };
 
-    const aliasTagOptions = [metricOption, ...standardDimensionOptions, ...customDimensionOptions];
+    const aliasTagOptions = [metricOption, ...standardDimensionOptions, ...variableDimensionOptions, ...customDimensionOptions];
 
     setState(prevState => ({
       ...prevState,
@@ -306,26 +324,41 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     props.onChange(query)
   }
 
-  const variableExists = (variableName: string): boolean => {
-    const templateSrv = getTemplateSrv();
-    const variables = templateSrv.getVariables().map((variable) => `$${variable.name}`);
-    return _.includes(variables, variableName);
-  };
-
   const getOptions = async (
     query: string,
     variableName?: string,
     target?: any
   ): Promise<Array<ComboboxOption<string>>> => {
-    let metrics: QueryItem[] = await props.datasource.metricFindQuery(query, target || props.query);
-    return convertToComboboxOptions(appendVariableIfExists(metrics, variableName));
-  };
+    let result = await props.datasource.metricFindQuery(query, target || props.query);
 
-  const appendVariableIfExists = (options: QueryItem[], variableName?: string) => {
-    if (variableName && variableExists(variableName)) {
-      return [{ text: variableName, value: variableName }, ...options];
+    const templateSrv = getTemplateSrv();
+    const variables: Array<ComboboxOption<string>> = templateSrv.getVariables().map((variable) => ({
+      label: `$${variable.name}`,
+      value: `$${variable.name}`
+    }));
+
+    // Handle grouped options from metricNestedList
+    const isGrouped = result.some((item: any) => item.options && Array.isArray(item.options));
+
+    let options: Array<ComboboxOption<string>> = [];
+    if (isGrouped) {
+      options = result.map((group: any) => ({
+        label: group.label,
+        options: group.options.map((opt: any) => ({
+          label: opt.text || opt.label,
+          value: opt.value,
+          ...opt
+        }))
+      }));
+    } else {
+      options = result.map((item: any) => ({
+        label: item.text || item.label,
+        value: item.value,
+        ...item
+      }));
     }
-    return options;
+
+    return [...variables, ...options];
   };
 
   const fetchSites = async (): Promise<Array<ComboboxOption<string>>> => {
@@ -417,9 +450,71 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
   };
 
   const onDimensionSelect = (value: SelectableValue[]) => {
+    const oldDimensions = ensureArray(props.query.dimension);
+    const newDimensions = value;
+
+    const oldValues = oldDimensions.map(d => d.value);
+    const newValues = newDimensions.map(d => d.value);
+
+    const removedIds = oldValues.filter(v => !newValues.includes(v));
+    const addedIds = newValues.filter(v => !oldValues.includes(v));
+
+    let newAliasBy = props.query.aliasBy || '';
+
+    if (removedIds.length === 1 && addedIds.length === 1) {
+      const removedId = removedIds[0];
+      const addedId = addedIds[0];
+
+      const findDim = (id: any) => state.dimensions.find(d => d.value === id);
+      const removedDim = findDim(removedId);
+      const addedDim = findDim(addedId);
+
+      if (removedDim && addedDim) {
+        // @ts-ignore
+        let removedField = removedDim['field'];
+        // @ts-ignore
+        let addedField = addedDim['field'];
+        // @ts-ignore
+        let removedText = removedDim['text'];
+        // @ts-ignore
+        let addedText = addedDim['text'];
+
+        // Handle variables (which don't have field/text properties but value starts with $)
+        if (!removedField && removedDim.value?.toString().startsWith('$')) {
+          removedField = removedDim.value;
+          removedText = removedDim.value;
+        }
+        if (!addedField && addedDim.value?.toString().startsWith('$')) {
+          addedField = addedDim.value;
+          addedText = addedDim.value;
+        }
+
+        if (removedField && addedField) {
+          const getTag = (field: string) => field.startsWith('$') ? field : `$tag_${field}`;
+          const oldTag = getTag(removedField);
+          const newTag = getTag(addedField);
+          if (newAliasBy.includes(oldTag)) {
+            newAliasBy = newAliasBy.split(oldTag).join(newTag);
+          }
+        }
+
+        if (removedText && addedText) {
+          const oldHandlebars = `{{${removedText}}}`;
+          const newHandlebars = `{{${addedText}}}`;
+          if (newAliasBy.includes(oldHandlebars)) {
+            newAliasBy = newAliasBy.split(oldHandlebars).join(newHandlebars);
+          }
+        }
+      }
+    }
+
     const query: Query = _.cloneDeep(props.query);
     // @ts-ignore
     query['dimension'] = value;
+
+    if (newAliasBy !== props.query.aliasBy) {
+      query.aliasBy = newAliasBy;
+    }
 
     onQueryChange(query);
     const dimensionLimitReached = query.dimension?.length >= MAX_DIMENSIONS;
@@ -673,7 +768,8 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
   }, [props.datasource]);
 
   // computed values
-  const filteredMetrics = excludeContraryMetricTypes(state.metrics, ensureArray(props.query.metric));
+  // Removed metric type filtering to allow selecting multiple metrics of different types (e.g. bits and unique IPs)
+  const filteredMetrics = state.metrics; 
 
   return (
     <Stack direction="column">
@@ -890,8 +986,12 @@ const MultiValueLabel = (props: MultiValueProps<any>) => {
 
   return (
     <components.MultiValueLabel {...props}>
-      <strong>{group}</strong>
-      <span style={{ margin: '0 4px' }}>/</span>
+      {group && (
+        <>
+          <strong>{group}</strong>
+          <span style={{ margin: '0 4px' }}>/</span>
+        </>
+      )}
       {label}
     </components.MultiValueLabel>
   );
