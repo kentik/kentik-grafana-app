@@ -42,7 +42,7 @@ export class KentikAPI {
   }
 
   async getSites(): Promise<any> {
-    const resp = await this._get('/site/v202211/sites');
+    const resp = await this._get('/site/v202509/sites');
     if (resp && resp.sites) {
       return resp.sites;
     } else {

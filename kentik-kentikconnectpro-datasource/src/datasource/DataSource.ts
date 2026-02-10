@@ -25,7 +25,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
 
     // `arguments[1]` is a hack used by `datasource.test.ts`
     const kentikApi = new KentikAPI(arguments[1] || getBackendSrv(), instanceSettings.uid);
-    this.kentik = new KentikProxy(kentikApi);
+    this.kentik = new KentikProxy(kentikApi, instanceSettings.uid);
     this.templateSrv = getTemplateSrv();
   }
 
@@ -311,6 +311,10 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     const aggName = query.aggregates[0]?.name || query.aggregateTypes?.[0] || '';
     const { aliasBy, prefix = '' } = target;
 
+    // Resolve variables early to allow patterns like {{$dimension}} to resolve to {{field}}
+    const resolvedAliasBy = this.templateSrv.replace(aliasBy, target.scopedVars);
+    const resolvedPrefix = this.templateSrv.replace(prefix, target.scopedVars);
+
     const replaceTag = (match: string, tagName: string) => {
       // Find dimension if tagName is a label or an ID
       const dim = dimensionList.find(
@@ -354,12 +358,12 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     };
 
     let result = '';
-    if (!aliasBy) {
+    if (!resolvedAliasBy) {
       const seriesKey = series.key || '';
       const suffix = aggName ? ` (${aggName})` : '';
-      result = prefix ? `${prefix} ${seriesKey}${suffix}` : `${seriesKey}${suffix}`;
+      result = resolvedPrefix ? `${resolvedPrefix} ${seriesKey}${suffix}` : `${seriesKey}${suffix}`;
     } else {
-      result = prefix ? `${prefix} ${aliasBy}` : aliasBy;
+      result = resolvedPrefix ? `${resolvedPrefix} ${resolvedAliasBy}` : resolvedAliasBy;
     }
 
     // Apply substitutions to the entire resulting string
@@ -488,7 +492,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
       case 'sites': {
         const sites = await this.kentik.getSites();
         const res = sites.map((site: any) => {
-          return { text: site.siteName, value: site.siteName };
+          const text = site.title || site.siteName || site.site_name || site.name || site.id; return { text, value: text };
         });
         return [{ text: ALL_SITES_LABEL, value: ALL_SITES_LABEL }, ...res];
       }

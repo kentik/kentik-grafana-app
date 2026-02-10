@@ -222,8 +222,8 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     const standardDimensionOptions: Array<ComboboxOption<string>> = dimensionList
       .filter((dim) => selectedDimensionValues.includes(dim.value))
       .map((dim) => ({
-        label: `${dim.text} ($tag_${dim.field})`,
-        value: `$tag_${dim.field}`,
+        label: `${dim.text} ({{${dim.field}}})`,
+        value: `{{${dim.field}}}`,
       }));
 
     // Add options for variables selected in Dimensions
@@ -231,16 +231,24 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       .filter((val): val is string => !!(val && val.startsWith('$')))
       .map((val) => ({
         label: val,
-        value: val,
+        value: `{{${val}}}`,
       }));
 
     // Filter custom dimensions to only those selected
     const customDimensionOptions: Array<ComboboxOption<string>> = (state.customDimensions || [])
-      .filter((dim: AliasByComboboxOption<string>) => selectedDimensionValues.includes(dim.originalValue))
-      .map((dim: AliasByComboboxOption<string>) => ({
-        label: `${dim.label} ($tag_${dim.originalValue})`,
-        value: `$tag_${dim.originalValue}`,
-      }));
+      .filter((dim: AliasByComboboxOption<string>): dim is AliasByComboboxOption<string> & { originalValue: string } => 
+         typeof dim.originalValue === 'string' && selectedDimensionValues.includes(dim.originalValue))
+      .map((dim) => {
+        const originalVal = dim.originalValue;
+        const isVariable = originalVal.startsWith('$');
+        const value = isVariable ? originalVal : `{{${originalVal}}}`;
+        const labelText = dim.label || originalVal;
+        const label = isVariable ? labelText : `${labelText} (${value})`;
+        return {
+          label,
+          value,
+        };
+      });
 
     // Add $col option for metric name
     const metricOption: ComboboxOption<string> = {
@@ -490,12 +498,21 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         }
 
         if (removedField && addedField) {
-          const getTag = (field: string) => field.startsWith('$') ? field : `$tag_${field}`;
-          const oldTag = getTag(removedField);
+          // Determine the target tag for the new field
+          const getTag = (field: string) => `{{${field}}}`;
           const newTag = getTag(addedField);
-          if (newAliasBy.includes(oldTag)) {
-            newAliasBy = newAliasBy.split(oldTag).join(newTag);
-          }
+
+          // Try replacing both legacy ($tag_) and new ({{}}) formats
+          const oldTags = [
+            removedField.startsWith('$') ? removedField : `$tag_${removedField}`, // Legacy/Variable
+            `{{${removedField}}}` // Handlebars
+          ];
+
+          oldTags.forEach(oldTag => {
+            if (newAliasBy.includes(oldTag)) {
+              newAliasBy = newAliasBy.split(oldTag).join(newTag);
+            }
+          });
         }
 
         if (removedText && addedText) {
@@ -529,13 +546,13 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 
   // Find the current "$..." token being typed at cursor position
   const findCurrentToken = (value: string, cursorPos: number): { token: string; start: number } | null => {
-    // Look backwards from cursor to find a $ that starts a token
+    // Look backwards from cursor to find a $ or { that starts a token
     let start = cursorPos - 1;
-    while (start >= 0 && value[start] !== '$' && value[start] !== ' ') {
+    while (start >= 0 && value[start] !== '$' && value[start] !== '{' && value[start] !== ' ') {
       start--;
     }
 
-    if (start >= 0 && value[start] === '$') {
+    if (start >= 0 && (value[start] === '$' || value[start] === '{')) {
       const token = value.slice(start, cursorPos);
       return { token, start };
     }
@@ -1014,10 +1031,26 @@ const DimensionsSuggestionComponent = (props: DimensionsSuggestionComponentProps
     return null;
   }
 
-  const filteredSuggestions = aliasTagOptions.filter(opt =>
-    opt.value?.toLowerCase().includes(aliasSuggestionFilter) ||
-    opt.label?.toLowerCase().includes(aliasSuggestionFilter)
-  );
+  const filterText = aliasSuggestionFilter.toLowerCase();
+  const search = (filterText.startsWith('$') || filterText.startsWith('{'))
+    ? filterText.replace(/^[\${]+/, '')
+    : filterText;
+
+  const filteredSuggestions = aliasTagOptions.filter(opt => {
+    const val = opt.value?.toLowerCase() || '';
+    const lbl = opt.label?.toLowerCase() || '';
+
+    // Standard "includes"
+    if (val.includes(filterText) || lbl.includes(filterText)) {
+      return true;
+    }
+
+    // Loose match for $ or { triggers: if user triggers suggestions, match against the content
+    if (search === '') {
+      return true; 
+    }
+    return val.includes(search) || lbl.includes(search);
+  });
 
   return (
     <div style={{

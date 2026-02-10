@@ -41,13 +41,14 @@ export function getMaxRefreshInterval(query: any) {
 }
 
 export class KentikProxy {
-  cache = localforage.createInstance({
-    name: "kentikCache"
-  });
+  cache: ReturnType<typeof localforage.createInstance>;
   cacheUpdateInterval: number;
   requestCachingIntervals: { '1d': number };
 
-  constructor(private kentikAPISrv: KentikAPI) {
+  constructor(private kentikAPISrv: KentikAPI, uid?: string) {
+    this.cache = localforage.createInstance({
+      name: `kentikCache${uid ? `-${uid}` : ''}`
+    });
     this.cacheUpdateInterval = 5 * 60 * 1000; // 5 min by default
     this.requestCachingIntervals = {
       '1d': 0,
