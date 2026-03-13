@@ -1,50 +1,31 @@
-<!-- This README file is going to be the one displayed on the Grafana.com website for your plugin. Uncomment and replace the content here before publishing.
+# Kentik for Grafana
 
-Remove any remaining comments before publishing as these may be displayed on Grafana.com -->
+The Kentik datasource plugin allows you to query the Kentik API and visualize network traffic data directly in Grafana. It leverages the **Kentik Network Observability Platform** to provide real-time, Internet-scale ingest and querying of network data including flow records (NetFlow, IPFIX, sFlow), BGP, GeoIP, and SNMP.
 
-# Kentik Connect Pro
-
-<!-- To help maximize the impact of your README and improve usability for users, we propose the following loose structure:
-
-**BEFORE YOU BEGIN**
-- Ensure all links are absolute URLs so that they will work when the README is displayed within Grafana and Grafana.com
-- Be inspired ✨
-  - [grafana-polystat-panel](https://github.com/grafana/grafana-polystat-panel)
-  - [volkovlabs-variable-panel](https://github.com/volkovlabs/volkovlabs-variable-panel)
-
-**ADD SOME BADGES**
-
-Badges convey useful information at a glance for users whether in the Catalog or viewing the source code. You can use the generator on [Shields.io](https://shields.io/badges/dynamic-json-badge) together with the Grafana.com API
-to create dynamic badges that update automatically when you publish a new version to the marketplace.
-
-- For the URL parameter use `https://grafana.com/api/plugins/your-plugin-id`.
-- Example queries:
-  - Downloads: `$.downloads`
-  - Catalog Version: `$.version`
-  - Grafana Dependency: `$.grafanaDependency`
-  - Signature Type: `$.versionSignatureType`
-- Optionally, for the logo parameter use `grafana`.
-
-Full example: ![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?logo=grafana&query=$.version&url=https://grafana.com/api/plugins/grafana-polystat-panel&label=Marketplace&prefix=v&color=F47A20)
-
-Consider other [badges](https://shields.io/badges) as you feel appropriate for your project.
-
-## Overview / Introduction
-Provide one or more paragraphs as an introduction to your plugin to help users understand why they should use it.
-
-Consider including screenshots:
-- in [plugin.json](https://grafana.com/developers/plugin-tools/reference/plugin-json#info) include them as relative links.
-- in the README ensure they are absolute URLs.
+The plugin provides instant access to the **Kentik Data Engine (KDE)**, enabling you to seamlessly integrate network activity metrics into your Grafana dashboards.
 
 ## Requirements
-List any requirements or dependencies they may need to run the plugin.
+
+- A Grafana instance (v10.4 or later)
+- An active **Kentik account** with API access
+- Devices registered in the Kentik portal
 
 ## Getting Started
-Provide a quick start on how to configure and use the plugin.
+
+1. Navigate to **Data Sources** in Grafana.
+2. Add **Kentik**.
+3. Select the appropriate **Region** (US, EU, or Custom).
+4. Enter your Kentik **Email** and **API Token**.
+5. Click **Save & Test** to verify connectivity.
+
+## Features
+
+- **Granular Visibility**: View traffic by time range, devices, sites, and over 200 dimensions across 20+ categories.
+- **Multi-Select Support**: Select multiple sites, devices, and up to 8 dimensions simultaneously.
+- **NMS / SNMP Support**: Query SNMP device and interface metrics alongside traditional flow data.
+- **Smart Labeling**: Customize graph legends using Alias and Prefix fields with autocomplete (e.g., `{{Source Interface}}`, `$col`, `$metric_group`).
+- **Drilldown Workflows**: Deep-link URLs to the Kentik Portal for detailed investigation.
 
 ## Documentation
-If your project has dedicated documentation available for users, provide links here. For help in following Grafana's style recommendations for technical documentation, refer to our [Writer's Toolkit](https://grafana.com/docs/writers-toolkit/).
 
-## Contributing
-Do you want folks to contribute to the plugin or provide feedback through specific means? If so, tell them how!
--->
+For more information, visit [Kentik Documentation](https://kb.kentik.com/).

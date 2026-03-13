@@ -33,15 +33,15 @@ export const DescriptionPanel: FC<Props> = (props) => {
 
     async function getKentikUid() {
         const dsList = await getDataSourceSrv().getList();
-        const kentikDs = dsList.find((ds) => ds.type === 'kentikconnectpro-datasource');
+        const kentikDs = dsList.find((ds) => ds.type === 'kentik-datasource');
         return kentikDs?.uid || '';
     }
 
     return (
         <div>
-            <img className={styles.image} src={`public/plugins/kentikconnectpro-datasource/img/kentik_logo.png`} />
+            <img className={styles.image} src={`public/plugins/kentik-datasource/img/kentik_logo.png`} />
             <p>
-                Kentik Connect Pro for Grafana allows you to quickly and easily add network activity visibility metrics to your
+                Kentik for Grafana allows you to quickly and easily add network activity visibility metrics to your
                 Grafana dashboard. By leveraging the power of Kentik’s monitoring SaaS, you can enjoy rich, actionable insights
                 into consumers of network bandwidth and anomalies that can affect application or service performance.
             </p>
@@ -50,7 +50,7 @@ export const DescriptionPanel: FC<Props> = (props) => {
                     <div>Complete:</div>
                     <Stack direction="row">
                         <i className={styles.successIcon + ' icon-gf icon-gf-check'}></i>
-                        <span className={styles.successLine}>Install Kentik Connect for Grafana.</span>
+                        <span className={styles.successLine}>Install Kentik for Grafana.</span>
                     </Stack>
                     {state.devices.length > 0 && (
                         <Stack direction="row">

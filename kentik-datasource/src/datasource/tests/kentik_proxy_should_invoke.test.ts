@@ -27,7 +27,7 @@ describe('KentikProxy.shouldInvoke', () => {
     });
 
     it('returns true when there is no cached entry', async () => {
-        jest.spyOn(proxy.cache, 'getItem').mockResolvedValue(null); // brak cache
+        jest.spyOn(proxy.cache, 'get').mockReturnValue(undefined);
         const result = await proxy.shouldInvoke(baseQuery);
         expect(result).toBe(true);
     });
@@ -43,7 +43,7 @@ describe('KentikProxy.shouldInvoke', () => {
             data: { ok: true },
         };
 
-        jest.spyOn(proxy.cache, 'getItem').mockResolvedValue(cachedQuery);
+        jest.spyOn(proxy.cache, 'get').mockReturnValue(cachedQuery);
 
         // current time = ending_time + 1s
         (getUTCTimestamp as jest.Mock).mockReturnValue(Date.parse(baseQuery.ending_time) + 1000);
@@ -61,7 +61,7 @@ describe('KentikProxy.shouldInvoke', () => {
             data: {},
         };
 
-        jest.spyOn(proxy.cache, 'getItem').mockResolvedValue(cachedQuery);
+        jest.spyOn(proxy.cache, 'get').mockReturnValue(cachedQuery);
 
         // current time = ending_time + 2h
         (getUTCTimestamp as jest.Mock).mockReturnValue(Date.parse(baseQuery.ending_time) + 2 * 3600 * 1000);
@@ -79,7 +79,7 @@ describe('KentikProxy.shouldInvoke', () => {
             data: {},
         };
 
-        jest.spyOn(proxy.cache, 'getItem').mockResolvedValue(cachedQuery);
+        jest.spyOn(proxy.cache, 'get').mockReturnValue(cachedQuery);
 
         // changed query range: 3h instead of 1h
         const modifiedQuery = {
@@ -101,7 +101,7 @@ describe('KentikProxy.shouldInvoke', () => {
             data: {},
         };
 
-        jest.spyOn(proxy.cache, 'getItem').mockResolvedValue(cachedQuery);
+        jest.spyOn(proxy.cache, 'get').mockReturnValue(cachedQuery);
 
         const modifiedQuery = {
             starting_time: '2024-12-31T23:00:00Z', // start earlier

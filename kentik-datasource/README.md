@@ -1,19 +1,20 @@
-# Kentik Connect Pro for Grafana
+# Kentik for Grafana
 
-Kentik Connect Pro allows you to query the Kentik API and visualize network traffic data directly in Grafana. It leverages the power of **Kentik Detect** to provide real-time, Internet-scale ingest and querying of network data including flow records (NetFlow, IPFIX, sFlow), BGP, GeoIP, and SNMP.
+The Kentik datasource plugin allows you to query the Kentik API and visualize network traffic data directly in Grafana. It leverages the **Kentik Network Observability Platform** to provide real-time, Internet-scale ingest and querying of network data including flow records (NetFlow, IPFIX, sFlow), BGP, GeoIP, and SNMP.
 
 The plugin provides instant access to the **Kentik Data Engine (KDE)**, enabling you to seamlessly integrate network activity metrics into your Grafana dashboards with improved performance and flexibility.
 
 ## Features
 
-* **Granular Visibility**: View traffic by time range, devices, sites, and over 30 source/destination dimensions.
+* **Granular Visibility**: View traffic by time range, devices, sites, and over 200 dimensions across 20+ categories (interfaces, routing, cloud, SNMP, and more).
 * **Multi-Select Support**: Select multiple sites, devices, and up to 8 dimensions simultaneously for complex queries.
-* **Smart Labeling**: Customize graph legends using the **Alias** and **Prefix** fields with intelligent autocomplete (e.g., `{{Source Interface}}` or `$tag_...`).
+* **NMS / SNMP Support**: Query SNMP device and interface metrics alongside traditional flow data.
+* **Smart Labeling**: Customize graph legends using the **Alias** and **Prefix** fields with intelligent autocomplete (e.g., `{{Source Interface}}`, `$col`, `$metric_group`).
 * **Drilldown Workflows**: Automatically generates deep-link URLs to the Kentik Portal for detailed investigation of specific data points.
 * **High Performance**: Integrated caching ensures fast dashboard loading and responsive query building.
 * **Flexible Visualization**:
   * Control the number of returned results with **Visualization Depth**.
-  * View Max, 95th percentile, and Average values in sortable tables.
+  * View Max, 95th Percentile, and Average values in sortable tables.
 
 ## Configuration
 
@@ -21,25 +22,25 @@ The plugin provides instant access to the **Kentik Data Engine (KDE)**, enabling
 
 To enable the datasource:
 
-
 1. Navigate to **Data Sources** in Grafana.
-2. Add **Kentik Connect Pro**.
-3. Enter your Kentik **Email** and **API Token**.
-4. Click **Save & Test** to verify connectivity.
+2. Add **Kentik**.
+3. Select the appropriate **Region** (US, EU, or Custom).
+4. Enter your Kentik **Email** and **API Token**.
+5. Click **Save & Test** to verify connectivity.
 
 ### Terminology
 
-* **Dimensions** (formerly Metric): Attributes used to segment data (e.g., Device, Site, Interface).
-* **Metric** (formerly Unit): The numerical value being measured (e.g., Bits/s, Packets/s).
+* **Dimensions**: Attributes used to segment data (e.g., Device, Site, Interface, Source IP).
+* **Metric**: The numerical value being measured (e.g., Bits/s, Packets/s, Retransmits).
 
 ## External Dependencies
 
 * **Kentik Account**: An active Kentik account and API key are required.
-* **Device Registration**: Devices must be configured in Kentik Detect to appear in the plugin.
+* **Device Registration**: Devices must be registered in the Kentik portal to appear in the plugin.
 
 ## Development
 
-This project requires **Node.js v22.17.0** or higher and **Docker**.
+This project requires **Node.js v22** or higher and **Docker**.
 
 1.  **Install dependencies**:
     ```bash
@@ -65,33 +66,41 @@ This project requires **Node.js v22.17.0** or higher and **Docker**.
     ```
 
 ## Build
-To produce a build of the plugin you will need Docker. If you want to build locally without Docker then you can reference the Dockerfile for the required dependencies.
 
-To create a local package, use make:
-
-*Note: you will need to have a Grafana API Key in order to create a build as the package is signed.*
+To produce a development build:
 
 ```bash
-make GRAFANA_API_KEY=$GRAFANA_API_KEY
+npm run build
 ```
 
-If the build succeeds, it will produce an archive named `kentik-connect-app-dev.zip`.
+### Signed Build
 
-To specify a version, use the `VERSION` environment variable:
+To build, sign, and package the plugin for distribution, use the signing script. A **Grafana API key** is required:
 
 ```bash
-make GRAFANA_API_KEY=$GRAFANA_API_KEY VERSION=1.5.0
+GRAFANA_API_KEY=<your-key> ./scripts/build-signed.sh
 ```
 
-This will produce an archive named `kentik-connect-app-1.5.0.zip`.
+This produces `kentik-datasource-dev.zip`.
 
-To add extra signing arguments use the `SIGN_ARGS` environment variable. For example, to specify a private archive for use on the `https://grafana-test.kentiklabs.com` domain:
+To specify a version:
 
 ```bash
-make GRAFANA_API_KEY=$GRAFANA_API_KEY SIGN_ARGS="--rootUrls https://grafana-test.kentiklabs.com"
+GRAFANA_API_KEY=<your-key> ./scripts/build-signed.sh --version 1.5.0
+```
+
+This produces `kentik-datasource-1.5.0.zip`.
+
+To restrict signing to a specific Grafana instance:
+
+```bash
+GRAFANA_API_KEY=<your-key> ./scripts/build-signed.sh --root-urls https://grafana-test.kentiklabs.com
 ```
 
 ## Useful links
-Grafana docs about Docker installation: https://docs.grafana.org/installation/docker/#installing-plugins-from-other-sources
+
+- [Grafana plugin development](https://grafana.com/developers/plugin-tools/)
+- [Kentik Documentation](https://kb.kentik.com/)
+- [Grafana Docker installation](https://docs.grafana.org/installation/docker/#installing-plugins-from-other-sources)
 
 

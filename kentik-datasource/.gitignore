@@ -30,9 +30,13 @@ Thumbs.db
 # Environment and Secrets
 .env
 .env.*
+!.env.example
 .credentials
 *.pem
 *.key
+
+# Node version manager
+.nvmrc
 
 # yarn
 .yarn/cache

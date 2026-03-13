@@ -13,8 +13,22 @@ const REGION_OPTIONS: Array<SelectableValue<Region>> = [
   { label: 'Custom', value: Region.CUSTOM },
 ];
 
-const DEFAULT_URL = { v6: 'https://grpc.api.kentik.com', v5: 'https://api.kentik.com' };
-const EU_URL = { v6: 'https://grpc.api.kentik.eu', v5: 'https://api.kentik.eu' };
+const DEFAULT_URL: Url = { v6: 'https://grpc.api.kentik.com', v5: 'https://api.kentik.com' };
+const EU_URL: Url = { v6: 'https://grpc.api.kentik.eu', v5: 'https://api.kentik.eu' };
+
+/** Derive the Kentik API URLs from the selected region. Pure function so it can
+ *  be used both during state initialisation and inside event handlers. */
+function getUrlByRegion(region: Region | undefined, dynamicUrl?: string): Url {
+  switch (region) {
+    case Region.EU:
+      return EU_URL;
+    case Region.CUSTOM:
+      return { v6: dynamicUrl || '', v5: dynamicUrl || '' };
+    case Region.DEFAULT:
+    default:
+      return DEFAULT_URL;
+  }
+}
 
 type State = Required<JsonData> & {
   token: string;
@@ -32,7 +46,7 @@ export function ConfigEditor(props: Props) {
   const { jsonData, secureJsonFields } = options;
 
   const [state, setState] = useState<State>({
-    url: DEFAULT_URL,
+    url: jsonData?.url || getUrlByRegion(jsonData?.region, jsonData?.dynamicUrl),
     email: jsonData?.email || '',
     region: jsonData?.region || Region.DEFAULT,
     dynamicUrl: jsonData?.dynamicUrl || '',
@@ -55,21 +69,14 @@ export function ConfigEditor(props: Props) {
   };
 
   const _getUrlByRegion = (region?: Region): Url => {
-    switch (region) {
-      case Region.DEFAULT:
-        return DEFAULT_URL;
-      case Region.EU:
-        return EU_URL;
-      case Region.CUSTOM:
-        return { v6: state.dynamicUrl, v5: state.dynamicUrl };
-      default:
-        throw new Error(`Unknown region type: "${region}"`);
-    }
+    return getUrlByRegion(region, state.dynamicUrl);
   };
 
   const onChangeEmail = (e: ChangeEvent<HTMLInputElement>) => setState({ ...state, email: e.target.value.trim() });
-  const onChangeCustomUrl = (e: ChangeEvent<HTMLInputElement>) =>
-    setState({ ...state, dynamicUrl: e.target.value.trim(), url: _getUrlByRegion(Region.CUSTOM) });
+  const onChangeCustomUrl = (e: ChangeEvent<HTMLInputElement>) => {
+    const newUrl = e.target.value.trim();
+    setState({ ...state, dynamicUrl: newUrl, url: getUrlByRegion(Region.CUSTOM, newUrl) });
+  };
   const onChangeRegion = (region: Region) => setState({ ...state, region, url: _getUrlByRegion(region), dynamicUrl: '' });
   const onChangeToken = (e: ChangeEvent<HTMLInputElement>) => setState({ ...state, token: e.target.value.trim() });
   const onResetToken = () =>
@@ -100,31 +107,50 @@ export function ConfigEditor(props: Props) {
     return true;
   };
 
+  const [saving, setSaving] = useState(false);
+
   const saveSettings = async () => {
-    const optionsFormValues = {
-      name: options.name,
-      isDefault: options.isDefault,
-      jsonData: {
-        ...options.jsonData,
-        url: state.url,
-        email: state.email,
-        region: state.region,
-        dynamicUrl: state.dynamicUrl,
-        tokenSet: !!state.token,
-      },
-      secureJsonData: state.tokenSet ? undefined : { token: state.token }
+    if (saving) {
+      return;
     }
+    setSaving(true);
+
+    const updatedJsonData = {
+      ...options.jsonData,
+      url: state.url,
+      email: state.email,
+      region: state.region,
+      dynamicUrl: state.dynamicUrl,
+      tokenSet: !!state.token || state.tokenSet,
+    };
+
+    // Build a minimal payload – only the fields the PUT endpoint needs.
+    // Setting version to 0 tells Grafana to skip the optimistic-lock check,
+    // which avoids 409 conflicts caused by provisioning version drift.
+    const payload: Record<string, any> = {
+      name: options.name,
+      type: options.type,
+      access: options.access,
+      uid: options.uid,
+      jsonData: updatedJsonData,
+      version: 0,
+      ...(state.token ? { secureJsonData: { token: state.token } } : {}),
+    };
 
     try {
-      onOptionsChange({
-        ...options,
-        ...optionsFormValues
-      });
+      await getBackendSrv().put(`/api/datasources/${options.id}`, payload);
+
+      // Keep the parent form state in sync
+      onOptionsChange({ ...options, jsonData: updatedJsonData });
+
       showCustomAlert('Settings saved!', '', 'success');
       setTimeout(() => window.location.reload(), 800);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to save datasource config:', err);
-      showCustomAlert('Error saving settings', '', 'error');
+      const msg = err?.data?.message || 'Unknown error';
+      showCustomAlert(`Error saving settings: ${msg}`, '', 'error');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -187,10 +213,10 @@ export function ConfigEditor(props: Props) {
         <div className={s.marginTop}>
           <Button
             type="submit"
-            disabled={isSubmitDisabled}
+            disabled={isSubmitDisabled || saving}
             onClick={saveSettings}
           >
-            Save API settings
+            {saving ? 'Saving…' : 'Save API settings'}
           </Button>
         </div>
       </FieldSet>

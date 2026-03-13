@@ -1,39 +1,12 @@
-import { ALL_SITES_LABEL, DataSource } from './DataSource';
+import { ALL_DEVICES_LABEL, ALL_SITES_LABEL, DataSource } from './DataSource';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
-import { Stack, Input, Button, Field, Label, Combobox, ComboboxOption, MultiSelect, FieldValidationMessage } from '@grafana/ui';
+import { Stack, Input, Button, Field, Label, Combobox, ComboboxOption, MultiCombobox, FieldValidationMessage } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
 import { DataQuery } from '@grafana/schema';
 import React, { useEffect, useState, useRef } from 'react';
 import _ from 'lodash';
-import { dimensionList } from './metric_def';
-
-// function getMetricType(metrics: SelectableValue[], selectedMetric: SelectableValue): METRIC_TYPE | undefined {
-//   if (selectedMetric === undefined) {
-//     return undefined;
-//   }
-
-//   const metricType = metrics.find((metric) => {
-//     return metric.label === selectedMetric.group
-//   });
-
-//   return metricType?.type;
-// }
-
-// function excludeContraryMetricTypes(metrics: SelectableValue[], currentMetrics: SelectableValue[]) {
-//   if (currentMetrics === undefined || currentMetrics === null || currentMetrics.length === 0) {
-//     return metrics;
-//   }
-
-//   const metricType = getMetricType(metrics, currentMetrics[0]);
-
-//   if (metricType === undefined) {
-//     return metrics;
-//   }
-
-//   return metrics.filter((metric) => {
-//     return metric.type === metricType;
-//   })
-// }
+import { dimensionList, DimensionCategory } from './metric_def';
+import { DimensionClass } from './metric_types';
 
 export interface Query extends DataQuery {
   mode: DataMode;
@@ -126,7 +99,7 @@ function appendVariableIfExists(options: QueryItem[], variableName: string): Que
   return options;
 }
 
-const OBLIGATORY_FIELDS_NAMES = ['sites', 'devices', 'dimension', 'metric'];
+const OBLIGATORY_FIELDS_NAMES = ['sites', 'dimension', 'metric'];
 
 export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
   _.defaults(props.query, DEFAULT_QUERY);
@@ -145,10 +118,10 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
   };
 
   const [state, setState] = useState({
-    sites: [] as Array<SelectableValue<string>>,
-    devices: [] as Array<SelectableValue<string>>,
-    dimensions: [] as Array<SelectableValue<string>>,
-    metrics: [] as Array<SelectableValue<string>>,
+    sites: [] as Array<ComboboxOption<string>>,
+    devices: [] as Array<ComboboxOption<string>>,
+    dimensions: [] as Array<ComboboxOption<string>>,
+    metrics: [] as Array<ComboboxOption<string>>,
     tagKeys: [] as Array<ComboboxOption<string>>,
     tagValues: [] as Array<Array<ComboboxOption<string>>>,
     operators: getOperators(),
@@ -163,6 +136,19 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     activeSuggestionField: null as 'aliasBy' | 'prefix' | null,
     activeSuggestionIndex: 0,
   });
+
+  // Local state for text inputs — updated on every keystroke for a responsive UI
+  // but only committed to the query (props.onChange) on blur / Enter so the
+  // dashboard isn't marked dirty until the user finishes editing.
+  const [localAliasBy, setLocalAliasBy] = useState(props.query.aliasBy || '');
+  const [localPrefix, setLocalPrefix] = useState(props.query.prefix || '');
+  const [localTopx, setLocalTopx] = useState(props.query.topx ?? '');
+
+  // Keep local state in sync when the query changes externally
+  // (e.g. dimension swap updating aliasBy, or dashboard variable refresh)
+  useEffect(() => { setLocalAliasBy(props.query.aliasBy || ''); }, [props.query.aliasBy]);
+  useEffect(() => { setLocalPrefix(props.query.prefix || ''); }, [props.query.prefix]);
+  useEffect(() => { setLocalTopx(props.query.topx ?? ''); }, [props.query.topx]);
   const [errorState, setErrorState] = useState<Record<string, string>>({
     sites: '',
     devices: '',
@@ -213,28 +199,133 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     return [];
   };
 
-  // Update alias tag options when dimensions change - only show selected dimensions
+  // Update alias tag options when dimensions or metrics change
   useEffect(() => {
+    const templateSrv = getTemplateSrv();
     const selectedDimensions = ensureArray(props.query.dimension);
     const selectedDimensionValues = selectedDimensions.map((d: SelectableValue<string>) => d.value);
 
-    // Filter standard dimensions to only those selected
+    // Determine query type from selected dimensions
+    const hasSnmpDims = selectedDimensionValues.some(
+      (v): v is string => typeof v === 'string' && v.startsWith('ktappprotocol__')
+    );
+    const isFlowQuery = !hasSnmpDims;
+
+    // For SNMP queries, extract the protocol prefix so we can build
+    // SNMP-compatible common field suggestions.
+    // e.g. "ktappprotocol__snmp_device_metrics__i_device_site_name"
+    //    → prefix = "ktappprotocol__snmp_device_metrics__"
+    let snmpProtocolPrefix: string | null = null;
+    if (hasSnmpDims) {
+      const snmpDim = selectedDimensionValues.find(
+        (v): v is string => typeof v === 'string' && v.startsWith('ktappprotocol__')
+      );
+      if (snmpDim) {
+        const lastSep = snmpDim.lastIndexOf('__');
+        snmpProtocolPrefix = lastSep > 0 ? snmpDim.slice(0, lastSep + 2) : null;
+      }
+    }
+
+    // ── Built-in tokens ────────────────────────────────────────────────────
+    const builtInOptions: Array<ComboboxOption<string>> = [
+      { label: 'Aggregate function ($col)', value: '$col', description: 'e.g. "95th Percentile"', group: 'Built-in' },
+      { label: 'Metric group ($metric_group)', value: '$metric_group', description: 'e.g. "SNMP Device CPU (%)"', group: 'Built-in' },
+    ];
+
+    // ── Common Fields (context-aware) ──────────────────────────────────────
+    // For flow queries: show standard flow common fields that can be injected.
+    // For SNMP queries: show SNMP-compatible device/site fields from the same
+    // protocol family.  Only options that resolve to valid dimensionList
+    // entries are included.
+    let commonFieldOptions: Array<ComboboxOption<string>> = [];
+
+    if (isFlowQuery) {
+      // Standard flow common fields — all injectable via extractAliasDimensions
+      commonFieldOptions = [
+        { label: 'Device ({{device}})', value: '{{device}}', group: 'Common Fields' },
+        { label: 'Site ({{site}})', value: '{{site}}', group: 'Common Fields' },
+        { label: 'Application ({{application}})', value: '{{application}}', group: 'Common Fields' },
+        { label: 'Protocol ({{Proto}})', value: '{{Proto}}', group: 'Common Fields' },
+        { label: 'Source IP/CIDR ({{IP_src}})', value: '{{IP_src}}', group: 'Common Fields' },
+        { label: 'Destination IP/CIDR ({{IP_dst}})', value: '{{IP_dst}}', group: 'Common Fields' },
+        { label: 'Source AS Number ({{AS_src}})', value: '{{AS_src}}', group: 'Common Fields' },
+        { label: 'Destination AS Number ({{AS_dst}})', value: '{{AS_dst}}', group: 'Common Fields' },
+      ];
+    } else if (snmpProtocolPrefix) {
+      // SNMP/ST: build common fields from the same protocol family
+      const snmpCommon: Array<{ label: string; suffix: string }> = [
+        { label: 'Device', suffix: 'i_device_name' },
+        { label: 'Site', suffix: 'i_device_site_name' },
+      ];
+      for (const item of snmpCommon) {
+        const dimValue = snmpProtocolPrefix + item.suffix;
+        const dim = dimensionList.find((d) => d.value === dimValue);
+        if (dim) {
+          commonFieldOptions.push({
+            label: `${item.label} ({{${dim.field}}})`,
+            value: `{{${dim.field}}}`,
+            group: 'Common Fields',
+          });
+        }
+      }
+    }
+
+    // Track covered values for deduplication
+    const coveredValues = new Set([
+      ...builtInOptions.map((o) => o.value),
+      ...commonFieldOptions.map((o) => o.value),
+    ]);
+
+    // ── Selected dimensions (standard) ─────────────────────────────────────
     const standardDimensionOptions: Array<ComboboxOption<string>> = dimensionList
       .filter((dim) => selectedDimensionValues.includes(dim.value))
+      .filter((dim) => !coveredValues.has(`{{${dim.field}}}`))
       .map((dim) => ({
         label: `${dim.text} ({{${dim.field}}})`,
         value: `{{${dim.field}}}`,
+        group: 'Dimensions',
       }));
 
-    // Add options for variables selected in Dimensions
+    // ── Variables used as dimensions ────────────────────────────────────────
     const variableDimensionOptions: Array<ComboboxOption<string>> = selectedDimensionValues
       .filter((val): val is string => !!(val && val.startsWith('$')))
       .map((val) => ({
         label: val,
         value: `{{${val}}}`,
+        group: 'Dimensions',
       }));
 
-    // Filter custom dimensions to only those selected
+    // ── Injectable dimensions ──────────────────────────────────────────────
+    // Show additional dimensions that are compatible with the current query
+    // type and can be auto-injected.  For flow queries: other flow dimensions
+    // (excluding already-selected and common fields).  For SNMP: other
+    // dimensions from the same protocol family.
+    const allCoveredValues = new Set([
+      ...Array.from(coveredValues),
+      ...standardDimensionOptions.map((o) => o.value),
+    ]);
+    let injectableDimensionOptions: Array<ComboboxOption<string>> = [];
+    if (isFlowQuery) {
+      injectableDimensionOptions = dimensionList
+        .filter((dim) => !dim.class || dim.class === DimensionClass.FLOW)
+        .filter((dim) => !allCoveredValues.has(`{{${dim.field}}}`))
+        .map((dim) => ({
+          label: `${dim.text} ({{${dim.field}}})`,
+          value: `{{${dim.field}}}`,
+          group: 'More Dimensions',
+        }));
+    } else if (snmpProtocolPrefix) {
+      injectableDimensionOptions = dimensionList
+        .filter((dim) => dim.value.startsWith(snmpProtocolPrefix!))
+        .filter((dim) => !allCoveredValues.has(`{{${dim.field}}}`))
+        .map((dim) => ({
+          label: `${dim.text} ({{${dim.field}}})`,
+          value: `{{${dim.field}}}`,
+          group: 'More Dimensions',
+        }));
+    }
+
+    // ── Custom dimensions ──────────────────────────────────────────────────
     const customDimensionOptions: Array<ComboboxOption<string>> = (state.customDimensions || [])
       .filter((dim: AliasByComboboxOption<string>): dim is AliasByComboboxOption<string> & { originalValue: string } => 
          typeof dim.originalValue === 'string' && selectedDimensionValues.includes(dim.originalValue))
@@ -247,16 +338,35 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         return {
           label,
           value,
+          group: 'Dimensions',
         };
       });
 
-    // Add $col option for metric name
-    const metricOption: ComboboxOption<string> = {
-      label: 'Metric name ($col)',
-      value: '$col',
-    };
+    // ── Grafana dashboard variables ────────────────────────────────────────
+    const dimensionVarNames = new Set(
+      selectedDimensionValues
+        .filter((val): val is string => !!(val && val.startsWith('$')))
+        .map((val) => val)
+    );
+    const grafanaVariableOptions: Array<ComboboxOption<string>> = templateSrv
+      .getVariables()
+      .filter((v: any) => !dimensionVarNames.has(`$${v.name}`))
+      .map((v: any) => ({
+        label: `$${v.name}`,
+        value: `$${v.name}`,
+        description: v.label || v.description || undefined,
+        group: 'Dashboard Variables',
+      }));
 
-    const aliasTagOptions = [metricOption, ...standardDimensionOptions, ...variableDimensionOptions, ...customDimensionOptions];
+    const aliasTagOptions = [
+      ...builtInOptions,
+      ...commonFieldOptions,
+      ...standardDimensionOptions,
+      ...variableDimensionOptions,
+      ...injectableDimensionOptions,
+      ...customDimensionOptions,
+      ...grafanaVariableOptions,
+    ];
 
     setState(prevState => ({
       ...prevState,
@@ -350,14 +460,16 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 
     let options: Array<ComboboxOption<string>> = [];
     if (isGrouped) {
-      options = result.map((group: any) => ({
-        label: group.label,
-        options: group.options.map((opt: any) => ({
-          label: opt.text || opt.label,
+      options = result.flatMap((group: any) =>
+        (group.options || []).map((opt: any) => ({
+          ...opt,
+          label: `${group.label} / ${opt.text || opt.label}`,
           value: opt.value,
-          ...opt
+          description: group.label,
+          group: group.label,
+          compatibleCategory: group.compatibleCategory,
         }))
-      }));
+      );
     } else {
       options = result.map((item: any) => ({
         label: item.text || item.label,
@@ -419,6 +531,11 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
   };
 
   const onOptionChange = (field: keyof Query, value: string) => {
+    // Update local state only — committed to the query on blur
+    if (field === 'topx') {
+      setLocalTopx(value);
+      return;
+    }
     const query = _.cloneDeep(props.query);
     //@ts-ignore
     query[field] = value;
@@ -448,12 +565,15 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 
   const onTopXBlur = () => {
     const query = _.cloneDeep(props.query);
+    // Commit local topx value
+    query.topx = localTopx;
     let queryValid = false;
     if (!query.topx || _.toNumber(query.topx) <= 0) {
       query.topx = DEFAULT_TOPX;
-      onQueryChange(query);
-      queryValid = isQueryValid(query);
+      setLocalTopx(DEFAULT_TOPX);
     }
+    onQueryChange(query);
+    queryValid = isQueryValid(query);
     onRunQuery(queryValid);
   };
 
@@ -537,22 +657,28 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     const dimensionLimitReached = query.dimension?.length >= MAX_DIMENSIONS;
     setState({
       ...state,
-      dimensions: state.dimensions.map((dimension: SelectableValue) => ({ ...dimension, isDisabled: dimensionLimitReached })),
+      dimensions: state.dimensions.map((dimension: ComboboxOption<string>) => ({ ...dimension, isDisabled: dimensionLimitReached })),
     });
 
     const queryValid = isQueryValid(query);
     onRunQuery(queryValid);
   }
 
-  // Find the current "$..." token being typed at cursor position
+  // Find the current "$..." or "{{..." token being typed at cursor position
   const findCurrentToken = (value: string, cursorPos: number): { token: string; start: number } | null => {
-    // Look backwards from cursor to find a $ or { that starts a token
+    // Look backwards from cursor to find a $ or { that starts a token.
+    // Stop at `}` (end of a previous token), space, or start-of-value so we
+    // never accidentally swallow an already-completed {{...}} pattern.
     let start = cursorPos - 1;
-    while (start >= 0 && value[start] !== '$' && value[start] !== '{' && value[start] !== ' ') {
+    while (start >= 0 && value[start] !== '$' && value[start] !== '{' && value[start] !== ' ' && value[start] !== '}') {
       start--;
     }
 
     if (start >= 0 && (value[start] === '$' || value[start] === '{')) {
+      // Consume all consecutive opening braces so "{{" is captured as one token start
+      while (start > 0 && value[start - 1] === '{') {
+        start--;
+      }
       const token = value.slice(start, cursorPos);
       return { token, start };
     }
@@ -561,7 +687,8 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 
   const onAliasMouseUp = (e: React.MouseEvent<HTMLInputElement>, field: 'aliasBy' | 'prefix') => {
     const cursorPos = e.currentTarget.selectionStart || 0;
-    const tokenInfo = findCurrentToken(props.query[field], cursorPos);
+    const currentValue = field === 'aliasBy' ? localAliasBy : localPrefix;
+    const tokenInfo = findCurrentToken(currentValue, cursorPos);
     const isCursorAfterTokenStart = tokenInfo && (tokenInfo.start === cursorPos - 1);
 
     if (isCursorAfterTokenStart) {
@@ -587,7 +714,12 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     const newValue = e.currentTarget.value;
     const cursorPos = e.currentTarget.selectionStart || newValue.length;
 
-    onQueryChange({ ...props.query, [field]: newValue });
+    // Update local state only — don't call onQueryChange yet (deferred to blur)
+    if (field === 'aliasBy') {
+      setLocalAliasBy(newValue);
+    } else {
+      setLocalPrefix(newValue);
+    }
 
     // Check if user is typing a $ token
     const tokenInfo = findCurrentToken(newValue, cursorPos);
@@ -618,10 +750,20 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       return;
     }
 
-    const filteredSuggestions = state.aliasTagOptions.filter(opt =>
-      opt.value?.toLowerCase().includes(state.aliasSuggestionFilter) ||
-      opt.label?.toLowerCase().includes(state.aliasSuggestionFilter)
-    );
+    const rawFilter = state.aliasSuggestionFilter.toLowerCase();
+    const strippedFilter = rawFilter.replace(/^[\${]+/, '');
+
+    const filteredSuggestions = state.aliasTagOptions.filter(opt => {
+      const val = opt.value?.toLowerCase() || '';
+      const lbl = opt.label?.toLowerCase() || '';
+      if (val.includes(rawFilter) || lbl.includes(rawFilter)) {
+        return true;
+      }
+      if (strippedFilter === '') {
+        return true;
+      }
+      return val.includes(strippedFilter) || lbl.includes(strippedFilter);
+    });
 
     if (e.key === 'Escape') {
       setState(prev => ({ ...prev, showAliasSuggestions: false, activeSuggestionField: null }));
@@ -657,7 +799,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 
     const field = state.activeSuggestionField;
     const input = field === 'prefix' ? prefixInputRef.current : aliasInputRef.current;
-    const currentValue = props.query[field] || '';
+    const currentValue = field === 'aliasBy' ? localAliasBy : localPrefix;
     const cursorPos = input?.selectionStart || currentValue.length;
 
     // Find the token being completed
@@ -665,14 +807,34 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 
     let newValue: string;
     if (tokenInfo) {
-      // Replace the partial token with the full value
-      newValue = currentValue.slice(0, tokenInfo.start) + option.value + currentValue.slice(cursorPos);
+      // Replace the partial token with the full value.
+      // Also consume any stray leading `{` before the token and trailing `}`
+      // after the cursor to avoid brace duplication (e.g. user types `{` then
+      // picks `{{device}}` from suggestions → without this we'd get `{{{device}}}`).
+      let startPos = tokenInfo.start;
+      let endPos = cursorPos;
+      if (option.value.startsWith('{{')) {
+        while (startPos > 0 && currentValue[startPos - 1] === '{') {
+          startPos--;
+        }
+      }
+      if (option.value.endsWith('}}')) {
+        while (endPos < currentValue.length && currentValue[endPos] === '}') {
+          endPos++;
+        }
+      }
+      newValue = currentValue.slice(0, startPos) + option.value + currentValue.slice(endPos);
     } else {
       // Just append
       newValue = currentValue + option.value;
     }
 
-    onQueryChange({ ...props.query, [field]: newValue });
+    // Update local state — committed to query on blur
+    if (field === 'aliasBy') {
+      setLocalAliasBy(newValue);
+    } else {
+      setLocalPrefix(newValue);
+    }
     setState(prev => ({ ...prev, showAliasSuggestions: false, aliasSuggestionFilter: '', activeSuggestionField: null }));
 
     // Focus back on input
@@ -685,7 +847,12 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     }, 0);
   };
 
-  const onAliasTextBlur = (): void => {
+  const onAliasTextBlur = (field: 'aliasBy' | 'prefix'): void => {
+    // Commit the local text value to the query on blur
+    const localValue = field === 'aliasBy' ? localAliasBy : localPrefix;
+    if (localValue !== (props.query[field] || '')) {
+      onQueryChange({ ...props.query, [field]: localValue });
+    }
     // Delay hiding to allow click on suggestion
     setTimeout(() => {
       setState(prev => ({ ...prev, showAliasSuggestions: false, activeSuggestionField: null }));
@@ -784,9 +951,93 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     };
   }, [props.datasource]);
 
-  // computed values
-  // Removed metric type filtering to allow selecting multiple metrics of different types (e.g. bits and unique IPs)
-  const filteredMetrics = state.metrics; 
+  // ── Dimension ↔ Metric cross-filtering ──────────────────────────────────
+  // NMS categories require matched dimensions and metrics AND specific devices;
+  // flow categories (no compatibleCategory / no category) are always mutually compatible.
+  const NMS_CATEGORIES = new Set<string>([
+    DimensionCategory.SNMP_DEVICE,
+    DimensionCategory.SNMP_INTERFACE,
+    DimensionCategory.ST_INTERFACE,
+  ]);
+
+  const selectedDimensions = ensureArray(props.query.dimension);
+  const selectedMetrics = ensureArray(props.query.metric);
+
+  // Categories present in the currently selected dimensions
+  const selectedDimCategories = new Set(
+    selectedDimensions
+      .map((d) => {
+        const dim = dimensionList.find((dl) => dl.value === d.value);
+        return dim?.category;
+      })
+      .filter(Boolean) as string[]
+  );
+  const hasNmsDim = [...selectedDimCategories].some((c) => NMS_CATEGORIES.has(c));
+  const hasFlowDim = selectedDimensions.length === 0 ||
+    selectedDimensions.some((d) => {
+      const dim = dimensionList.find((dl) => dl.value === d.value);
+      return !dim?.category || !NMS_CATEGORIES.has(dim.category);
+    });
+
+  // compatibleCategory values present in the currently selected metrics
+  const selectedMetricCompat = new Set(
+    selectedMetrics
+      .map((m) => {
+        const opt = state.metrics.find((o: any) => o.value === m.value);
+        return (opt as any)?.compatibleCategory;
+      })
+      .filter(Boolean) as string[]
+  );
+  const hasNmsMetric = [...selectedMetricCompat].some((c) => NMS_CATEGORIES.has(c));
+  const hasFlowMetric = selectedMetrics.length === 0 ||
+    selectedMetrics.some((m) => {
+      const opt = state.metrics.find((o: any) => o.value === m.value);
+      return !(opt as any)?.compatibleCategory;
+    });
+
+  // Grey-out (disable) incompatible metrics based on selected dimensions
+  // AND selected metrics (can't mix flow + NMS metric types).
+  const filteredMetrics = state.metrics.map((metric: any) => {
+    let compatible = true;
+
+    // Dimension-based constraints
+    if (selectedDimensions.length > 0) {
+      if (!metric.compatibleCategory) {
+        compatible = hasFlowDim && !hasNmsDim;
+      } else {
+        compatible = selectedDimCategories.has(metric.compatibleCategory);
+      }
+    }
+
+    // Metric-to-metric constraints: once a metric type is chosen,
+    // disable metrics of incompatible types (flow vs NMS).
+    if (compatible && selectedMetrics.length > 0) {
+      const isNmsMetricOption = metric.compatibleCategory && NMS_CATEGORIES.has(metric.compatibleCategory);
+      if (!isNmsMetricOption) {
+        // This is a flow metric — only compatible if existing selection includes flow
+        compatible = hasFlowMetric && !hasNmsMetric;
+      } else {
+        // This is an NMS metric — only compatible if existing selection matches its category
+        compatible = !hasFlowMetric && (!hasNmsMetric || selectedMetricCompat.has(metric.compatibleCategory));
+      }
+    }
+
+    return compatible ? metric : { ...metric, isDisabled: true };
+  });
+
+  // Grey-out (disable) incompatible dimensions based on selected metrics
+  const filteredDimensions = state.dimensions.map((dim: any) => {
+    let compatible = true;
+    if (selectedMetrics.length > 0) {
+      const isNmsDim = dim.category && NMS_CATEGORIES.has(dim.category);
+      if (!isNmsDim) {
+        compatible = hasFlowMetric && !hasNmsMetric;
+      } else {
+        compatible = selectedMetricCompat.has(dim.category);
+      }
+    }
+    return compatible ? dim : { ...dim, isDisabled: true };
+  });
 
   return (
     <Stack direction="column">
@@ -806,28 +1057,26 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       <Stack direction="row" gap={2} alignItems="flex-start">
         <Field label={<><span>Sites <span style={{ color: 'red' }}>*</span></span></>}>
           <>
-            <MultiSelect
+            <MultiCombobox<string>
               placeholder={state.isLoading ? 'Loading...' : ALL_SITES_LABEL}
-              value={ensureArray(props.query.sites)}
-              disabled={state.isLoading}
+              value={ensureArray(props.query.sites).map((s: SelectableValue) => s.value as string)}
+              loading={state.isLoading}
               options={state.isLoading ? [] : state.sites}
               width={40}
-              hideSelectedOptions={false}
-              onChange={(value) => onSitesSelect(value)}
+              onChange={(value: Array<ComboboxOption<string>>) => onSitesSelect(value)}
             />
             {errorState.sites && <FieldValidationMessage>{errorState.sites}</FieldValidationMessage>}
           </>
         </Field>
-        <Field label={<><span>Devices <span style={{ color: 'red' }}>*</span></span></>}>
+        <Field label="Devices">
           <>
-            <MultiSelect
-              placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
-              disabled={state.isLoading}
-              value={ensureArray(props.query.devices)}
+            <MultiCombobox<string>
+              placeholder={state.isDevicesLoading ? 'Loading...' : ALL_DEVICES_LABEL}
+              loading={state.isDevicesLoading}
+              value={ensureArray(props.query.devices).map((d: SelectableValue) => d.value as string)}
               options={state.devices}
               width={40}
-              hideSelectedOptions={false}
-              onChange={(value) => onDeviceSelect(value)}
+              onChange={(value: Array<ComboboxOption<string>>) => onDeviceSelect(value)}
             />
             {errorState.devices && <FieldValidationMessage>{errorState.devices}</FieldValidationMessage>}
           </>
@@ -836,14 +1085,13 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       <Stack direction="row" gap={2} alignItems="flex-start">
         <Field label={<><span>Dimensions <span style={{ color: 'red' }}>*</span></span></>}>
           <>
-            <MultiSelect
+            <MultiCombobox<string>
               placeholder={'Select...'}
-              disabled={state.isLoading}
-              value={ensureArray(props.query.dimension)}
-              options={state.dimensions}
+              loading={state.isLoading}
+              value={ensureArray(props.query.dimension).map((d: SelectableValue) => d.value as string)}
+              options={filteredDimensions}
               width={40}
-              hideSelectedOptions={false}
-              onChange={(value) => onDimensionSelect(value)}
+              onChange={(value: Array<ComboboxOption<string>>) => onDimensionSelect(value)}
             />
             {ensureArray(props.query.dimension).length >= MAX_DIMENSIONS && <div style={{ width: '150px' }}>Max {MAX_DIMENSIONS} dimensions allowed.</div>}
             {errorState.dimension && <FieldValidationMessage>{errorState.dimension}</FieldValidationMessage>}
@@ -851,17 +1099,13 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         </Field>
         <Field label={<><span>Metric <span style={{ color: 'red' }}>*</span></span></>}>
           <>
-            <MultiSelect
+            <MultiCombobox<string>
               placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
-              disabled={state.isLoading}
-              value={ensureArray(props.query.metric)}
-              components={{
-                MultiValueLabel,
-              }}
+              loading={state.isLoading}
+              value={ensureArray(props.query.metric).map((m: SelectableValue) => m.value as string)}
               options={filteredMetrics}
               width={40}
-              hideSelectedOptions={false}
-              onChange={(value) => onMetricSelect(value)}
+              onChange={(value: Array<ComboboxOption<string>>) => onMetricSelect(value)}
             />
             {errorState.metric && <FieldValidationMessage>{errorState.metric}</FieldValidationMessage>}
           </>
@@ -883,10 +1127,10 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
               ref={prefixInputRef}
               type="text"
               width={19.5}
-              value={props.query.prefix}
+              value={localPrefix}
               onChange={(e) => onAliasTextChange(e, 'prefix')}
               onKeyDown={onAliasKeyDown}
-              onBlur={onAliasTextBlur}
+              onBlur={() => onAliasTextBlur('prefix')}
               placeholder='Type...'
               onMouseUp={(e) => onAliasMouseUp(e, 'prefix')}
             />
@@ -906,10 +1150,10 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
               ref={aliasInputRef}
               type="text"
               width={50}
-              value={props.query.aliasBy || ''}
+              value={localAliasBy}
               onChange={(e) => onAliasTextChange(e, 'aliasBy')}
               onKeyDown={onAliasKeyDown}
-              onBlur={onAliasTextBlur}
+              onBlur={() => onAliasTextBlur('aliasBy')}
               onMouseUp={(e) => onAliasMouseUp(e, 'aliasBy')}
               placeholder='Type $ for suggestions, e.g., Traffic: $tag_src_ip'
             />
@@ -925,16 +1169,6 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         </Field>
       </Stack>
       <Stack direction="row" gap={2} alignItems="flex-start">
-        <Field label="Visualization depth">
-          <Input
-            type="number"
-            width={12}
-            value={props.query.topx}
-            onChange={(e) => onOptionChange('topx', e.currentTarget.value)}
-            onBlur={onTopXBlur}
-            placeholder='Type...'
-          />
-        </Field>
         <Field label="Filters">
           <Button size="sm" icon="plus" variant="secondary" onClick={onAddFilterButtonClick} aria-label="filters-button"></Button>
         </Field>
@@ -949,6 +1183,16 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
             />
           </Field>
         )}
+        <Field label="Visualization depth">
+          <Input
+            type="number"
+            width={12}
+            value={localTopx}
+            onChange={(e) => onOptionChange('topx', e.currentTarget.value)}
+            onBlur={onTopXBlur}
+            placeholder='Type...'
+          />
+        </Field>
       </Stack>
       {props.query.customFilters.map((filter: CustomFilter, filterIdx: number) => (
         <Stack direction="column" gap={0.5} key={`custom-filter-stack-${filterIdx}`}>
@@ -996,24 +1240,6 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
   );
 };
 
-import { components, MultiValueProps } from 'react-select';
-
-const MultiValueLabel = (props: MultiValueProps<any>) => {
-  const { label, group } = props.data;
-
-  return (
-    <components.MultiValueLabel {...props}>
-      {group && (
-        <>
-          <strong>{group}</strong>
-          <span style={{ margin: '0 4px' }}>/</span>
-        </>
-      )}
-      {label}
-    </components.MultiValueLabel>
-  );
-};
-
 type DimensionsSuggestionComponentProps = {
   showAliasSuggestions: boolean;
   activeSuggestionField: string | null;
@@ -1039,9 +1265,10 @@ const DimensionsSuggestionComponent = (props: DimensionsSuggestionComponentProps
   const filteredSuggestions = aliasTagOptions.filter(opt => {
     const val = opt.value?.toLowerCase() || '';
     const lbl = opt.label?.toLowerCase() || '';
+    const desc = opt.description?.toLowerCase() || '';
 
     // Standard "includes"
-    if (val.includes(filterText) || lbl.includes(filterText)) {
+    if (val.includes(filterText) || lbl.includes(filterText) || desc.includes(filterText)) {
       return true;
     }
 
@@ -1049,8 +1276,11 @@ const DimensionsSuggestionComponent = (props: DimensionsSuggestionComponentProps
     if (search === '') {
       return true; 
     }
-    return val.includes(search) || lbl.includes(search);
+    return val.includes(search) || lbl.includes(search) || desc.includes(search);
   });
+
+  // Track which groups have been rendered to show group headers
+  let lastGroup: string | undefined;
 
   return (
     <div style={{
@@ -1061,35 +1291,55 @@ const DimensionsSuggestionComponent = (props: DimensionsSuggestionComponentProps
       backgroundColor: 'var(--background-primary, #111)',
       border: '1px solid var(--border-medium, #333)',
       borderRadius: '4px',
-      maxHeight: '200px',
+      maxHeight: '280px',
       overflowY: 'auto',
       minWidth: '300px',
       boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
     }}>
-      {filteredSuggestions.map((opt, idx) => (
-        <div
-          key={opt.value || idx}
-          style={{
-            padding: '8px 12px',
-            cursor: 'pointer',
-            borderBottom: '1px solid var(--border-weak, #222)',
-            backgroundColor: idx === activeSuggestionIndex ? 'var(--background-secondary, #222)' : 'transparent',
-          }}
-          onMouseDown={(e) => {
-            e.preventDefault(); // Prevent blur
-            onSelectAliasSuggestion(opt);
-          }}
-          onMouseEnter={(e) => {
-            (e.target as HTMLDivElement).style.backgroundColor = 'var(--background-secondary, #222)';
-          }}
-          onMouseLeave={(e) => {
-            (e.target as HTMLDivElement).style.backgroundColor = 'transparent';
-          }}
-        >
-          <div style={{ fontWeight: 500 }}>{opt.label}</div>
-          <div style={{ fontSize: '11px', opacity: 0.7 }}>{opt.value}</div>
-        </div>
-      ))}
+      {filteredSuggestions.map((opt, idx) => {
+        const showGroupHeader = opt.group && opt.group !== lastGroup;
+        lastGroup = opt.group;
+        return (
+          <React.Fragment key={`${opt.group || ''}-${opt.value || idx}`}>
+            {showGroupHeader && (
+              <div style={{
+                padding: '6px 12px 4px',
+                fontSize: '11px',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                color: 'var(--text-secondary, #8e8e8e)',
+                borderTop: idx > 0 ? '1px solid var(--border-weak, #222)' : 'none',
+              }}>
+                {opt.group}
+              </div>
+            )}
+            <div
+              style={{
+                padding: '6px 12px',
+                cursor: 'pointer',
+                backgroundColor: idx === activeSuggestionIndex ? 'var(--background-secondary, #222)' : 'transparent',
+              }}
+              onMouseDown={(e) => {
+                e.preventDefault(); // Prevent blur
+                onSelectAliasSuggestion(opt);
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLDivElement).style.backgroundColor = 'var(--background-secondary, #222)';
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLDivElement).style.backgroundColor = 'transparent';
+              }}
+            >
+              <div style={{ fontWeight: 500 }}>{opt.label}</div>
+              {opt.description && (
+                <div style={{ fontSize: '11px', opacity: 0.6 }}>{opt.description}</div>
+              )}
+              <div style={{ fontSize: '11px', opacity: 0.7 }}>{opt.value}</div>
+            </div>
+          </React.Fragment>
+        );
+      })}
       {filteredSuggestions.length === 0 && (
         <div style={{ padding: '8px 12px', opacity: 0.6 }}>
           No matching tags. Select dimensions first.

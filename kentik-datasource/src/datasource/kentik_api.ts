@@ -82,7 +82,7 @@ export class KentikAPI {
   async getSavedFilters(): Promise<any> {
     try {
       const data = await this._get('/saved-filters/v202501alpha1', false, true);
-      return Array.isArray(data?.filters) ? data.filters : (Array.isArray(data) ? data : []);
+      return Array.isArray(data?.filters) ? data.filters : Array.isArray(data) ? data : [];
     } catch (e: any) {
       if (e.status === 403) {
         return [];
@@ -93,7 +93,8 @@ export class KentikAPI {
 
   async invokeTopXDataQuery(query: any): Promise<any> {
     const kentikV5Query = {
-      queries: [{ query: query, bucketIndex: 0 }],
+      version: 4,
+      queries: [{ bucket: 'Left +Y Axis', isOverlay: false, query: query }],
     };
 
     return this._post('/api/v5/query/topXdata', kentikV5Query);
@@ -101,7 +102,8 @@ export class KentikAPI {
 
   async invokeDrilldownUrlQuery(query: any): Promise<any> {
     const kentikV5Query = {
-      queries: [{ query: query, bucketIndex: 0 }],
+      version: 4,
+      queries: [{ bucket: 'Left +Y Axis', isOverlay: false, query: query }],
     };
 
     return this._post('/api/v5/query/url', kentikV5Query);
@@ -123,23 +125,19 @@ export class KentikAPI {
           url: this.baseUrl + url,
           showErrorAlert: !requiresAdminLevel && !silentOnForbidden,
         })
-      ).then(result => result.data
-      );
+      ).then((result) => result.data);
 
-    return retry(
-      requestFn,
-      (error: FetchError) => {
-        if (error.status === 429) {
-          showAlert(error);
-          return true;
-        }
-        if (error.status === 403 && (requiresAdminLevel || silentOnForbidden)) {
-          return false;
-        }
+    return retry(requestFn, (error: FetchError) => {
+      if (error.status === 429) {
         showAlert(error);
+        return true;
+      }
+      if (error.status === 403 && (requiresAdminLevel || silentOnForbidden)) {
         return false;
       }
-    );
+      showAlert(error);
+      return false;
+    });
   }
 
   private async _post(url: string, data: any, silentOnForbidden = false): Promise<any> {
