@@ -63,29 +63,33 @@ export class KentikProxy {
     const hash = getHash(cachedQuery);
 
     if (await this.shouldInvoke(query)) {
-      // Invoke query
       const result = await this.kentikAPISrv.invokeTopXDataQuery(query);
-      const url = await this.kentikAPISrv.invokeDrilldownUrlQuery(query);
 
       if (query.hostname_lookup) {
-        const resultData = result.results[0].data;
-        resultData.forEach((row: any) => {
-          if (row.lookup !== undefined) {
-            row.key = row.lookup;
-          }
-        });
+        const resultData = result.results?.[0]?.data;
+        if (resultData) {
+          resultData.forEach((row: any) => {
+            if (row.lookup !== undefined) {
+              row.key = row.lookup;
+            }
+          });
+        }
       }
 
       this.cache.set(hash, {
         query: cachedQuery,
         data: result,
-        url: url,
+        url: '',
       });
-      return { data: result, url };
+
+      return { data: result, url: '' };
     } else {
       // Get from cache
       const cached = this.cache.get(hash) as QueryCache | undefined;
-      return cached && { data: cached.data, url: cached.url };
+      if (!cached) {
+        return { data: { results: [{ data: [] }] }, url: '' };
+      }
+      return { data: cached.data, url: cached.url };
     }
   }
 
@@ -160,7 +164,8 @@ export class KentikProxy {
   async getCustomDimensions() {
     const customDimensionsField = 'customDimensions';
     if (!this.cache.get(customDimensionsField)) {
-      // Store the promise so concurrent callers await the same in-flight request
+      // Store the promise so concurrent callers await the same in-flight request.
+      // On rejection, evict the cached promise so the next call retries.
       const promise = this.kentikAPISrv.getCustomDimensions().then((customDimensions) =>
         customDimensions.map((dimension: any) => ({
           values: this._getDimensionPopulatorsValues(dimension),
@@ -168,7 +173,10 @@ export class KentikProxy {
           value: dimension.name,
           field: dimension.name,
         }))
-      );
+      ).catch((err: any) => {
+        this.cache.delete(customDimensionsField);
+        throw err;
+      });
       this.cache.set(customDimensionsField, promise);
     }
     return this.cache.get(customDimensionsField);
@@ -178,6 +186,7 @@ export class KentikProxy {
     const savedFiltersField = 'savedFilters';
     if (!this.cache.get(savedFiltersField)) {
       // Store the promise so concurrent callers await the same in-flight request.
+      // On rejection, evict the cached promise so the next call retries.
       // Note: kentikAPISrv.getSavedFilters() already unwraps `.filters` and returns
       // the flat array, so we map the array directly (not `.filters` on the result).
       const promise = this.kentikAPISrv.getSavedFilters().then((savedFilters) => {
@@ -187,6 +196,9 @@ export class KentikProxy {
           field: filter.filterName,
           id: filter.id,
         }));
+      }).catch((err: any) => {
+        this.cache.delete(savedFiltersField);
+        throw err;
       });
       this.cache.set(savedFiltersField, promise);
     }

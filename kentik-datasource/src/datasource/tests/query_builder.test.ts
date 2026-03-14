@@ -102,7 +102,7 @@ describe('Kentik Query Builder', () => {
         cidr: 32,
         cidr6: 128,
         topx: '8',
-        depth: 100,
+        depth: 25,
         fastData: 'Auto',
         lookback_seconds: 0,
         time_format: 'UTC',

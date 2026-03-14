@@ -14,7 +14,12 @@
 
 import { DataSource } from '../DataSource';
 import { FieldType } from '@grafana/data';
+import { lastValueFrom } from 'rxjs';
 
+/** Await the last emission from the Observable returned by ds.query() */
+async function queryResult(ds: DataSource, options: any) {
+  return lastValueFrom(ds.query(options));
+}
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 /**
@@ -64,28 +69,80 @@ function createMoment(timeStr: string) {
 
 function createDatasourceWithMocks(
   topXResponseData: any,
-  drilldownUrl = 'https://portal.kentik.com/v4/explorer'
+  _drilldownUrl = 'https://portal.kentik.com/v4/explorer'
 ) {
   const instanceSettings = {};
 
   const backendSrv: any = {
     get: () => Promise.resolve([]),
-    fetch: () => ({
-      toPromise: () =>
-        Promise.resolve({ status: 200, data: { dimensions: [] } }),
-      subscribe: (observer: any) => {
-        observer.next({ status: 200, data: { dimensions: [] } });
-        observer.complete();
-      },
-    }),
+    fetch: (options: any) => {
+      // _post now uses fetch() with method: 'POST', so handle both GET and POST
+      if (options.method === 'POST') {
+        let data: any;
+        if (options.url.includes('topXdata')) {
+          // Batched queries: echo back results with the correct bucket names
+          const requestData = options.data;
+          if (requestData?.queries?.length) {
+            const originalResults = topXResponseData.results || [];
+            data = {
+              ...topXResponseData,
+              results: requestData.queries.map((q: any) => ({
+                ...(originalResults[0] || { data: [] }),
+                bucket: q.bucket,
+              })),
+            };
+          } else {
+            data = topXResponseData;
+          }
+        } else if (options.url.includes('/url')) {
+          data = _drilldownUrl;
+        } else {
+          data = {};
+        }
+        return {
+          toPromise: () => Promise.resolve({ status: 200, data }),
+          subscribe: (observer: any) => {
+            observer.next({ status: 200, data });
+            observer.complete();
+            return { unsubscribe: () => {} };
+          },
+          pipe: (..._ops: any[]) => ({
+            toPromise: () => Promise.resolve({ status: 200, data }),
+            subscribe: (observer: any) => {
+              observer.next({ status: 200, data });
+              observer.complete();
+              return { unsubscribe: () => {} };
+            },
+          }),
+        };
+      }
+      // GET requests (e.g. custom dimensions, saved filters)
+      return {
+        toPromise: () =>
+          Promise.resolve({ status: 200, data: { dimensions: [] } }),
+        subscribe: (observer: any) => {
+          observer.next({ status: 200, data: { dimensions: [] } });
+          observer.complete();
+          return { unsubscribe: () => {} };
+        },
+        pipe: (..._ops: any[]) => ({
+          toPromise: () =>
+            Promise.resolve({ status: 200, data: { dimensions: [] } }),
+          subscribe: (observer: any) => {
+            observer.next({ status: 200, data: { dimensions: [] } });
+            observer.complete();
+            return { unsubscribe: () => {} };
+          },
+        }),
+      };
+    },
     post: (_url: string, _data: any) => {
-      // The post is called for topXdata and url queries.
-      // Return the mock response for topXdata, a string for url.
+      // Legacy fallback — kept for any code paths still using backendSrv.post()
       if (_url.includes('topXdata')) {
         return Promise.resolve(topXResponseData);
       }
       if (_url.includes('/url')) {
-        return Promise.resolve(drilldownUrl);
+        return Promise.resolve(_drilldownUrl);
       }
       return Promise.resolve({});
     },
@@ -148,7 +205,7 @@ describe('DataSource.query() integration – full pipeline', () => {
       ]);
 
       const ds = createDatasourceWithMocks(kentikResponse);
-      const result = await ds.query(makeQueryOptions() as any);
+      const result = await queryResult(ds, makeQueryOptions() as any);
 
       // Should produce 2 DataFrames (one per top-x row)
       expect(result.data).toHaveLength(2);
@@ -172,14 +229,16 @@ describe('DataSource.query() integration – full pipeline', () => {
         makeFlowRow('1.2.3.4', 'avg_bits_per_sec', [[1710028800000, 1000]]),
       ]);
 
-      const ds = createDatasourceWithMocks(kentikResponse, 'https://portal.kentik.com/explore');
-      const result = await ds.query(makeQueryOptions() as any);
+      const ds = createDatasourceWithMocks(kentikResponse);
+      // portalUrl is derived from region in the constructor; set it explicitly for the test
+      ds.portalUrl = 'https://portal.kentik.com';
+      const result = await queryResult(ds, makeQueryOptions() as any);
 
       const valueField = result.data[0].fields[1];
       expect(valueField.config.links).toEqual([
         expect.objectContaining({
           title: 'Open in Kentik',
-          url: 'https://portal.kentik.com/explore',
+          url: 'https://portal.kentik.com/v4/core/explorer',
           targetBlank: true,
         }),
       ]);
@@ -193,7 +252,7 @@ describe('DataSource.query() integration – full pipeline', () => {
 
       const kentikResponse = makeKentikTopXResponse(rows);
       const ds = createDatasourceWithMocks(kentikResponse);
-      const result = await ds.query(makeQueryOptions({ topx: '3' }) as any);
+      const result = await queryResult(ds, makeQueryOptions({ topx: '3' }) as any);
 
       expect(result.data).toHaveLength(3);
     });
@@ -206,7 +265,7 @@ describe('DataSource.query() integration – full pipeline', () => {
       ]);
 
       const ds = createDatasourceWithMocks(kentikResponse);
-      const result = await ds.query(makeQueryOptions() as any);
+      const result = await queryResult(ds, makeQueryOptions() as any);
 
       expect(result.data).toHaveLength(1);
 
@@ -223,7 +282,7 @@ describe('DataSource.query() integration – full pipeline', () => {
       const kentikResponse = makeKentikTopXResponse([]);
 
       const ds = createDatasourceWithMocks(kentikResponse);
-      const result = await ds.query(makeQueryOptions() as any);
+      const result = await queryResult(ds, makeQueryOptions() as any);
 
       expect(result.data).toEqual([]);
     });
@@ -237,7 +296,7 @@ describe('DataSource.query() integration – full pipeline', () => {
       ]);
 
       const ds = createDatasourceWithMocks(kentikResponse);
-      const result = await ds.query(makeQueryOptions({ mode: 'table' }) as any);
+      const result = await queryResult(ds, makeQueryOptions({ mode: 'table' }) as any);
 
       // Table mode returns frame(s) inside data[]
       expect(result.data).toBeDefined();
@@ -268,7 +327,7 @@ describe('DataSource.query() integration – full pipeline', () => {
         url: 'https://portal.kentik.com/explore',
       });
 
-      const result = await ds.query(
+      const result = await queryResult(ds,
         makeQueryOptions({ metric: 'avg_bits_per_sec,max_bits_per_sec' }) as any
       );
 
@@ -295,7 +354,7 @@ describe('DataSource.query() integration – full pipeline', () => {
       const invokeSpy = jest.spyOn(ds.kentik, 'invokeTopXDataQuery');
       invokeSpy.mockResolvedValue({ data: kentikResponse, url: '' });
 
-      await ds.query(makeQueryOptions({ metric: 'avg_bits_per_sec' }) as any);
+      await queryResult(ds, makeQueryOptions({ metric: 'avg_bits_per_sec' }) as any);
 
       const query: any = invokeSpy.mock.calls[0][0];
       const agg = query.aggregates[0];
@@ -320,7 +379,7 @@ describe('DataSource.query() integration – full pipeline', () => {
       const invokeSpy = jest.spyOn(ds.kentik, 'invokeTopXDataQuery');
       invokeSpy.mockResolvedValue({ data: kentikResponse, url: '' });
 
-      await ds.query(makeQueryOptions({ metric: 'p95th_bits_per_sec' }) as any);
+      await queryResult(ds, makeQueryOptions({ metric: 'p95th_bits_per_sec' }) as any);
 
       const query: any = invokeSpy.mock.calls[0][0];
       expect(query.outsort).toBe('p95th_bits_per_sec');
@@ -335,12 +394,56 @@ describe('DataSource.query() integration – full pipeline', () => {
 
       const backendSrv: any = {
         get: () => Promise.resolve([]),
-        fetch: () => ({
-          subscribe: (observer: any) => {
-            observer.next({ status: 200, data: { dimensions: [] } });
-            observer.complete();
-          },
-        }),
+        fetch: (options: any) => {
+          if (options.method === 'POST') {
+            let data: any;
+            if (options.url.includes('topXdata')) {
+              capturedPayload = options.data;
+              // Echo back results with correct bucket names from the request
+              const emptyResp = makeKentikTopXResponse([]);
+              const queries = options.data?.queries || [];
+              data = {
+                ...emptyResp,
+                results: queries.map((q: any) => ({
+                  ...(emptyResp.results?.[0] || { data: [] }),
+                  bucket: q.bucket,
+                })),
+              };
+            } else {
+              data = '';
+            }
+            return {
+              toPromise: () => Promise.resolve({ status: 200, data }),
+              subscribe: (observer: any) => {
+                observer.next({ status: 200, data });
+                observer.complete();
+                return { unsubscribe: () => {} };
+              },
+              pipe: (..._ops: any[]) => ({
+                toPromise: () => Promise.resolve({ status: 200, data }),
+                subscribe: (observer: any) => {
+                  observer.next({ status: 200, data });
+                  observer.complete();
+                  return { unsubscribe: () => {} };
+                },
+              }),
+            };
+          }
+          return {
+            subscribe: (observer: any) => {
+              observer.next({ status: 200, data: { dimensions: [] } });
+              observer.complete();
+              return { unsubscribe: () => {} };
+            },
+            pipe: (..._ops: any[]) => ({
+              subscribe: (observer: any) => {
+                observer.next({ status: 200, data: { dimensions: [] } });
+                observer.complete();
+                return { unsubscribe: () => {} };
+              },
+            }),
+          };
+        },
         post: (url: string, data: any) => {
           if (url.includes('topXdata')) {
             capturedPayload = data;
@@ -355,12 +458,12 @@ describe('DataSource.query() integration – full pipeline', () => {
       ds.initialRun = false;
       ds.templateSrv = { replace: jest.fn((v: string) => v) } as any;
 
-      await ds.query(makeQueryOptions() as any);
+      await queryResult(ds, makeQueryOptions() as any);
 
       expect(capturedPayload).not.toBeNull();
       expect(capturedPayload.version).toBe(4);
       expect(capturedPayload.queries).toHaveLength(1);
-      expect(capturedPayload.queries[0].bucket).toBe('Left +Y Axis');
+      expect(capturedPayload.queries[0].bucket).toMatch(/^batch_\d+$/);
       expect(capturedPayload.queries[0].isOverlay).toBe(false);
       expect(capturedPayload.queries[0].query).toBeDefined();
       expect(capturedPayload.queries[0].query.dimension).toEqual(['IP_src']);

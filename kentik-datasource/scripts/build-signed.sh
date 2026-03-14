@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck shell=bash
 #
 # build-signed.sh — Build, sign, and package the Kentik datasource plugin.
 #
@@ -19,7 +20,7 @@ set -euo pipefail
 
 PLUGIN_ID="kentik-datasource"
 VERSION="dev"
-SIGN_ARGS=""
+SIGN_ARGS=()
 
 # ── Parse arguments ──────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
@@ -29,7 +30,7 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     --root-urls)
-      SIGN_ARGS="--rootUrls $2"
+      SIGN_ARGS=(--rootUrls "$2")
       shift 2
       ;;
     *)
@@ -55,7 +56,7 @@ npm run build
 
 echo "── Signing plugin ─────────────────────────────────────────"
 export GRAFANA_API_KEY
-npx @grafana/sign-plugin@latest --signatureType=commercial $SIGN_ARGS
+npx @grafana/sign-plugin@latest --signatureType=commercial "${SIGN_ARGS[@]}"
 
 echo "── Packaging ──────────────────────────────────────────────"
 ARCHIVE="${PLUGIN_ID}-${VERSION}.zip"

@@ -191,7 +191,10 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
   // Helper to ensure multi-select fields are always arrays of SelectableValues
   const ensureArray = (value: any): SelectableValue[] => {
     if (Array.isArray(value)) {
-      return value;
+      // Normalise plain strings (e.g. from saved dashboard JSON) into SelectableValue objects
+      return value.map(v =>
+        typeof v === 'string' ? { value: v, label: v } : v
+      );
     }
     if (typeof value === 'string' && value.length > 0) {
       return value.split(',').map(v => ({ value: v, label: v }));

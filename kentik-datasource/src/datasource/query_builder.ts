@@ -165,6 +165,13 @@ function buildTopXdataQuery(options: any, panelId?: string) {
   const metricArray = options.metric?.split(',').map(normaliseKtPrefix);
   const metricDefs = allMetricOptions.filter(opt => metricArray?.includes(opt.value));
 
+  console.log('[KentikDS] buildTopXdataQuery debug:', {
+    rawMetric: options.metric,
+    metricArray,
+    metricDefsCount: metricDefs.length,
+    rawDimension: options.dimension,
+  });
+
   if (_.isEmpty(options.deviceNames)) {
     // No devices selected → query all devices (same pattern as sites)
   }
@@ -196,7 +203,7 @@ function buildTopXdataQuery(options: any, panelId?: string) {
     cidr: 32,
     cidr6: 128,
     topx: options.topx,
-    depth: isNmsQuery ? 75 : 100,
+    depth: isNmsQuery ? 75 : Math.max(Number(options.topx) || 10, 25),
     fastData: isNmsQuery ? 'Full' : 'Auto',
     lookback_seconds: 0,
     time_format: 'UTC',

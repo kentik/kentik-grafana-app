@@ -1,4 +1,35 @@
-import { DataSource } from '../DataSource';
+import { DataSource, derivePortalUrl } from '../DataSource';
+import { lastValueFrom } from 'rxjs';
+
+describe('derivePortalUrl', () => {
+  it('returns US portal for default region', () => {
+    expect(derivePortalUrl('default')).toBe('https://portal.kentik.com');
+  });
+
+  it('returns EU portal for eu region', () => {
+    expect(derivePortalUrl('eu')).toBe('https://portal.kentik.eu');
+  });
+
+  it('strips api. prefix for custom region', () => {
+    expect(derivePortalUrl('custom', 'https://api.acme.com')).toBe('https://portal.acme.com');
+  });
+
+  it('strips grpc.api. prefix for custom region', () => {
+    expect(derivePortalUrl('custom', 'https://grpc.api.acme.com')).toBe('https://portal.acme.com');
+  });
+
+  it('keeps host as-is when no api. prefix (on-prem)', () => {
+    expect(derivePortalUrl('custom', 'https://kentik.internal')).toBe('https://kentik.internal');
+  });
+
+  it('falls back to v5 URL when dynamicUrl is empty', () => {
+    expect(derivePortalUrl('custom', '', { v5: 'https://api.onprem.example.com' })).toBe('https://portal.onprem.example.com');
+  });
+
+  it('falls back to kentik.com when custom has no URL at all', () => {
+    expect(derivePortalUrl('custom')).toBe('https://portal.kentik.com');
+  });
+});
 
 describe('DataSource', () => {
   const ctx: any = {};
@@ -196,7 +227,7 @@ describe('applyAliasPattern', () => {
         scopedVars: {},
       };
 
-      await ctx.ds.query(options);
+      await lastValueFrom(ctx.ds.query(options));
 
       const calledQuery: any = invokeSpy.mock.calls[0][0];
       expect(calledQuery.dimension).toEqual(['src_endpoint', 'dst_endpoint']);
@@ -225,7 +256,7 @@ describe('applyAliasPattern', () => {
         scopedVars: {},
       };
 
-      await ctx.ds.query(options);
+      await lastValueFrom(ctx.ds.query(options));
 
       const calledQuery: any = invokeSpy.mock.calls[0][0];
       expect(calledQuery.dimension).toEqual(['src_endpoint', 'dst_endpoint']);

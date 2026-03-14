@@ -24,6 +24,7 @@ import {
 import { getTemplateSrv, TemplateSrv, getBackendSrv } from '@grafana/runtime';
 
 import * as _ from 'lodash';
+import { Observable } from 'rxjs';
 import { CustomFilter, DEFAULT_QUERY, Query } from './QueryEditor';
 
 export interface MyDataSourceOptions extends DataSourceJsonData {}
@@ -103,11 +104,53 @@ function extractAliasTagNames(aliasBy: string | undefined, prefix: string | unde
   return Array.from(tags);
 }
 
+/**
+ * Derive the Kentik portal URL from the datasource region configuration.
+ *
+ * - `default`  → https://portal.kentik.com
+ * - `eu`       → https://portal.kentik.eu
+ * - `custom`   → Derive from the custom API URL:
+ *     - `https://api.acme.com`      → `https://portal.acme.com`
+ *     - `https://grpc.api.acme.com` → `https://portal.acme.com`
+ *     - `https://kentik.internal`   → `https://kentik.internal` (no api. prefix)
+ */
+export function derivePortalUrl(region: string, dynamicUrl?: string, url?: { v5?: string; v6?: string }): string {
+  switch (region) {
+    case 'eu':
+      return 'https://portal.kentik.eu';
+    case 'custom': {
+      // Use the dynamicUrl (user-entered) or fall back to the v5 API URL
+      const apiUrl = dynamicUrl || url?.v5 || '';
+      if (!apiUrl) {
+        return 'https://portal.kentik.com';
+      }
+      try {
+        const parsed = new URL(apiUrl);
+        // Strip `api.` or `grpc.api.` prefix and replace with `portal.`
+        const host = parsed.hostname;
+        if (host.startsWith('grpc.api.')) {
+          parsed.hostname = 'portal.' + host.slice('grpc.api.'.length);
+        } else if (host.startsWith('api.')) {
+          parsed.hostname = 'portal.' + host.slice('api.'.length);
+        }
+        // Return origin only (no path)
+        return parsed.origin;
+      } catch {
+        return 'https://portal.kentik.com';
+      }
+    }
+    default:
+      return 'https://portal.kentik.com';
+  }
+}
+
 export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   datasourceType: string;
   kentik: any;
   templateSrv: TemplateSrv;
   initialRun: boolean;
+  /** Kentik portal base URL — derived from the configured region. */
+  portalUrl: string;
 
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
     super(instanceSettings);
@@ -118,6 +161,14 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     const kentikApi = new KentikAPI(arguments[1] || getBackendSrv(), instanceSettings.uid);
     this.kentik = new KentikProxy(kentikApi, instanceSettings.uid);
     this.templateSrv = getTemplateSrv();
+
+    // Derive the Kentik portal URL from the region setting.
+    // On-prem / custom deployments: derive portal from the configured API URL
+    // by stripping the `api.` or `grpc.api.` prefix.  If the URL doesn't match
+    // the hosted pattern, use it as-is (on-prem portals are often at the same origin).
+    const jsonData = instanceSettings.jsonData as any;
+    const region = jsonData?.region || 'default';
+    this.portalUrl = derivePortalUrl(region, jsonData?.dynamicUrl, jsonData?.url);
   }
 
   interpolateDeviceField(value: any, variable: any) {
@@ -178,24 +229,44 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     return areTargetsEmpty;
   };
 
-  async query(options: DataQueryRequest<Query>): Promise<DataQueryResponse> {
+  query(options: DataQueryRequest<Query>): Observable<DataQueryResponse> {
+    return new Observable<DataQueryResponse>((subscriber) => {
+      this._executeQuery(options).then(
+        (result) => {
+          subscriber.next(result.response);
+          subscriber.complete();
+        },
+        (err) => {
+          subscriber.error(err);
+        }
+      );
+    });
+  }
+
+  /** Internal query execution — returns DataFrames. */
+  private async _executeQuery(options: DataQueryRequest<Query>): Promise<{ response: DataQueryResponse }> {
     if (this.initialRun === true && this.isQueryTargetsEmpty(options)) {
       this.initialRun = false;
-
-      return Promise.resolve({ data: [] });
+      return { response: { data: [] } };
     }
 
     this.initialRun = false;
 
     if (!options.targets || options.targets.length === 0) {
-      return Promise.resolve({ data: [] });
+      return { response: { data: [] } };
     }
     if (options.panelPluginId === KENTIK_DESCRIPTION_PANEL) {
-      return Promise.resolve({ data: [] });
+      return { response: { data: [] } };
     }
 
-    const customDimensions = await this.kentik.getCustomDimensions();
-    const savedFiltersList = await this.kentik.getSavedFilters();
+    const customDimensions = await this.kentik.getCustomDimensions().catch((err: any) => {
+      console.warn('[KentikDS] Failed to load custom dimensions, continuing without them:', err.message || err);
+      return [];
+    });
+    const savedFiltersList = await this.kentik.getSavedFilters().catch((err: any) => {
+      console.warn('[KentikDS] Failed to load saved filters, continuing without them:', err.message || err);
+      return [];
+    });
     const kentikFilters: AdHocVariableFilter[] = options.filters || [];
 
     const promises = _.map(
@@ -339,16 +410,14 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
             target.mode,
             { ...target, scopedVars: options.scopedVars },
             topXData.data,
-            topXData.url
+            this.portalUrl
           );
 
           return processed;
         }
 
-        // graph mode
-        const allAggResults: any[] = [];
-
-        for (const singleAgg of query.aggregates) {
+        // graph mode — fire all aggregate queries in parallel
+        const aggPromises = query.aggregates.map(async (singleAgg: any) => {
           const perAggQuery = {
             ...query,
             aggregates: [singleAgg],
@@ -357,17 +426,16 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           };
 
           const topXData = await this.kentik.invokeTopXDataQuery(perAggQuery);
-          const processed = await this.processResponse(
+          return this.processResponse(
             perAggQuery,
             target.mode,
             { ...target, aggregate: singleAgg, scopedVars: options.scopedVars },
             topXData.data,
-            topXData.url
+            this.portalUrl
           );
+        });
 
-          allAggResults.push(processed);
-        }
-
+        const allAggResults = await Promise.all(aggPromises);
         return _.flatten(allAggResults);
         } catch (err: any) {
           console.error('[KentikDS] Query target error:', err);
@@ -377,16 +445,16 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     );
 
     const results = await Promise.all(promises);
-    return { data: _.flatten(results) };
+    return { response: { data: _.flatten(results) } };
   }
 
   async processResponse(query: any, mode: string, target: any, data: any, drilldownUrl: string) {
-    if (!data.results) {
+    if (!data?.results || !data.results[0]) {
       return [];
     }
 
     const bucketData = data.results[0].data;
-    if (bucketData.length === 0) {
+    if (!bucketData || bucketData.length === 0) {
       return [];
     }
 
@@ -413,6 +481,14 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   processTimeSeries(bucketData: any, query: any, target: any, drilldownUrl: string) {
     const frames: PartialDataFrame[] = [];
 
+    // Build a "Open in Kentik" link to the Data Explorer with query context
+    const explorerUrl = drilldownUrl ? `${drilldownUrl}/v4/core/explorer` : '';
+
+    // Frame-level notice: surfaces as an always-visible link in the panel
+    const frameMeta = explorerUrl ? {
+      custom: { kentikExplorerUrl: explorerUrl },
+    } : undefined;
+
     let endIndex = query.topx;
     if (bucketData.length < endIndex) {
       endIndex = bucketData.length;
@@ -429,6 +505,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
 
       if (timeseries) {
         const frame: PartialDataFrame = {
+          meta: frameMeta,
           fields: [
             {
               name: 'time',
@@ -443,7 +520,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
                 links: [
                   {
                     title: 'Open in Kentik',
-                    url: drilldownUrl,
+                    url: explorerUrl,
                     targetBlank: true,
                   },
                 ],
@@ -466,6 +543,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           const endMs = new Date(query.ending_time + ' UTC').getTime();
 
           const frame: PartialDataFrame = {
+            meta: frameMeta,
             fields: [
               {
                 name: 'time',
@@ -480,7 +558,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
                   links: [
                     {
                       title: 'Open in Kentik',
-                      url: drilldownUrl,
+                      url: explorerUrl,
                       targetBlank: true,
                     },
                   ],
