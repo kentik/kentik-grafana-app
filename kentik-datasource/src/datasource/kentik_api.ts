@@ -35,7 +35,7 @@ export class KentikAPI {
   }
 
   async getDevices(): Promise<any> {
-    const resp = await this._get('/device/v202308beta1/device');
+    const resp = await this._get('/device/v202308beta1/device?query.noCustomColumns=true');
     if (resp && resp.devices) {
       return resp.devices;
     } else {
