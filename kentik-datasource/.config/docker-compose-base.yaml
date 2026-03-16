@@ -7,7 +7,7 @@ services:
       context: .
       args:
         grafana_image: ${GRAFANA_IMAGE:-grafana-enterprise}
-        grafana_version: ${GRAFANA_VERSION:-12.2.0}
+        grafana_version: ${GRAFANA_VERSION:-12.4.1}
         development: ${DEVELOPMENT:-false}
         anonymous_auth_enabled: ${ANONYMOUS_AUTH_ENABLED:-true}
     ports:
@@ -18,7 +18,7 @@ services:
       - ..:/root/kentik-datasource
 
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       GF_LOG_FILTERS: plugin.kentik-datasource:debug
       GF_LOG_LEVEL: debug
       GF_DATAPROXY_LOGGING: 1

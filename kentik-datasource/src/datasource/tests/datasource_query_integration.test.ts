@@ -69,7 +69,7 @@ function createMoment(timeStr: string) {
 
 function createDatasourceWithMocks(
   topXResponseData: any,
-  _drilldownUrl = 'https://portal.kentik.com/v4/explorer'
+  _drilldownUrl = 'https://portal.kentik.com/v4/core/explorer/abc123hash'
 ) {
   const instanceSettings = {};
 
@@ -238,7 +238,7 @@ describe('DataSource.query() integration – full pipeline', () => {
       expect(valueField.config.links).toEqual([
         expect.objectContaining({
           title: 'Open in Kentik',
-          url: 'https://portal.kentik.com/v4/core/explorer',
+          url: 'https://portal.kentik.com/v4/core/explorer/abc123hash',
           targetBlank: true,
         }),
       ]);

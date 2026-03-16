@@ -402,21 +402,38 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           }
         }
 
+        // Fetch the Kentik Data Explorer drilldown URL in parallel with data queries.
+        // This returns a hash-based URL (e.g. /v4/core/explorer/<hash>) that preserves
+        // the full query context when the user clicks "Open in Kentik".
+        const drilldownPromise = this.kentik.invokeDrilldownUrlQuery(query)
+          .then((response: any) => {
+            const url = typeof response === 'string' ? response
+              : response?.url || response?.data?.url || response;
+            if (url && typeof url === 'string' && url.includes('/')) {
+              return url;
+            }
+            return `${this.portalUrl}/v4/core/explorer`;
+          })
+          .catch(() => `${this.portalUrl}/v4/core/explorer`);
+
         // table mode
         if (target.mode === 'table') {
-          const topXData = await this.kentik.invokeTopXDataQuery(query);
+          const [topXData, drilldownUrl] = await Promise.all([
+            this.kentik.invokeTopXDataQuery(query),
+            drilldownPromise,
+          ]);
           const processed = await this.processResponse(
             query,
             target.mode,
             { ...target, scopedVars: options.scopedVars },
             topXData.data,
-            this.portalUrl
+            drilldownUrl
           );
 
           return processed;
         }
 
-        // graph mode — fire all aggregate queries in parallel
+        // graph mode — fire drilldown URL + all aggregate queries in parallel
         const aggPromises = query.aggregates.map(async (singleAgg: any) => {
           const perAggQuery = {
             ...query,
@@ -426,12 +443,13 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
           };
 
           const topXData = await this.kentik.invokeTopXDataQuery(perAggQuery);
+          const drilldownUrl = await drilldownPromise;
           return this.processResponse(
             perAggQuery,
             target.mode,
             { ...target, aggregate: singleAgg, scopedVars: options.scopedVars },
             topXData.data,
-            this.portalUrl
+            drilldownUrl
           );
         });
 
@@ -481,8 +499,9 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
   processTimeSeries(bucketData: any, query: any, target: any, drilldownUrl: string) {
     const frames: PartialDataFrame[] = [];
 
-    // Build a "Open in Kentik" link to the Data Explorer with query context
-    const explorerUrl = drilldownUrl ? `${drilldownUrl}/v4/core/explorer` : '';
+    // drilldownUrl is now the full Kentik Data Explorer URL with query hash
+    // (e.g. https://portal.kentik.com/v4/core/explorer/ce2e3a75ab7a...)
+    const explorerUrl = drilldownUrl || '';
 
     // Frame-level notice: surfaces as an always-visible link in the panel
     const frameMeta = explorerUrl ? {

@@ -92,15 +92,7 @@
           ]
         }
       },
-      "links": [
-        {
-          "title": "Open in Kentik",
-          "url": "https://portal.kentik.com/v4/core/explorer",
-          "targetBlank": true,
-          "type": "link",
-          "icon": "external-link-alt"
-        }
-      ]
+      "links": []
     },
     {
       "title": "Traffic by Destination Interface",
@@ -161,15 +153,7 @@
           ]
         }
       },
-      "links": [
-        {
-          "title": "Open in Kentik",
-          "url": "https://portal.kentik.com/v4/core/explorer",
-          "targetBlank": true,
-          "type": "link",
-          "icon": "external-link-alt"
-        }
-      ]
+      "links": []
     },
     {
       "collapsed": false,
@@ -242,15 +226,7 @@
           ]
         }
       },
-      "links": [
-        {
-          "title": "Open in Kentik",
-          "url": "https://portal.kentik.com/v4/core/explorer",
-          "targetBlank": true,
-          "type": "link",
-          "icon": "external-link-alt"
-        }
-      ]
+      "links": []
     },
     {
       "title": "Traffic by Source MAC Address",
@@ -311,15 +287,7 @@
           ]
         }
       },
-      "links": [
-        {
-          "title": "Open in Kentik",
-          "url": "https://portal.kentik.com/v4/core/explorer",
-          "targetBlank": true,
-          "type": "link",
-          "icon": "external-link-alt"
-        }
-      ]
+      "links": []
     },
     {
       "collapsed": false,
@@ -391,15 +359,7 @@
           ]
         }
       },
-      "links": [
-        {
-          "title": "Open in Kentik",
-          "url": "https://portal.kentik.com/v4/core/explorer",
-          "targetBlank": true,
-          "type": "link",
-          "icon": "external-link-alt"
-        }
-      ]
+      "links": []
     },
     {
       "title": "Top Destination IPs by Bits/s",
@@ -459,15 +419,7 @@
           ]
         }
       },
-      "links": [
-        {
-          "title": "Open in Kentik",
-          "url": "https://portal.kentik.com/v4/core/explorer",
-          "targetBlank": true,
-          "type": "link",
-          "icon": "external-link-alt"
-        }
-      ]
+      "links": []
     },
     {
       "title": "Traffic by Source AS Number",
@@ -527,15 +479,7 @@
           ]
         }
       },
-      "links": [
-        {
-          "title": "Open in Kentik",
-          "url": "https://portal.kentik.com/v4/core/explorer",
-          "targetBlank": true,
-          "type": "link",
-          "icon": "external-link-alt"
-        }
-      ]
+      "links": []
     },
     {
       "title": "Traffic by Source Country",
@@ -595,15 +539,7 @@
           ]
         }
       },
-      "links": [
-        {
-          "title": "Open in Kentik",
-          "url": "https://portal.kentik.com/v4/core/explorer",
-          "targetBlank": true,
-          "type": "link",
-          "icon": "external-link-alt"
-        }
-      ]
+      "links": []
     },
     {
       "title": "Traffic by INET Family (IPv4 vs IPv6)",
@@ -663,15 +599,7 @@
           ]
         }
       },
-      "links": [
-        {
-          "title": "Open in Kentik",
-          "url": "https://portal.kentik.com/v4/core/explorer",
-          "targetBlank": true,
-          "type": "link",
-          "icon": "external-link-alt"
-        }
-      ]
+      "links": []
     },
     {
       "collapsed": false,
@@ -743,15 +671,7 @@
           ]
         }
       },
-      "links": [
-        {
-          "title": "Open in Kentik",
-          "url": "https://portal.kentik.com/v4/core/explorer",
-          "targetBlank": true,
-          "type": "link",
-          "icon": "external-link-alt"
-        }
-      ]
+      "links": []
     },
     {
       "title": "Top Source Ports by Bits/s",
@@ -811,15 +731,7 @@
           ]
         }
       },
-      "links": [
-        {
-          "title": "Open in Kentik",
-          "url": "https://portal.kentik.com/v4/core/explorer",
-          "targetBlank": true,
-          "type": "link",
-          "icon": "external-link-alt"
-        }
-      ]
+      "links": []
     },
     {
       "title": "Top Destination Ports by Bits/s",
@@ -879,15 +791,7 @@
           ]
         }
       },
-      "links": [
-        {
-          "title": "Open in Kentik",
-          "url": "https://portal.kentik.com/v4/core/explorer",
-          "targetBlank": true,
-          "type": "link",
-          "icon": "external-link-alt"
-        }
-      ]
+      "links": []
     },
     {
       "title": "Packets/s by Protocol",
@@ -948,15 +852,7 @@
           ]
         }
       },
-      "links": [
-        {
-          "title": "Open in Kentik",
-          "url": "https://portal.kentik.com/v4/core/explorer",
-          "targetBlank": true,
-          "type": "link",
-          "icon": "external-link-alt"
-        }
-      ]
+      "links": []
     },
     {
       "collapsed": true,
@@ -1028,15 +924,7 @@
               ]
             }
           },
-          "links": [
-            {
-              "title": "Open in Kentik",
-              "url": "https://portal.kentik.com/v4/core/explorer",
-              "targetBlank": true,
-              "type": "link",
-              "icon": "external-link-alt"
-            }
-          ]
+          "links": []
         },
         {
           "title": "Unique Source IPs",
@@ -1096,15 +984,7 @@
               ]
             }
           },
-          "links": [
-            {
-              "title": "Open in Kentik",
-              "url": "https://portal.kentik.com/v4/core/explorer",
-              "targetBlank": true,
-              "type": "link",
-              "icon": "external-link-alt"
-            }
-          ]
+          "links": []
         }
       ]
     },
@@ -1182,15 +1062,7 @@
               ]
             }
           },
-          "links": [
-            {
-              "title": "Open in Kentik",
-              "url": "https://portal.kentik.com/v4/core/explorer",
-              "targetBlank": true,
-              "type": "link",
-              "icon": "external-link-alt"
-            }
-          ]
+          "links": []
         },
         {
           "title": "Traffic by IP Protocol + Port",
@@ -1251,15 +1123,7 @@
               ]
             }
           },
-          "links": [
-            {
-              "title": "Open in Kentik",
-              "url": "https://portal.kentik.com/v4/core/explorer",
-              "targetBlank": true,
-              "type": "link",
-              "icon": "external-link-alt"
-            }
-          ]
+          "links": []
         },
         {
           "title": "Full Network Overview \u2014 All Dimensions Table",
@@ -1313,15 +1177,7 @@
               }
             ]
           },
-          "links": [
-            {
-              "title": "Open in Kentik",
-              "url": "https://portal.kentik.com/v4/core/explorer",
-              "targetBlank": true,
-              "type": "link",
-              "icon": "external-link-alt"
-            }
-          ]
+          "links": []
         }
       ]
     }

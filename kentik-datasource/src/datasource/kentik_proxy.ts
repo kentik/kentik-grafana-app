@@ -140,7 +140,9 @@ export class KentikProxy {
   }
 
   async invokeDrilldownUrlQuery(query: any) {
-    const url = await this.kentikAPISrv.invokeDrilldownUrlQuery(query);
+    // Ensure hostname_lookup is a boolean — the /query/url endpoint rejects strings
+    const cleanQuery = { ...query, hostname_lookup: this.hostnameLookupToBoolean(query.hostname_lookup) };
+    const url = await this.kentikAPISrv.invokeDrilldownUrlQuery(cleanQuery);
     return url;
   }
 

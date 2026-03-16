@@ -5,19 +5,34 @@
   "id": "kentik-datasource",
   "metrics": true,
   "info": {
-    "description": "",
+    "description": "Visualize and explore Kentik network observability data in Grafana.",
     "author": {
-      "name": "Kentik"
+      "name": "Kentik",
+      "url": "https://www.kentik.com"
     },
     "keywords": [
-      "datasource"
+      "datasource",
+      "kentik",
+      "network",
+      "flow",
+      "SNMP",
+      "NMS",
+      "observability",
+      "traffic"
     ],
     "logos": {
       "small": "img/logo_small.png",
       "large": "img/logo_large.png"
     },
-    "links": [],
-    "screenshots": [],
+    "links": [
+      {"name": "Kentik", "url": "https://www.kentik.com"},
+      {"name": "Documentation", "url": "https://kb.kentik.com/v4/Ma00.htm"}
+    ],
+    "screenshots": [
+      {"name": "Query Editor", "path": "img/queryeditor.png"},
+      {"name": "Graph Panel", "path": "img/graphedit.png"},
+      {"name": "Datasource Configuration", "path": "img/datasourceconfig.png"}
+    ],
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },

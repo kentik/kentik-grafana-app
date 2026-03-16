@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - 'kentik-datasource/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    paths:
+      - 'kentik-datasource/**'
+      - '.github/workflows/ci.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kentik-datasource
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: kentik-datasource/package-lock.json
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - run: npx jest --no-coverage
+
+      - name: Package plugin
+        run: |
+          mkdir -p /tmp/pkg/kentik-datasource
+          cp -r dist/* /tmp/pkg/kentik-datasource/
+          cd /tmp/pkg
+          zip -qr ${{ github.workspace }}/kentik-datasource.zip kentik-datasource
+
+      - name: Validate plugin
+        run: |
+          npx -y @grafana/plugin-validator@latest \
+            -sourceCodeUri file://${{ github.workspace }}/kentik-datasource \
+            ${{ github.workspace }}/kentik-datasource.zip

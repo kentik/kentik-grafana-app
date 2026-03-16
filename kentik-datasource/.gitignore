@@ -71,3 +71,4 @@ ci/
 /playwright/.auth/
 
 .eslintcache
+kentik-datasource-*.zip

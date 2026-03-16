@@ -4,14 +4,14 @@
 # build-signed.sh — Build, sign, and package the Kentik datasource plugin.
 #
 # Usage:
-#   GRAFANA_API_KEY=<key> ./scripts/build-signed.sh [OPTIONS]
+#   GRAFANA_ACCESS_POLICY_TOKEN=<token> ./scripts/build-signed.sh [OPTIONS]
 #
 # Options:
 #   --version <ver>   Version label for the archive (default: "dev")
 #   --root-urls <url> Restrict signing to specific Grafana root URLs
 #
 # Environment:
-#   GRAFANA_API_KEY   (required) Grafana Cloud API key for signing
+#   GRAFANA_ACCESS_POLICY_TOKEN   (required) Grafana Cloud access policy token for signing
 #
 # Output:
 #   kentik-datasource-<version>.zip
@@ -41,9 +41,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 # ── Validate ─────────────────────────────────────────────────────
-if [[ -z "${GRAFANA_API_KEY:-}" ]]; then
-  echo "Error: GRAFANA_API_KEY is not set." >&2
-  echo "Usage: GRAFANA_API_KEY=<key> $0 [--version <ver>] [--root-urls <url>]" >&2
+if [[ -z "${GRAFANA_ACCESS_POLICY_TOKEN:-}" ]]; then
+  echo "Error: GRAFANA_ACCESS_POLICY_TOKEN is not set." >&2
+  echo "Usage: GRAFANA_ACCESS_POLICY_TOKEN=<token> $0 [--version <ver>] [--root-urls <url>]" >&2
   exit 1
 fi
 
@@ -55,8 +55,8 @@ echo "── Building plugin ─────────────────
 npm run build
 
 echo "── Signing plugin ─────────────────────────────────────────"
-export GRAFANA_API_KEY
-npx @grafana/sign-plugin@latest --signatureType=commercial "${SIGN_ARGS[@]}"
+export GRAFANA_ACCESS_POLICY_TOKEN
+npx @grafana/sign-plugin@latest --signatureType=commercial ${SIGN_ARGS[@]+"${SIGN_ARGS[@]}"}
 
 echo "── Packaging ──────────────────────────────────────────────"
 ARCHIVE="${PLUGIN_ID}-${VERSION}.zip"
