@@ -181,7 +181,7 @@ export function ConfigEditor(props: Props) {
           <div className="gf-form">
             <i className={`fa fa-exclamation-circle ${s.colorError}`}>
               <span className={s.marginLeft}>
-                Invalid API credentials. This app won`t work until the credentials are updated.
+                Invalid API credentials. This app won't work until the credentials are updated.
               </span>
             </i>
           </div>
@@ -205,7 +205,7 @@ export function ConfigEditor(props: Props) {
             <i className="fa fa-warning kentik-api-status-icon warning"></i>
             <span className={s.marginLeft}>
               The specified Kentik user seems to have Member access level (not Admin), Custom Dimensions in the
-              dashboard filters won`t be available.
+              dashboard filters won't be available.
             </span>
           </div>
         )}
