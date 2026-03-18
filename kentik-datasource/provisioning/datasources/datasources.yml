@@ -1,0 +1,16 @@
+apiVersion: 1
+
+datasources:
+  - name: 'Kentik'
+    type: 'kentik-datasource'
+    uid: 'kentik-datasource-dev'
+    access: proxy
+    isDefault: false
+    orgId: 1
+    version: 1
+    editable: true
+    jsonData:
+      region: 'default'
+      url:
+        v6: 'https://grpc.api.kentik.com'
+        v5: 'https://api.kentik.com'

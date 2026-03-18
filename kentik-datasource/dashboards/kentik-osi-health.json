@@ -1,0 +1,1204 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "title": "\ud83d\udd0c Layer 1 \u2014 Physical: Interface & Device Health",
+      "type": "row"
+    },
+    {
+      "title": "Traffic by Source Interface",
+      "description": "L1: Physical interface utilization \u2014 which interfaces are carrying the most traffic",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "id": 1,
+      "datasource": {
+        "type": "kentik-datasource",
+        "uid": "kentik-datasource-dev"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "mode": "graph",
+          "dimension": [
+            "InterfaceID_src"
+          ],
+          "metric": [
+            "p95th_bits_per_sec"
+          ],
+          "hostnameLookup": "enabled",
+          "prefix": "Src Intf",
+          "aliasBy": "{{InterfaceID_src}} \u2014 $col",
+          "topx": "10",
+          "customFilters": [],
+          "conjunctionOperator": "AND",
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        }
+      },
+      "links": []
+    },
+    {
+      "title": "Traffic by Destination Interface",
+      "description": "L1: Egress interface utilization",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "id": 2,
+      "datasource": {
+        "type": "kentik-datasource",
+        "uid": "kentik-datasource-dev"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "mode": "graph",
+          "dimension": [
+            "InterfaceID_dst"
+          ],
+          "metric": [
+            "p95th_bits_per_sec"
+          ],
+          "hostnameLookup": "enabled",
+          "prefix": "Dst Intf",
+          "aliasBy": "{{InterfaceID_dst}} \u2014 $col",
+          "topx": "10",
+          "customFilters": [],
+          "conjunctionOperator": "AND",
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        }
+      },
+      "links": []
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 101,
+      "title": "\ud83d\udd17 Layer 2 \u2014 Data Link: VLANs & MAC Addresses",
+      "type": "row"
+    },
+    {
+      "title": "Traffic by Source VLAN",
+      "description": "L2: VLAN distribution \u2014 identify VLAN congestion or misconfiguration",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "datasource": {
+        "type": "kentik-datasource",
+        "uid": "kentik-datasource-dev"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "mode": "graph",
+          "dimension": [
+            "VLAN_src"
+          ],
+          "metric": [
+            "p95th_bits_per_sec"
+          ],
+          "hostnameLookup": "disabled",
+          "prefix": "VLAN",
+          "aliasBy": "VLAN {{VLAN_src}}",
+          "topx": "10",
+          "customFilters": [],
+          "conjunctionOperator": "AND",
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        }
+      },
+      "links": []
+    },
+    {
+      "title": "Traffic by Source MAC Address",
+      "description": "L2: MAC address distribution \u2014 identify top L2 endpoints",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "datasource": {
+        "type": "kentik-datasource",
+        "uid": "kentik-datasource-dev"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "mode": "graph",
+          "dimension": [
+            "src_eth_mac"
+          ],
+          "metric": [
+            "p95th_bits_per_sec"
+          ],
+          "hostnameLookup": "disabled",
+          "prefix": "MAC",
+          "aliasBy": "{{src_eth_mac}}",
+          "topx": "10",
+          "customFilters": [],
+          "conjunctionOperator": "AND",
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        }
+      },
+      "links": []
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 102,
+      "title": "\ud83c\udf10 Layer 3 \u2014 Network: IP, BGP & Geography",
+      "type": "row"
+    },
+    {
+      "title": "Top Source IPs by Bits/s",
+      "description": "L3: Heaviest source endpoints on the network",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 15
+      },
+      "id": 5,
+      "datasource": {
+        "type": "kentik-datasource",
+        "uid": "kentik-datasource-dev"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "mode": "graph",
+          "dimension": [
+            "IP_src"
+          ],
+          "metric": [
+            "p95th_bits_per_sec"
+          ],
+          "hostnameLookup": "enabled",
+          "prefix": "",
+          "aliasBy": "{{IP_src}}",
+          "topx": "10",
+          "customFilters": [],
+          "conjunctionOperator": "AND",
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "links": []
+    },
+    {
+      "title": "Top Destination IPs by Bits/s",
+      "description": "L3: Heaviest destination endpoints",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 15
+      },
+      "id": 6,
+      "datasource": {
+        "type": "kentik-datasource",
+        "uid": "kentik-datasource-dev"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "mode": "graph",
+          "dimension": [
+            "IP_dst"
+          ],
+          "metric": [
+            "p95th_bits_per_sec"
+          ],
+          "hostnameLookup": "enabled",
+          "prefix": "",
+          "aliasBy": "{{IP_dst}}",
+          "topx": "10",
+          "customFilters": [],
+          "conjunctionOperator": "AND",
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "links": []
+    },
+    {
+      "title": "Traffic by Source AS Number",
+      "description": "L3: BGP origin AS \u2014 which networks are sending you traffic",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 15
+      },
+      "id": 7,
+      "datasource": {
+        "type": "kentik-datasource",
+        "uid": "kentik-datasource-dev"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "mode": "graph",
+          "dimension": [
+            "AS_src"
+          ],
+          "metric": [
+            "p95th_bits_per_sec"
+          ],
+          "hostnameLookup": "disabled",
+          "prefix": "AS",
+          "aliasBy": "AS{{AS_src}}",
+          "topx": "10",
+          "customFilters": [],
+          "conjunctionOperator": "AND",
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "links": []
+    },
+    {
+      "title": "Traffic by Source Country",
+      "description": "L3: Geographic distribution of source traffic",
+      "type": "piechart",
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 21
+      },
+      "id": 8,
+      "datasource": {
+        "type": "kentik-datasource",
+        "uid": "kentik-datasource-dev"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "mode": "graph",
+          "dimension": [
+            "Geography_src"
+          ],
+          "metric": [
+            "avg_bits_per_sec"
+          ],
+          "hostnameLookup": "disabled",
+          "prefix": "",
+          "aliasBy": "{{Geography_src}}",
+          "topx": "15",
+          "customFilters": [],
+          "conjunctionOperator": "AND",
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ]
+        }
+      },
+      "links": []
+    },
+    {
+      "title": "Traffic by INET Family (IPv4 vs IPv6)",
+      "description": "L3: Protocol family distribution",
+      "type": "piechart",
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 21
+      },
+      "id": 9,
+      "datasource": {
+        "type": "kentik-datasource",
+        "uid": "kentik-datasource-dev"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "mode": "graph",
+          "dimension": [
+            "inet_family"
+          ],
+          "metric": [
+            "avg_bits_per_sec"
+          ],
+          "hostnameLookup": "disabled",
+          "prefix": "",
+          "aliasBy": "{{inet_family}}",
+          "topx": "5",
+          "customFilters": [],
+          "conjunctionOperator": "AND",
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ]
+        }
+      },
+      "links": []
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "id": 103,
+      "title": "\ud83d\udea2 Layer 4 \u2014 Transport: Protocols & Ports",
+      "type": "row"
+    },
+    {
+      "title": "Traffic by Protocol (TCP/UDP/ICMP)",
+      "description": "L4: Transport protocol breakdown",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 28
+      },
+      "id": 10,
+      "datasource": {
+        "type": "kentik-datasource",
+        "uid": "kentik-datasource-dev"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "mode": "graph",
+          "dimension": [
+            "Proto"
+          ],
+          "metric": [
+            "p95th_bits_per_sec"
+          ],
+          "hostnameLookup": "disabled",
+          "prefix": "",
+          "aliasBy": "{{Proto}}",
+          "topx": "10",
+          "customFilters": [],
+          "conjunctionOperator": "AND",
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 20,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "links": []
+    },
+    {
+      "title": "Top Source Ports by Bits/s",
+      "description": "L4: Which source ports are generating the most traffic",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 28
+      },
+      "id": 11,
+      "datasource": {
+        "type": "kentik-datasource",
+        "uid": "kentik-datasource-dev"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "mode": "graph",
+          "dimension": [
+            "Port_src"
+          ],
+          "metric": [
+            "p95th_bits_per_sec"
+          ],
+          "hostnameLookup": "disabled",
+          "prefix": "",
+          "aliasBy": "Port {{Port_src}} ({{Proto}})",
+          "topx": "10",
+          "customFilters": [],
+          "conjunctionOperator": "AND",
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "links": []
+    },
+    {
+      "title": "Top Destination Ports by Bits/s",
+      "description": "L4: Which services (by port) are receiving the most traffic",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 28
+      },
+      "id": 12,
+      "datasource": {
+        "type": "kentik-datasource",
+        "uid": "kentik-datasource-dev"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "mode": "graph",
+          "dimension": [
+            "Port_dst"
+          ],
+          "metric": [
+            "p95th_bits_per_sec"
+          ],
+          "hostnameLookup": "disabled",
+          "prefix": "",
+          "aliasBy": "Port {{Port_dst}}",
+          "topx": "10",
+          "customFilters": [],
+          "conjunctionOperator": "AND",
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "links": []
+    },
+    {
+      "title": "Packets/s by Protocol",
+      "description": "L4: Packet rate per transport protocol \u2014 useful for detecting small-packet floods",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 34
+      },
+      "id": 13,
+      "datasource": {
+        "type": "kentik-datasource",
+        "uid": "kentik-datasource-dev"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "mode": "graph",
+          "dimension": [
+            "Proto"
+          ],
+          "metric": [
+            "p95th_pkts_per_sec"
+          ],
+          "hostnameLookup": "disabled",
+          "prefix": "pps",
+          "aliasBy": "{{Proto}}",
+          "topx": "10",
+          "customFilters": [],
+          "conjunctionOperator": "AND",
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps",
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        }
+      },
+      "links": []
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "id": 104,
+      "title": "\ud83d\udce1 Layer 5\u20136 \u2014 Session & Presentation: Connection Patterns",
+      "type": "row",
+      "panels": [
+        {
+          "title": "Flows/s by Source IP (Connection Density)",
+          "description": "L5: Flow rate as a proxy for session/connection density \u2014 spikes may indicate scanning or DDoS",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 6,
+            "w": 12,
+            "x": 0,
+            "y": 41
+          },
+          "id": 14,
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "mode": "graph",
+              "dimension": [
+                "IP_src"
+              ],
+              "metric": [
+                "avg_flows_per_sec"
+              ],
+              "hostnameLookup": "enabled",
+              "prefix": "flows",
+              "aliasBy": "{{IP_src}}",
+              "topx": "10",
+              "customFilters": [],
+              "conjunctionOperator": "AND",
+              "datasource": {
+                "type": "kentik-datasource",
+                "uid": "kentik-datasource-dev"
+              }
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "fps",
+              "custom": {
+                "fillOpacity": 10,
+                "lineWidth": 2,
+                "spanNulls": true
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ]
+            }
+          },
+          "links": []
+        },
+        {
+          "title": "Unique Source IPs",
+          "description": "L5: Cardinality of unique source endpoints \u2014 sudden changes indicate new traffic patterns",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 6,
+            "w": 12,
+            "x": 12,
+            "y": 41
+          },
+          "id": 15,
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "mode": "graph",
+              "dimension": [
+                "InterfaceID_src"
+              ],
+              "metric": [
+                "avg_src_ip"
+              ],
+              "hostnameLookup": "disabled",
+              "prefix": "Uniq Src",
+              "aliasBy": "{{InterfaceID_src}} \u2014 $col",
+              "topx": "10",
+              "customFilters": [],
+              "conjunctionOperator": "AND",
+              "datasource": {
+                "type": "kentik-datasource",
+                "uid": "kentik-datasource-dev"
+              }
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "fillOpacity": 10,
+                "lineWidth": 2,
+                "spanNulls": true
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ]
+            }
+          },
+          "links": []
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      },
+      "id": 105,
+      "title": "\ud83c\udf0d Layer 7 \u2014 Application: Services, DNS & Protocols",
+      "type": "row",
+      "panels": [
+        {
+          "title": "Traffic by Destination Port (Service View)",
+          "description": "L7: Application-layer services identified by well-known destination ports (HTTP/443, DNS/53, SSH/22, etc.)",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 6,
+            "w": 12,
+            "x": 0,
+            "y": 48
+          },
+          "id": 16,
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "mode": "graph",
+              "dimension": [
+                "Port_dst"
+              ],
+              "metric": [
+                "avg_bits_per_sec"
+              ],
+              "hostnameLookup": "disabled",
+              "prefix": "Svc",
+              "aliasBy": "Port {{Port_dst}}",
+              "topx": "15",
+              "customFilters": [],
+              "conjunctionOperator": "AND",
+              "datasource": {
+                "type": "kentik-datasource",
+                "uid": "kentik-datasource-dev"
+              }
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bps",
+              "custom": {
+                "fillOpacity": 15,
+                "lineWidth": 2,
+                "spanNulls": true,
+                "stacking": {
+                  "mode": "normal"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max",
+                "lastNotNull"
+              ]
+            }
+          },
+          "links": []
+        },
+        {
+          "title": "Traffic by IP Protocol + Port",
+          "description": "L7: Combined protocol and port view \u2014 TCP:443 vs UDP:53 vs TCP:22 etc.",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 6,
+            "w": 12,
+            "x": 12,
+            "y": 48
+          },
+          "id": 17,
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "mode": "graph",
+              "dimension": [
+                "Proto",
+                "Port_dst"
+              ],
+              "metric": [
+                "avg_bits_per_sec"
+              ],
+              "hostnameLookup": "disabled",
+              "prefix": "",
+              "aliasBy": "{{Proto}}/{{Port_dst}}",
+              "topx": "10",
+              "customFilters": [],
+              "conjunctionOperator": "AND",
+              "datasource": {
+                "type": "kentik-datasource",
+                "uid": "kentik-datasource-dev"
+              }
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bps",
+              "custom": {
+                "fillOpacity": 10,
+                "lineWidth": 2,
+                "spanNulls": true
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ]
+            }
+          },
+          "links": []
+        },
+        {
+          "title": "Full Network Overview \u2014 All Dimensions Table",
+          "description": "Sortable table view across key dimensions with Max, 95th Percentile, and Average",
+          "type": "table",
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 54
+          },
+          "id": 18,
+          "datasource": {
+            "type": "kentik-datasource",
+            "uid": "kentik-datasource-dev"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "mode": "table",
+              "dimension": [
+                "InterfaceID_src"
+              ],
+              "metric": [
+                "p95th_bits_per_sec"
+              ],
+              "hostnameLookup": "enabled",
+              "prefix": "",
+              "aliasBy": "{{InterfaceID_src}} \u2014 $col",
+              "topx": "25",
+              "customFilters": [],
+              "conjunctionOperator": "AND",
+              "datasource": {
+                "type": "kentik-datasource",
+                "uid": "kentik-datasource-dev"
+              }
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bps"
+            },
+            "overrides": []
+          },
+          "options": {
+            "showHeader": true,
+            "sortBy": [
+              {
+                "displayName": "p95th_bits_per_sec",
+                "desc": true
+              }
+            ]
+          },
+          "links": []
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": [
+    "kentik",
+    "network",
+    "osi",
+    "noc"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Kentik: Network Health by OSI Layer",
+  "uid": "kentik-osi-health",
+  "version": 1
+}

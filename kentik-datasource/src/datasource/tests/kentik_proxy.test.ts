@@ -1,0 +1,75 @@
+import { KentikAPI } from '../kentik_api';
+import { KentikProxy } from '../kentik_proxy';
+
+describe('KentikProxy', () => {
+  const ctx: any = {};
+
+  describe('When getting custom dimensions', () => {
+    const data = {
+      dimensions: [
+        {
+          description: 'just-testing',
+          name: 'c_test',
+          populators: [{ value: 'value1' }, { value: 'value2' }],
+        },
+        {
+          description: 'just-testing-2',
+          name: 'c_test_2',
+          populators: [{ value: 'value3' }, { value: 'value4' }],
+        },
+      ],
+    };
+    beforeEach(() => getKentikProxyInstance(ctx, data));
+
+    it('Should parse it properly', async () => {
+      const dimensions = await ctx.kentikProxy.getCustomDimensions();
+      expect(dimensions).toHaveLength(2);
+      expect(dimensions[0]).toEqual({
+        text: 'Custom just-testing',
+        value: 'c_test',
+        field: 'c_test',
+        values: ['value1', 'value2'],
+      });
+      expect(dimensions[1]).toEqual({
+        text: 'Custom just-testing-2',
+        value: 'c_test_2',
+        field: 'c_test_2',
+        values: ['value3', 'value4'],
+      });
+    });
+  });
+});
+
+function getKentikProxyInstance(ctx: any, data: any) {
+  ctx.backendSrv = {
+    get: () => {
+      return Promise.resolve([
+        {
+          type: 'kentik-connect-datasource',
+          jsonData: {
+            region: 'default',
+          },
+        },
+      ]);
+    },
+    fetch: () => {
+      return {
+        toPromise: () =>
+          Promise.resolve({
+            status: 200,
+            data,
+          }),
+        subscribe: (observer: any) => {
+          observer.next({
+            status: 200,
+            data,
+          });
+          observer.complete();
+        },
+      };
+    },
+  };
+
+  ctx.kentikAPI = new KentikAPI(ctx.backendSrv, 'uid');
+  ctx.kentikProxy = new KentikProxy(ctx.kentikAPI);
+}
