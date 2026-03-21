@@ -6,27 +6,27 @@ on:
       - master
       - main
     paths:
-      - 'kentik-datasource/**'
+      - '**'
       - '.github/workflows/ci.yml'
   pull_request:
     paths:
-      - 'kentik-datasource/**'
+      - '**'
       - '.github/workflows/ci.yml'
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: kentik-datasource
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: '22'
+          node-version: '24'
           cache: 'npm'
-          cache-dependency-path: kentik-datasource/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - run: npm ci
 
@@ -38,11 +38,63 @@ jobs:
         run: |
           mkdir -p /tmp/pkg/kentik-datasource
           cp -r dist/* /tmp/pkg/kentik-datasource/
+          cp -r dashboards /tmp/pkg/kentik-datasource/dashboards
           cd /tmp/pkg
           zip -qr ${{ github.workspace }}/kentik-datasource.zip kentik-datasource
 
       - name: Validate plugin
         run: |
           npx -y @grafana/plugin-validator@latest \
-            -sourceCodeUri file://${{ github.workspace }}/kentik-datasource \
+            -sourceCodeUri file://${{ github.workspace }} \
             ${{ github.workspace }}/kentik-datasource.zip
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - grafana_image: grafana-enterprise
+            grafana_version: "11.6.0"
+          - grafana_image: grafana-enterprise
+            grafana_version: "12.4.1"
+          - grafana_image: grafana-enterprise
+            grafana_version: latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Start Grafana
+        run: |
+          docker compose up -d
+          # Poll until Grafana is ready (up to 60 s)
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/api/health >/dev/null 2>&1; then
+              echo "Grafana is ready"
+              break
+            fi
+            echo "Waiting for Grafana... ($i)"
+            sleep 2
+          done
+        env:
+          GRAFANA_IMAGE: ${{ matrix.grafana_image }}
+          GRAFANA_VERSION: ${{ matrix.grafana_version }}
+          ANONYMOUS_AUTH_ENABLED: "true"
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npx playwright test
+        env:
+          GRAFANA_URL: http://localhost:3000
