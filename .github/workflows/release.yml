@@ -6,8 +6,8 @@ on:
       - 'v*' # Run workflow on version tags, e.g. v2.0.0
 
 env:
-  PLUGIN_DIR: kentik-datasource
   PLUGIN_ID: kentik-datasource
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   release:
@@ -17,38 +17,36 @@ jobs:
       attestations: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
         with:
-          node-version: '22'
+          fetch-depth: 0 # Full history for changelog generation
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
           cache: 'npm'
-          cache-dependency-path: kentik-datasource/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: ${{ env.PLUGIN_DIR }}
         run: npm ci
 
       - name: Build plugin
-        working-directory: ${{ env.PLUGIN_DIR }}
         run: npm run build
 
       - name: Run tests
-        working-directory: ${{ env.PLUGIN_DIR }}
         run: npx jest --no-coverage
 
       - name: Sign plugin
-        working-directory: ${{ env.PLUGIN_DIR }}
         run: npx @grafana/sign-plugin@latest
         env:
           GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
 
       - name: Package plugin
-        working-directory: ${{ env.PLUGIN_DIR }}
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           mkdir -p "/tmp/pkg/${{ env.PLUGIN_ID }}"
           cp -r dist/* "/tmp/pkg/${{ env.PLUGIN_ID }}/"
+          cp -r dashboards "/tmp/pkg/${{ env.PLUGIN_ID }}/dashboards"
           cd /tmp/pkg
           zip -r "${{ github.workspace }}/${{ env.PLUGIN_ID }}-${VERSION}.zip" "${{ env.PLUGIN_ID }}"
           cd "${{ github.workspace }}"
