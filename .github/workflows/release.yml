@@ -46,7 +46,6 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           mkdir -p "/tmp/pkg/${{ env.PLUGIN_ID }}"
           cp -r dist/* "/tmp/pkg/${{ env.PLUGIN_ID }}/"
-          cp -r dashboards "/tmp/pkg/${{ env.PLUGIN_ID }}/dashboards"
           cd /tmp/pkg
           zip -r "${{ github.workspace }}/${{ env.PLUGIN_ID }}-${VERSION}.zip" "${{ env.PLUGIN_ID }}"
           cd "${{ github.workspace }}"

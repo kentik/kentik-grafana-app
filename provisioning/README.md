@@ -1,51 +1,111 @@
-# Kentik Datasource — Test Environment
+# Testing the Kentik Datasource Plugin
+
+This document describes how to set up a local test environment for the Kentik
+datasource plugin for Grafana plugin review purposes.
+
+## Prerequisites
+
+- [Docker](https://www.docker.com/products/docker-desktop) and Docker Compose
+- Node.js 24+
+- A Kentik account with API access ([free trial available](https://portal.kentik.com/signup.html))
+- Your Kentik **email address** and **API token** (found at
+  [app.kentik.com → Settings → API](https://app.kentik.com/#/settings/api))
 
 ## Quick Start
 
+### 1. Clone the repository
+
 ```bash
-# 1. Build the plugin
-npm ci && npm run build
-
-# 2. Start Grafana with the plugin loaded
-docker compose up -d
-
-# 3. Open Grafana at http://localhost:3000 (anonymous admin access)
+git clone https://github.com/kentik/kentik-grafana-app.git
+cd kentik-grafana-app
 ```
 
-## Provisioned Resources
+### 2. Build the plugin
 
-### Datasource
+```bash
+npm install
+npm run build
+```
 
-The Kentik datasource is pre-configured at `provisioning/datasources/datasources.yml`.
+### 3. Start Grafana
 
-**To complete setup**, navigate to **Connections → Data Sources → Kentik** and enter:
+```bash
+docker compose up --build
+```
 
-- **Email** — Your Kentik account email
-- **API Token** — Generated from [Kentik portal](https://portal.kentik.com) → My Account → API
+Grafana will be available at **http://localhost:3000**
 
-Click **Save API Settings**, then **Save & Test** to verify connectivity.
+Default credentials: `admin` / `admin`
 
-### Dashboards
+### 4. Configure credentials
 
-Four dashboards are auto-provisioned into the **Kentik** folder:
+The datasource is pre-provisioned but requires your Kentik credentials:
 
-| Dashboard                                     | Description                                             |
-| --------------------------------------------- | ------------------------------------------------------- |
-| **Kentik: Home**                              | Landing page with links to other dashboards             |
-| **Kentik: Network Health & Traffic Overview** | OSI-layer organized panels (SNMP, flow, geo, transport) |
-| **Kentik Top Talkers**                        | Variable-driven top-N analysis by dimension/metric      |
-| **Kentik: Site & Device Overview**            | Heatmap, status history, and bar chart visualizations   |
+1. Go to **Connections → Data Sources → Kentik**
+2. Enter your Kentik **email** and **API token**
+3. Click **Save & test** — you should see "Data source is working"
 
-### Docker Compose
+## What You'll See
 
-- **Grafana version**: Configurable via `GRAFANA_IMAGE` / `GRAFANA_VERSION` env vars (defaults to `grafana-enterprise:12.4.1`)
-- **Anonymous auth**: Enabled by default for easy testing (`Admin` role)
-- **Plugin signing**: Unsigned plugins allowed in development mode
-- **Logs**: Debug-level logging enabled for the plugin (`GF_LOG_FILTERS=plugin.kentik-datasource:debug`)
+Once running, Grafana will have:
 
-## Requirements
+- **Kentik datasource** pre-configured under Connections → Data Sources
+- **4 pre-built dashboards** under the "Kentik" folder:
+  - **Kentik Home** — overview of top traffic by dimension
+  - **Top Talkers** — top source/destination IPs, ASNs, and ports
+  - **OSI Health** — layer-by-layer network health metrics
+  - **Site Overview** — per-site traffic breakdown
 
-- A [Kentik](https://www.kentik.com) account with API access (free trial available)
-- Docker and Docker Compose
+## Verifying the Plugin
 
-For more information see [Provision dashboards and data sources](https://grafana.com/tutorials/provision-dashboards-and-data-sources/)
+### Query editor
+
+1. Open any pre-built dashboard and click a panel → **Edit**
+2. The query editor exposes:
+   - **Data Mode** — Graph or Table
+   - **Sites / Devices** — populated from your Kentik account
+   - **Dimensions** — 200+ flow, BGP, GeoIP, DNS, cloud, and SNMP dimensions
+   - **Metric** — bits, packets, unique IPs, etc.
+   - **Filters** — custom filter expressions
+   - **Alias by** — `$tag_<field>` or `{{field}}` variable substitution
+
+### Creating a query from scratch
+
+1. Go to **Dashboards → New → New Dashboard → Add visualization**
+2. Select **Kentik** as the data source
+3. Set a time range with known traffic (e.g. last 6 hours)
+4. Choose a Dimension (e.g. `Source IP`) and Metric (e.g. `Bits/s`)
+5. Click **Run query** — results should populate within a few seconds
+
+## Grafana Version Compatibility
+
+| Grafana Version | Status |
+|---|---|
+| 11.6.x | ✅ Minimum supported |
+| 12.4.x | ✅ Tested |
+| latest | ✅ Tested in CI |
+
+## Region Support
+
+| Region | API Endpoint |
+|---|---|
+| US (default) | `https://api.kentik.com` |
+| EU | `https://api.kentik.eu` |
+| Custom | Configurable in datasource settings |
+
+To test with the EU region, change **Region** to `EU` in the datasource
+configuration page and re-enter your credentials.
+
+## Troubleshooting
+
+**"Plugin unavailable" on dashboards**
+The datasource credentials haven't been saved yet. Go to Connections → Data
+Sources → Kentik, enter your credentials, and click Save & test.
+
+**"Data source is not responding"**
+Check that your API token has read access enabled in the Kentik portal under
+Settings → API Tokens.
+
+**No data in panels**
+Ensure the selected time range covers a period with traffic data in your Kentik
+account. Try "Last 24 hours" as a starting point.
