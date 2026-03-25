@@ -38,9 +38,24 @@ jobs:
         run: |
           mkdir -p /tmp/pkg/kentik-datasource
           cp -r dist/* /tmp/pkg/kentik-datasource/
-          cp -r dashboards /tmp/pkg/kentik-datasource/dashboards
           cd /tmp/pkg
           zip -qr ${{ github.workspace }}/kentik-datasource.zip kentik-datasource
+
+      - name: Check zip structure
+        run: |
+          # Fail if dashboards are nested under a double dashboards/ path
+          if unzip -l ${{ github.workspace }}/kentik-datasource.zip | grep -q 'dashboards/dashboards/'; then
+            echo "ERROR: zip contains dashboards/dashboards/ — duplicate copy detected"
+            unzip -l ${{ github.workspace }}/kentik-datasource.zip | grep dashboard
+            exit 1
+          fi
+          # Confirm dashboards are present at the expected path
+          if ! unzip -l ${{ github.workspace }}/kentik-datasource.zip | grep -q 'kentik-datasource/dashboards/'; then
+            echo "ERROR: zip is missing kentik-datasource/dashboards/"
+            exit 1
+          fi
+          echo "Zip structure OK"
+          unzip -l ${{ github.workspace }}/kentik-datasource.zip | grep dashboard
 
       - name: Validate plugin
         run: |
