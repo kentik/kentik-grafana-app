@@ -20,7 +20,7 @@
       "id": 1,
       "options": {
         "mode": "markdown",
-        "content": "![Kentik](public/plugins/kentik-datasource/img/logo_large.png)\n\n# Kentik for Grafana\n\nKentik for Grafana allows you to quickly and easily add network activity visibility metrics to your Grafana dashboard.\n\nBy leveraging the power of Kentik's monitoring SaaS, you can enjoy rich, actionable insights into consumers of network bandwidth and anomalies that can affect application or service performance.\n\n**Getting Started:**\n1. ✅ Install Kentik for Grafana\n2. Configure your [Kentik datasource](/connections/datasources) with API credentials\n3. Explore the dashboards in the Kentik folder →"
+        "content": "![Kentik](public/plugins/kentik-connect-datasource/img/logo_large.png)\n\n# Kentik for Grafana\n\nKentik for Grafana allows you to quickly and easily add network activity visibility metrics to your Grafana dashboard.\n\nBy leveraging the power of Kentik's monitoring SaaS, you can enjoy rich, actionable insights into consumers of network bandwidth and anomalies that can affect application or service performance.\n\n**Getting Started:**\n1. ✅ Install Kentik for Grafana\n2. Configure your [Kentik datasource](/connections/datasources) with API credentials\n3. Explore the dashboards in the Kentik folder →"
       },
       "fieldConfig": {
         "defaults": {},

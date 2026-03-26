@@ -23,7 +23,7 @@
   "panels": [
     {
       "title": "Protocol Traffic Density (Heatmap)",
-      "description": "Heatmap showing traffic volume distribution across protocols over time — bright cells indicate burst activity",
+      "description": "Heatmap showing traffic volume distribution across protocols over time \u2014 bright cells indicate burst activity",
       "type": "heatmap",
       "gridPos": {
         "h": 9,
@@ -33,8 +33,8 @@
       },
       "id": 1,
       "datasource": {
-        "type": "kentik-datasource",
-        "uid": "kentik-datasource-dev"
+        "type": "kentik-connect-datasource",
+        "uid": "kentik"
       },
       "targets": [
         {
@@ -53,8 +53,8 @@
           "customFilters": [],
           "conjunctionOperator": "AND",
           "datasource": {
-            "type": "kentik-datasource",
-            "uid": "kentik-datasource-dev"
+            "type": "kentik-connect-datasource",
+            "uid": "kentik"
           }
         }
       ],
@@ -90,7 +90,7 @@
     },
     {
       "title": "Device Flow Activity (Status History)",
-      "description": "Status history showing per-device flow rates over time — red indicates low/no flows (possible collection outage), green indicates healthy activity",
+      "description": "Status history showing per-device flow rates over time \u2014 red indicates low/no flows (possible collection outage), green indicates healthy activity",
       "type": "status-history",
       "gridPos": {
         "h": 8,
@@ -100,8 +100,8 @@
       },
       "id": 2,
       "datasource": {
-        "type": "kentik-datasource",
-        "uid": "kentik-datasource-dev"
+        "type": "kentik-connect-datasource",
+        "uid": "kentik"
       },
       "targets": [
         {
@@ -120,8 +120,8 @@
           "customFilters": [],
           "conjunctionOperator": "AND",
           "datasource": {
-            "type": "kentik-datasource",
-            "uid": "kentik-datasource-dev"
+            "type": "kentik-connect-datasource",
+            "uid": "kentik"
           }
         }
       ],
@@ -143,9 +143,18 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "red", "value": null },
-              { "color": "orange", "value": 10 },
-              { "color": "green", "value": 100 }
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 10
+              },
+              {
+                "color": "green",
+                "value": 100
+              }
             ]
           },
           "custom": {
@@ -159,7 +168,7 @@
     },
     {
       "title": "Site Traffic Overview (Bar Chart)",
-      "description": "Traffic volume by site — quickly identify which sites are driving the most bandwidth",
+      "description": "Traffic volume by site \u2014 quickly identify which sites are driving the most bandwidth",
       "type": "barchart",
       "gridPos": {
         "h": 10,
@@ -169,8 +178,8 @@
       },
       "id": 3,
       "datasource": {
-        "type": "kentik-datasource",
-        "uid": "kentik-datasource-dev"
+        "type": "kentik-connect-datasource",
+        "uid": "kentik"
       },
       "targets": [
         {
@@ -189,8 +198,8 @@
           "customFilters": [],
           "conjunctionOperator": "AND",
           "datasource": {
-            "type": "kentik-datasource",
-            "uid": "kentik-datasource-dev"
+            "type": "kentik-connect-datasource",
+            "uid": "kentik"
           }
         }
       ],

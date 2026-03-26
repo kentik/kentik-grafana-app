@@ -18,7 +18,7 @@
 #
 set -euo pipefail
 
-PLUGIN_ID="kentik-datasource"
+PLUGIN_ID="$(grep '"id"' src/plugin.json | sed -E 's/.*"id" *: *"(.*)".*/\1/')"
 VERSION="dev"
 SIGN_ARGS=()
 

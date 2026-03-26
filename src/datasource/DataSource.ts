@@ -22,6 +22,7 @@ import {
   PartialDataFrame,
 } from '@grafana/data';
 import { getTemplateSrv, TemplateSrv, getBackendSrv } from '@grafana/runtime';
+import { showAlert } from '../utils/alert_helper';
 
 import * as _ from 'lodash';
 import { Observable } from 'rxjs';
@@ -260,11 +261,11 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     }
 
     const customDimensions = await this.kentik.getCustomDimensions().catch((err: any) => {
-      console.warn('[KentikDS] Failed to load custom dimensions, continuing without them:', err.message || err);
+      showAlert(err);
       return [];
     });
     const savedFiltersList = await this.kentik.getSavedFilters().catch((err: any) => {
-      console.warn('[KentikDS] Failed to load saved filters, continuing without them:', err.message || err);
+      showAlert(err);
       return [];
     });
     const kentikFilters: AdHocVariableFilter[] = options.filters || [];
@@ -456,8 +457,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         const allAggResults = await Promise.all(aggPromises);
         return _.flatten(allAggResults);
         } catch (err: any) {
-          console.error('[KentikDS] Query target error:', err);
-          return [];
+          throw err;
         }
       }
     );
@@ -684,9 +684,7 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
         }
       }
 
-      // Debug: log when a tag fails to resolve so we can inspect the series row
-      console.warn(`[KentikDS] Alias tag {{${tagName}}} not found in series row. Available keys:`, Object.keys(series).filter((k) => k !== 'timeSeries'));
-
+      // Tag not found — return the original token unchanged
       return match;
     };
 

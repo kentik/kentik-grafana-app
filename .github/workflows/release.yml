@@ -6,7 +6,7 @@ on:
       - 'v*' # Run workflow on version tags, e.g. v2.0.0
 
 env:
-  PLUGIN_ID: kentik-datasource
+  PLUGIN_ID: kentik-connect-datasource
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:

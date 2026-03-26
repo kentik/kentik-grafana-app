@@ -165,13 +165,6 @@ function buildTopXdataQuery(options: any, panelId?: string) {
   const metricArray = options.metric?.split(',').map(normaliseKtPrefix);
   const metricDefs = allMetricOptions.filter(opt => metricArray?.includes(opt.value));
 
-  console.log('[KentikDS] buildTopXdataQuery debug:', {
-    rawMetric: options.metric,
-    metricArray,
-    metricDefsCount: metricDefs.length,
-    rawDimension: options.dimension,
-  });
-
   if (_.isEmpty(options.deviceNames)) {
     // No devices selected → query all devices (same pattern as sites)
   }

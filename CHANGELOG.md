@@ -39,6 +39,7 @@ All notable changes to this project will be documented in this file.
 **Breaking changes:**
 
 - Minimum Grafana version: 10.4.0
+- Plugin type changed from `app` to `datasource`; plugin ID changed from `kentik-connect-app` to `kentik-connect-datasource` (required by Grafana's validator — datasource plugins must use the `-datasource` suffix). Both plugins can run side-by-side; existing `kentik-connect-app` v1.7.0 dashboards remain functional while you migrate at your own pace. See [v2.0.0 release notes](docs/v2.0.0-release.md) for migration steps.
 
 ## [1.7.0] - 2023-06-27
 

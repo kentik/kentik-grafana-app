@@ -3,7 +3,7 @@ import { JsonData, MyDataSourceOptions, MySecureJsonData, Region, Url } from './
 import { css } from '@emotion/css';
 import { GrafanaTheme2, SelectableValue, DataSourcePluginOptionsEditorProps } from '@grafana/data';
 import { getBackendSrv } from '@grafana/runtime';
-import { Input, SecretInput, Button, Field, FieldSet, RadioButtonGroup, useStyles2 } from '@grafana/ui';
+import { Input, SecretInput, Button, Field, FieldSet, RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
 import { showCustomAlert } from './utils/alert_helper';
 import { KentikAPI } from './datasource/kentik_api';
 
@@ -72,15 +72,31 @@ export function ConfigEditor(props: Props) {
     return getUrlByRegion(region, state.dynamicUrl);
   };
 
-  const onChangeEmail = (e: ChangeEvent<HTMLInputElement>) => setState({ ...state, email: e.target.value.trim() });
+  const onChangeEmail = (e: ChangeEvent<HTMLInputElement>) => {
+    const email = e.target.value.trim();
+    setState({ ...state, email });
+    onOptionsChange({ ...options, jsonData: { ...options.jsonData, email } });
+  };
   const onChangeCustomUrl = (e: ChangeEvent<HTMLInputElement>) => {
     const newUrl = e.target.value.trim();
-    setState({ ...state, dynamicUrl: newUrl, url: getUrlByRegion(Region.CUSTOM, newUrl) });
+    const url = getUrlByRegion(Region.CUSTOM, newUrl);
+    setState({ ...state, dynamicUrl: newUrl, url });
+    onOptionsChange({ ...options, jsonData: { ...options.jsonData, dynamicUrl: newUrl, url } });
   };
-  const onChangeRegion = (region: Region) => setState({ ...state, region, url: _getUrlByRegion(region), dynamicUrl: '' });
-  const onChangeToken = (e: ChangeEvent<HTMLInputElement>) => setState({ ...state, token: e.target.value.trim() });
-  const onResetToken = () =>
+  const onChangeRegion = (region: Region) => {
+    const url = _getUrlByRegion(region);
+    setState({ ...state, region, url, dynamicUrl: '' });
+    onOptionsChange({ ...options, jsonData: { ...options.jsonData, region, url, dynamicUrl: '' } });
+  };
+  const onChangeToken = (e: ChangeEvent<HTMLInputElement>) => {
+    const token = e.target.value.trim();
+    setState({ ...state, token });
+    onOptionsChange({ ...options, secureJsonData: { token } });
+  };
+  const onResetToken = () => {
     setState({ ...state, token: '', tokenSet: false, apiValidated: false, apiMemberWarning: false, apiError: false });
+    onOptionsChange({ ...options, secureJsonFields: { ...options.secureJsonFields, token: false }, secureJsonData: {} });
+  };
 
   const _onApiError = () => setState({ ...state, apiValidated: false, apiError: true });
 
@@ -146,7 +162,6 @@ export function ConfigEditor(props: Props) {
       showCustomAlert('Settings saved!', '', 'success');
       setTimeout(() => window.location.reload(), 800);
     } catch (err: any) {
-      console.error('Failed to save datasource config:', err);
       const msg = err?.data?.message || 'Unknown error';
       showCustomAlert(`Error saving settings: ${msg}`, '', 'error');
     } finally {
@@ -178,13 +193,12 @@ export function ConfigEditor(props: Props) {
         </Field>
 
         {isConfigured() && state.apiError && (
-          <div className="gf-form">
-            <i className={`fa fa-exclamation-circle ${s.colorError}`}>
-              <span className={s.marginLeft}>
-                Invalid API credentials. This app won&apos;t work until the credentials are updated.
-              </span>
-            </i>
-          </div>
+          <Stack direction="row" alignItems="center" gap={1}>
+            <i className={`fa fa-exclamation-circle ${s.colorError}`} />
+            <span className={s.marginLeft}>
+              Invalid API credentials. This app won&apos;t work until the credentials are updated.
+            </span>
+          </Stack>
         )}
 
         {state.tokenSet && state.apiValidated && (
