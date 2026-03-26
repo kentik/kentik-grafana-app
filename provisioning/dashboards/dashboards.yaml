@@ -10,4 +10,4 @@ providers:
     allowUiUpdates: true
     updateIntervalSeconds: 600
     options:
-      path: /root/kentik-datasource/dashboards
+      path: /root/kentik-connect-datasource/dashboards
