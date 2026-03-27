@@ -212,8 +212,7 @@ export async function sendTopXDataQuery(
   datasourceUid: string,
   apiKey: string,
   query: any,
-  maxRetries = 3,
-  quiet = true
+  maxRetries = 3
 ): Promise<{ ok: boolean; status: number; body: any }> {
   const url = `${grafanaUrl}/api/datasources/proxy/uid/${datasourceUid}/api/v5/query/topXdata`;
 
@@ -239,9 +238,6 @@ export async function sendTopXDataQuery(
     } catch (err: any) {
       if (attempt < maxRetries) {
         const backoff = Math.min(2000 * Math.pow(2, attempt), 30000);
-        if (!quiet) {
-          console.log(`    ⟳ fetch failed, retrying in ${backoff}ms (attempt ${attempt + 1}/${maxRetries})...`);
-        }
         await sleep(backoff);
         continue;
       }
@@ -255,13 +251,6 @@ export async function sendTopXDataQuery(
         : resp.status === 429
         ? Math.min(5000 * Math.pow(2, attempt), 60000)
         : Math.min(2000 * Math.pow(2, attempt), 15000);
-      if (!quiet) {
-        console.log(
-          `    ⟳ ${resp.status} ${
-            resp.status === 429 ? 'rate limited' : 'bad gateway'
-          }, retrying in ${backoff}ms (attempt ${attempt + 1}/${maxRetries})...`
-        );
-      }
       await sleep(backoff);
       continue;
     }
@@ -285,12 +274,11 @@ export async function validateDimension(
   dim: DimensionLike,
   metric: MetricLike,
   config: { grafanaUrl: string; datasourceUid: string; apiKey: string; device: string | null },
-  quiet = true
 ): Promise<ValidationResult> {
   const start = Date.now();
   try {
     const query = buildMinimalQuery(dim.value, metric, config.device);
-    const resp = await sendTopXDataQuery(config.grafanaUrl, config.datasourceUid, config.apiKey, query, 3, quiet);
+    const resp = await sendTopXDataQuery(config.grafanaUrl, config.datasourceUid, config.apiKey, query, 3);
 
     const durationMs = Date.now() - start;
     const status = resp.ok ? 'pass' : 'fail';

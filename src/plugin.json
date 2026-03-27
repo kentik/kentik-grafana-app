@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
   "type": "datasource",
   "name": "Kentik",
-  "id": "kentik-datasource",
+  "id": "kentik-connect-datasource",
   "metrics": true,
   "info": {
     "description": "Visualize and explore Kentik network observability data in Grafana.",
@@ -26,7 +26,8 @@
     },
     "links": [
       {"name": "Kentik", "url": "https://www.kentik.com"},
-      {"name": "Documentation", "url": "https://kb.kentik.com/docs/apis-overview"}
+      {"name": "Documentation", "url": "https://kb.kentik.com/docs/apis-overview"},
+      {"name": "sponsor", "url": "https://www.kentik.com/get-started/"}
     ],
     "screenshots": [
       {"name": "Query Editor", "path": "img/queryeditor.png"},

@@ -229,7 +229,6 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
           customDimensions
         });
       } catch (error) {
-        console.error('Failed to initialize Query Editor:', error);
         setState(s => ({ ...s, isLoading: false, isDevicesLoading: false }));
       }
     };
@@ -500,8 +499,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       return;
     }
     const query: Query = _.cloneDeep(props.query);
-    // @ts-ignore
-    query[field] = option.value;
+    (query as Record<keyof Query, unknown>)[field] = option.value;
 
     onQueryChange(query);
     const queryValid = isQueryValid(query);
@@ -515,8 +513,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       return;
     }
     const query = _.cloneDeep(props.query);
-    //@ts-ignore
-    query[field] = value;
+    (query as Record<keyof Query, unknown>)[field] = value;
 
     onQueryChange(query);
     isQueryValid(query)
@@ -524,8 +521,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 
   const onDeviceSelect = (value: SelectableValue[]) => {
     const query: Query = _.cloneDeep(props.query);
-    // @ts-ignore
-    query['devices'] = value;
+    query['devices'] = value as Query['devices'];
 
     onQueryChange(query);
     isQueryValid(query)
@@ -533,7 +529,6 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 
   const onMetricSelect = (value: SelectableValue[]) => {
     const query: Query = _.cloneDeep(props.query);
-    // @ts-ignore
     query['metric'] = value;
 
     onQueryChange(query);
@@ -576,14 +571,10 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       const addedDim = findDim(addedId);
 
       if (removedDim && addedDim) {
-        // @ts-ignore
-        let removedField = removedDim['field'];
-        // @ts-ignore
-        let addedField = addedDim['field'];
-        // @ts-ignore
-        let removedText = removedDim['text'];
-        // @ts-ignore
-        let addedText = addedDim['text'];
+        let removedField = (removedDim as ComboboxOption & { field?: string; text?: string })['field'];
+        let addedField = (addedDim as ComboboxOption & { field?: string; text?: string })['field'];
+        let removedText = (removedDim as ComboboxOption & { field?: string; text?: string })['text'];
+        let addedText = (addedDim as ComboboxOption & { field?: string; text?: string })['text'];
 
         // Handle variables (which don't have field/text properties but value starts with $)
         if (!removedField && removedDim.value?.toString().startsWith('$')) {
@@ -624,8 +615,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     }
 
     const query: Query = _.cloneDeep(props.query);
-    // @ts-ignore
-    query['dimension'] = value;
+    query['dimension'] = value as Query['dimension'];
 
     if (newAliasBy !== props.query.aliasBy) {
       query.aliasBy = newAliasBy;

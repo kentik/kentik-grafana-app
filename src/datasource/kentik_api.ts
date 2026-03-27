@@ -218,7 +218,6 @@ export class BatchQueryScheduler {
     return new Promise((resolve, reject) => {
       const bucket = `batch_${++batchCounter}`;
       this.pending.push({ bucket, query, resolve, reject });
-      console.log(`[KentikDS] BatchScheduler: queued ${bucket} (${this.pending.length} pending, dim=${query.dimension?.[0] || '?'})`);
 
       // Reset the flush timer — new query extends the window
       if (this.timer) {
@@ -243,7 +242,6 @@ export class BatchQueryScheduler {
       chunks.push(all.slice(i, i + MAX_QUERIES_PER_BATCH));
     }
 
-    console.log(`[KentikDS] BatchScheduler: flushing ${all.length} queries in ${chunks.length} chunk(s) of max ${MAX_QUERIES_PER_BATCH}`);
     await Promise.all(chunks.map((chunk) => this.executeChunk(chunk)));
   }
 
@@ -271,7 +269,6 @@ export class BatchQueryScheduler {
       }
     } catch (_err) {
       // Sub-batch failed — fall back to individual queries for this chunk
-      console.warn(`[KentikDS] Batch query to ${this.endpoint} failed, falling back to individual queries`);
       await this.fallbackIndividual(chunk);
     }
   }

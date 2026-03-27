@@ -14,11 +14,15 @@
 #   GRAFANA_ACCESS_POLICY_TOKEN   (required) Grafana Cloud access policy token for signing
 #
 # Output:
-#   kentik-datasource-<version>.zip
+#   kentik-connect-datasource-<version>.zip
 #
 set -euo pipefail
 
-PLUGIN_ID="kentik-datasource"
+PLUGIN_ID="$(node -e "process.stdout.write(require('./src/plugin.json').id)")"
+if [[ -z "$PLUGIN_ID" ]]; then
+  echo "Error: could not read plugin ID from src/plugin.json" >&2
+  exit 1
+fi
 VERSION="dev"
 SIGN_ARGS=()
 

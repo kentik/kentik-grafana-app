@@ -2,8 +2,8 @@ apiVersion: 1
 
 datasources:
   - name: 'Kentik'
-    type: 'kentik-datasource'
-    uid: 'kentik-datasource-dev'
+    type: 'kentik-connect-datasource'
+    uid: 'kentik'
     access: proxy
     isDefault: false
     orgId: 1

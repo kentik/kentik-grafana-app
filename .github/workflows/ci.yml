@@ -36,32 +36,76 @@ jobs:
 
       - name: Package plugin
         run: |
-          mkdir -p /tmp/pkg/kentik-datasource
-          cp -r dist/* /tmp/pkg/kentik-datasource/
+          mkdir -p /tmp/pkg/kentik-connect-datasource
+          cp -r dist/* /tmp/pkg/kentik-connect-datasource/
           cd /tmp/pkg
-          zip -qr ${{ github.workspace }}/kentik-datasource.zip kentik-datasource
+          zip -qr ${{ github.workspace }}/kentik-connect-datasource.zip kentik-connect-datasource
 
       - name: Check zip structure
         run: |
           # Fail if dashboards are nested under a double dashboards/ path
-          if unzip -l ${{ github.workspace }}/kentik-datasource.zip | grep -q 'dashboards/dashboards/'; then
+          if unzip -l ${{ github.workspace }}/kentik-connect-datasource.zip | grep -q 'dashboards/dashboards/'; then
             echo "ERROR: zip contains dashboards/dashboards/ — duplicate copy detected"
-            unzip -l ${{ github.workspace }}/kentik-datasource.zip | grep dashboard
+            unzip -l ${{ github.workspace }}/kentik-connect-datasource.zip | grep dashboard
             exit 1
           fi
           # Confirm dashboards are present at the expected path
-          if ! unzip -l ${{ github.workspace }}/kentik-datasource.zip | grep -q 'kentik-datasource/dashboards/'; then
-            echo "ERROR: zip is missing kentik-datasource/dashboards/"
+          if ! unzip -l ${{ github.workspace }}/kentik-connect-datasource.zip | grep -q 'kentik-connect-datasource/dashboards/'; then
+            echo "ERROR: zip is missing kentik-connect-datasource/dashboards/"
             exit 1
           fi
           echo "Zip structure OK"
-          unzip -l ${{ github.workspace }}/kentik-datasource.zip | grep dashboard
+          unzip -l ${{ github.workspace }}/kentik-connect-datasource.zip | grep dashboard
+
+      - name: Upload plugin zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-zip
+          path: kentik-connect-datasource.zip
+          retention-days: 1
+
+      - name: Check for console logging in source
+        run: |
+          if grep -rn "console\.\(log\|warn\|error\|debug\|info\)" src/ --include="*.ts" --include="*.tsx" --exclude-dir="tests"; then
+            echo "ERROR: console logging detected — remove before submitting to Grafana"
+            exit 1
+          fi
+          echo "No console logging found"
+
+      - name: Check for @ts-ignore in source
+        run: |
+          if grep -rn "@ts-ignore\|@ts-expect-error" src/ --include="*.ts" --include="*.tsx" --exclude-dir="tests"; then
+            echo "ERROR: @ts-ignore/@ts-expect-error detected — fix TypeScript errors properly"
+            exit 1
+          fi
+          echo "No @ts-ignore found"
+
+      - name: Check for deprecated gf-form CSS classes
+        run: |
+          if grep -rn "gf-form" src/ --include="*.ts" --include="*.tsx" --include="*.css" --include="*.scss"; then
+            echo "ERROR: deprecated gf-form CSS class detected — use @grafana/ui components"
+            exit 1
+          fi
+          echo "No deprecated CSS classes found"
+
+  validate:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout source (no dependencies installed)
+        uses: actions/checkout@v5
+
+      - name: Download plugin zip
+        uses: actions/download-artifact@v4
+        with:
+          name: plugin-zip
+          path: ${{ github.workspace }}
 
       - name: Validate plugin
         run: |
           npx -y @grafana/plugin-validator@latest \
             -sourceCodeUri file://${{ github.workspace }} \
-            ${{ github.workspace }}/kentik-datasource.zip
+            ${{ github.workspace }}/kentik-connect-datasource.zip
 
   e2e:
     runs-on: ubuntu-latest
