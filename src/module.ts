@@ -1,19 +1,10 @@
-import { AppConfig } from './components/AppConfig';
-
-import './styles/dark.scss';
-import './styles/light.scss';
-
 import { AppPlugin } from '@grafana/data';
-import { loadPluginCss } from '@grafana/runtime';
 
-loadPluginCss({
-  dark: 'plugins/kentik-connect-app/styles/dark.css',
-  light: 'plugins/kentik-connect-app/styles/light.css',
-});
-
-export const plugin = new AppPlugin<{}>().addConfigPage({
-  title: 'Configuration',
-  icon: 'cog',
-  body: AppConfig,
-  id: 'configuration',
-});
+/**
+ * kentik-connect-app v1.8.0 — Bridge plugin
+ *
+ * This is a minimal app shell that exists only to auto-install the
+ * kentik-connect-datasource plugin for existing kentik-connect-app users.
+ * All functionality now lives in kentik-connect-datasource.
+ */
+export const plugin = new AppPlugin<{}>();
