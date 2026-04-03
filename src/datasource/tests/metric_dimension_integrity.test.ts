@@ -15,6 +15,8 @@
 
 import { dimensionList, allMetricOptions, metricNestedList, flattenMetricOptions } from '../metric_def';
 import { DimensionCategory } from '../metric_types';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // -- Helpers ----------------------------------------------------------------
 
@@ -237,5 +239,101 @@ describe('No Legacy Prefixes', () => {
         m.value.includes('st_interface_metrics') || m.unit?.includes('st_interface_metrics')
     );
     expect(wrong.map((m) => m.value)).toEqual([]);
+  });
+});
+
+// ── UI Theming Hygiene ────────────────────────────────────────────────────
+// Guards against inline styles and legacy CSS classes that don't adapt to
+// Grafana's light/dark themes.  Caught during the Grafana plugin review.
+
+const SRC_ROOT = path.resolve(__dirname, '..', '..');
+
+function readSource(relPath: string): string {
+  return fs.readFileSync(path.resolve(SRC_ROOT, relPath), 'utf-8');
+}
+
+describe('QueryEditor theming hygiene', () => {
+  const source = readSource('datasource/QueryEditor.tsx');
+
+  it('must not use hardcoded color values in inline styles', () => {
+    // Catches color, backgroundColor, borderColor with named colors or hex values
+    const pattern = /style=\{\{[^}]*(?:(?:background|border)?[Cc]olor:\s*['"](?:red|blue|green|white|black|orange|yellow|#[0-9a-fA-F]{3,8})['"])/g;
+    const violations: string[] = [];
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(source)) !== null) {
+      const line = source.substring(0, match.index).split('\n').length;
+      violations.push(`Line ${line}: ${match[0].substring(0, 60)}...`);
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it('must not use hardcoded rgba/rgb in inline styles', () => {
+    // Catches any rgba()/rgb() in style={{...}} blocks
+    const pattern = /style=\{\{[^}]*(?:rgba?\([^)]+\))/g;
+    const violations: string[] = [];
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(source)) !== null) {
+      const line = source.substring(0, match.index).split('\n').length;
+      violations.push(`Line ${line}: ${match[0].substring(0, 60)}...`);
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it('must not use hardcoded font sizes in inline styles', () => {
+    const pattern = /style=\{\{[^}]*fontSize:\s*['"][0-9]+px['"]/g;
+    const violations: string[] = [];
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(source)) !== null) {
+      const line = source.substring(0, match.index).split('\n').length;
+      violations.push(`Line ${line}: ${match[0].substring(0, 60)}...`);
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it('must use useStyles2 for theming', () => {
+    expect(source).toContain('useStyles2');
+  });
+});
+
+describe('ConfigEditor theming hygiene', () => {
+  const source = readSource('ConfigEditor.tsx');
+
+  const BANNED_CSS_CLASSES = [
+    'icon-gf',
+    'icon-gf-check',
+    'kentik-enabled-box',
+    'kentik-enabled-box-inner',
+    'kentik-api-status-icon',
+    'fa fa-warning',
+    'fa fa-check',
+  ];
+
+  it('must not reference legacy or undefined CSS class names', () => {
+    const violations: string[] = [];
+    for (const cls of BANNED_CSS_CLASSES) {
+      if (source.includes(`"${cls}"`) || source.includes(`'${cls}'`)) {
+        violations.push(`Found banned CSS class: "${cls}"`);
+      }
+      if (new RegExp(`className=["'][^"']*\\b${cls.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(source)) {
+        violations.push(`Found banned CSS class in className: "${cls}"`);
+      }
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it('must not use <i> tags with legacy icon classes', () => {
+    const pattern = /<i\s+className=["'][^"']*(?:fa\s|icon-gf)/g;
+    const violations: string[] = [];
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(source)) !== null) {
+      const line = source.substring(0, match.index).split('\n').length;
+      violations.push(`Line ${line}: ${match[0].substring(0, 60)}`);
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it('must use useStyles2 and Icon from @grafana/ui', () => {
+    expect(source).toContain('useStyles2');
+    expect(source).toMatch(/import\s*\{[^}]*Icon[^}]*\}\s*from\s*['"]@grafana\/ui['"]/);
   });
 });

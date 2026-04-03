@@ -1,10 +1,11 @@
 import { ALL_DEVICES_LABEL, ALL_SITES_LABEL, DataSource } from './DataSource';
-import { QueryEditorProps, SelectableValue } from '@grafana/data';
-import { Stack, Input, Button, Field, Label, Combobox, ComboboxOption, MultiCombobox, FieldValidationMessage } from '@grafana/ui';
+import { GrafanaTheme2, QueryEditorProps, SelectableValue } from '@grafana/data';
+import { Stack, Input, Button, Field, Label, Combobox, ComboboxOption, MultiCombobox, FieldValidationMessage, useStyles2 } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
 import { DataQuery } from '@grafana/schema';
 import React, { useEffect, useState, useRef } from 'react';
 import _ from 'lodash';
+import { css } from '@emotion/css';
 import { dimensionList, DimensionCategory } from './metric_def';
 import { DimensionClass } from './metric_types';
 
@@ -104,6 +105,7 @@ const OBLIGATORY_FIELDS_NAMES = ['sites', 'dimension', 'metric'];
 export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
   _.defaults(props.query, DEFAULT_QUERY);
 
+  const s = useStyles2(getQueryEditorStyles);
   const prefixInputRef = useRef<HTMLInputElement>(null);
   const aliasInputRef = useRef<HTMLInputElement>(null);
 
@@ -1023,7 +1025,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         </Field>
       </Stack>
       <Stack direction="row" gap={2} alignItems="flex-start">
-        <Field label={<><span>Sites <span style={{ color: 'red' }}>*</span></span></>}>
+        <Field label={<><span>Sites <span className={s.requiredIndicator}>*</span></span></>}>
           <>
             <MultiCombobox<string>
               placeholder={state.isLoading ? 'Loading...' : ALL_SITES_LABEL}
@@ -1051,7 +1053,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
         </Field>
       </Stack>
       <Stack direction="row" gap={2} alignItems="flex-start">
-        <Field label={<><span>Dimensions <span style={{ color: 'red' }}>*</span></span></>}>
+        <Field label={<><span>Dimensions <span className={s.requiredIndicator}>*</span></span></>}>
           <>
             <MultiCombobox<string>
               placeholder={'Select...'}
@@ -1061,11 +1063,11 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
               width={40}
               onChange={(value: Array<ComboboxOption<string>>) => onDimensionSelect(value)}
             />
-            {ensureArray(props.query.dimension).length >= MAX_DIMENSIONS && <div style={{ width: '150px' }}>Max {MAX_DIMENSIONS} dimensions allowed.</div>}
+            {ensureArray(props.query.dimension).length >= MAX_DIMENSIONS && <div className={s.dimensionLimitMessage}>Max {MAX_DIMENSIONS} dimensions allowed.</div>}
             {errorState.dimension && <FieldValidationMessage>{errorState.dimension}</FieldValidationMessage>}
           </>
         </Field>
-        <Field label={<><span>Metric <span style={{ color: 'red' }}>*</span></span></>}>
+        <Field label={<><span>Metric <span className={s.requiredIndicator}>*</span></span></>}>
           <>
             <MultiCombobox<string>
               placeholder={state.isDevicesLoading ? 'Loading...' : 'Select...'}
@@ -1164,7 +1166,7 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       </Stack>
       {props.query.customFilters.map((filter: CustomFilter, filterIdx: number) => (
         <Stack direction="column" gap={0.5} key={`custom-filter-stack-${filterIdx}`}>
-          <div style={{ height: '8px' }} />
+          <div className={s.filterSpacer} />
           <Stack direction="row" gap={2} alignItems="center" key={`custom-filter-row-${filterIdx}`}>
             <Combobox
               value={filter.keySegment}
@@ -1220,6 +1222,7 @@ type DimensionsSuggestionComponentProps = {
 
 const DimensionsSuggestionComponent = (props: DimensionsSuggestionComponentProps) => {
 
+  const s = useStyles2(getQueryEditorStyles);
   const { aliasSuggestionFilter, showAliasSuggestions, activeSuggestionField, activeSuggestionIndex, aliasTagOptions, onSelectAliasSuggestion, field } = props;
   if (!showAliasSuggestions || activeSuggestionField !== field) {
     return null;
@@ -1248,68 +1251,106 @@ const DimensionsSuggestionComponent = (props: DimensionsSuggestionComponentProps
   });
 
   return (
-    <div style={{
-      position: 'absolute',
-      top: '100%',
-      left: 0,
-      zIndex: 1000,
-      backgroundColor: 'var(--background-primary, #111)',
-      border: '1px solid var(--border-medium, #333)',
-      borderRadius: '4px',
-      maxHeight: '280px',
-      overflowY: 'auto',
-      minWidth: '300px',
-      boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
-    }}>
+    <div className={s.suggestionDropdown}>
       {filteredSuggestions.map((opt, idx) => {
         const prevGroup = idx > 0 ? filteredSuggestions[idx - 1].group : undefined;
         const showGroupHeader = opt.group && opt.group !== prevGroup;
         return (
           <React.Fragment key={`${opt.group || ''}-${opt.value || idx}`}>
             {showGroupHeader && (
-              <div style={{
-                padding: '6px 12px 4px',
-                fontSize: '11px',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                color: 'var(--text-secondary, #8e8e8e)',
-                borderTop: idx > 0 ? '1px solid var(--border-weak, #222)' : 'none',
-              }}>
+              <div className={idx > 0 ? `${s.suggestionGroupHeader} ${s.suggestionGroupBorder}` : s.suggestionGroupHeader}>
                 {opt.group}
               </div>
             )}
             <div
-              style={{
-                padding: '6px 12px',
-                cursor: 'pointer',
-                backgroundColor: idx === activeSuggestionIndex ? 'var(--background-secondary, #222)' : 'transparent',
-              }}
+              className={idx === activeSuggestionIndex ? `${s.suggestionItem} ${s.suggestionItemActive}` : s.suggestionItem}
               onMouseDown={(e) => {
                 e.preventDefault(); // Prevent blur
                 onSelectAliasSuggestion(opt);
               }}
               onMouseEnter={(e) => {
-                (e.target as HTMLDivElement).style.backgroundColor = 'var(--background-secondary, #222)';
+                (e.currentTarget as HTMLDivElement).classList.add(s.suggestionItemActive);
               }}
               onMouseLeave={(e) => {
-                (e.target as HTMLDivElement).style.backgroundColor = 'transparent';
+                if (idx !== activeSuggestionIndex) {
+                  (e.currentTarget as HTMLDivElement).classList.remove(s.suggestionItemActive);
+                }
               }}
             >
-              <div style={{ fontWeight: 500 }}>{opt.label}</div>
+              <div className={s.suggestionLabel}>{opt.label}</div>
               {opt.description && (
-                <div style={{ fontSize: '11px', opacity: 0.6 }}>{opt.description}</div>
+                <div className={s.suggestionDescription}>{opt.description}</div>
               )}
-              <div style={{ fontSize: '11px', opacity: 0.7 }}>{opt.value}</div>
+              <div className={s.suggestionValue}>{opt.value}</div>
             </div>
           </React.Fragment>
         );
       })}
       {filteredSuggestions.length === 0 && (
-        <div style={{ padding: '8px 12px', opacity: 0.6 }}>
+        <div className={s.suggestionEmpty}>
           No matching tags. Select dimensions first.
         </div>
       )}
     </div>
   );
 }
+
+const getQueryEditorStyles = (theme: GrafanaTheme2) => ({
+  requiredIndicator: css`
+    color: ${theme.colors.error.text};
+  `,
+  filterSpacer: css`
+    height: ${theme.spacing(1)};
+  `,
+  dimensionLimitMessage: css`
+    font-size: ${theme.typography.bodySmall.fontSize};
+    color: ${theme.colors.text.secondary};
+  `,
+  suggestionDropdown: css`
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: ${theme.zIndex.dropdown};
+    background-color: ${theme.colors.background.primary};
+    border: 1px solid ${theme.colors.border.medium};
+    border-radius: ${theme.shape.radius.default};
+    max-height: 280px;
+    overflow-y: auto;
+    min-width: 300px;
+    box-shadow: ${theme.shadows.z3};
+  `,
+  suggestionGroupHeader: css`
+    padding: ${theme.spacing(0.75)} ${theme.spacing(1.5)} ${theme.spacing(0.5)};
+    font-size: ${theme.typography.bodySmall.fontSize};
+    font-weight: ${theme.typography.fontWeightBold};
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: ${theme.colors.text.secondary};
+  `,
+  suggestionGroupBorder: css`
+    border-top: 1px solid ${theme.colors.border.weak};
+  `,
+  suggestionItem: css`
+    padding: ${theme.spacing(0.75)} ${theme.spacing(1.5)};
+    cursor: pointer;
+    background-color: transparent;
+  `,
+  suggestionItemActive: css`
+    background-color: ${theme.colors.background.secondary};
+  `,
+  suggestionLabel: css`
+    font-weight: ${theme.typography.fontWeightMedium};
+  `,
+  suggestionDescription: css`
+    font-size: ${theme.typography.bodySmall.fontSize};
+    opacity: 0.6;
+  `,
+  suggestionValue: css`
+    font-size: ${theme.typography.bodySmall.fontSize};
+    opacity: 0.7;
+  `,
+  suggestionEmpty: css`
+    padding: ${theme.spacing(1)} ${theme.spacing(1.5)};
+    opacity: 0.6;
+  `,
+});

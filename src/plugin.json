@@ -89,13 +89,14 @@
       ]
     },
     {
-      "path": "/api/v5",
+      "path": "api/v5",
       "method": "*",
-      "url": "{{.JsonData.url.v5}}",
+      "url": "{{.JsonData.url.v5}}/api/v5",
       "headers": [
         {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
         {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
-        {"name": "Accept", "content": "application/json"}      ]
+        {"name": "Accept", "content": "application/json"}
+      ]
     }
   ],
   "dependencies": {
