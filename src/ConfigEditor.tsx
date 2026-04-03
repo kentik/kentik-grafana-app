@@ -3,7 +3,7 @@ import { JsonData, MyDataSourceOptions, MySecureJsonData, Region, Url } from './
 import { css } from '@emotion/css';
 import { GrafanaTheme2, SelectableValue, DataSourcePluginOptionsEditorProps } from '@grafana/data';
 import { getBackendSrv } from '@grafana/runtime';
-import { Input, SecretInput, Button, Field, FieldSet, RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
+import { Input, SecretInput, Button, Field, FieldSet, RadioButtonGroup, Stack, useStyles2, Icon } from '@grafana/ui';
 import { showCustomAlert } from './utils/alert_helper';
 import { KentikAPI } from './datasource/kentik_api';
 
@@ -194,7 +194,7 @@ export function ConfigEditor(props: Props) {
 
         {isConfigured() && state.apiError && (
           <Stack direction="row" alignItems="center" gap={1}>
-            <i className={`fa fa-exclamation-circle ${s.colorError}`} />
+            <Icon name="exclamation-circle" className={s.colorError} />
             <span className={s.marginLeft}>
               Invalid API credentials. This app won&apos;t work until the credentials are updated.
             </span>
@@ -202,25 +202,29 @@ export function ConfigEditor(props: Props) {
         )}
 
         {state.tokenSet && state.apiValidated && (
-          <div className="kentik-enabled-box">
-            <i className="icon-gf icon-gf-check kentik-api-status-icon success"></i>
-            <span className={s.marginLeft}>
-              Successfully enabled.
-              <strong> Next up: </strong>
-              <a href="d/xScUGST71/kentik-home" className="external-link">
-                Go to Kentik Home Dashboard
-              </a>
-            </span>
+          <div className={s.statusBox}>
+            <Stack direction="row" alignItems="center" gap={1}>
+              <Icon name="check-circle" className={s.colorSuccess} />
+              <span className={s.marginLeft}>
+                Successfully enabled.
+                <strong> Next up: </strong>
+                <a href="d/xScUGST71/kentik-home" className="external-link">
+                  Go to Kentik Home Dashboard
+                </a>
+              </span>
+            </Stack>
           </div>
         )}
 
         {state.tokenSet && state.apiValidated && state.apiMemberWarning && (
-          <div className="kentik-enabled-box">
-            <i className="fa fa-warning kentik-api-status-icon warning"></i>
-            <span className={s.marginLeft}>
-              The specified Kentik user seems to have Member access level (not Admin), Custom Dimensions in the
-              dashboard filters won&apos;t be available.
-            </span>
+          <div className={s.statusBox}>
+            <Stack direction="row" alignItems="center" gap={1}>
+              <Icon name="exclamation-triangle" className={s.colorWarning} />
+              <span className={s.marginLeft}>
+                The specified Kentik user seems to have Member access level (not Admin), Custom Dimensions in the
+                dashboard filters won&apos;t be available.
+              </span>
+            </Stack>
           </div>
         )}
 
@@ -241,6 +245,18 @@ export function ConfigEditor(props: Props) {
 const getStyles = (theme: GrafanaTheme2) => ({
   colorError: css`
     color: ${theme.colors.error.text};
+  `,
+  colorSuccess: css`
+    color: ${theme.colors.success.text};
+  `,
+  colorWarning: css`
+    color: ${theme.colors.warning.text};
+  `,
+  statusBox: css`
+    margin-top: ${theme.spacing(1)};
+    padding: ${theme.spacing(1)};
+    background: ${theme.colors.background.secondary};
+    border-radius: ${theme.shape.radius.default};
   `,
   marginTop: css`
     margin-top: ${theme.spacing(1)};
