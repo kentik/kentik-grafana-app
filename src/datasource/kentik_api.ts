@@ -57,6 +57,30 @@ export class KentikAPI {
     return this._get('/user/v202211/users', requiresAdminLevel);
   }
 
+  /**
+   * Lightweight credential check for Save & Test.
+   * Hits /sites and /users to verify the token and admin level.
+   * We use the same endpoints as getSites/getUsers; the gRPC
+   * gateway doesn't support page_size query params.
+   */
+  async validateCredentials(): Promise<{ ok: boolean; isAdmin: boolean }> {
+    // Verify token + email by fetching sites
+    await this._get('/site/v202509/sites');
+
+    // Check admin access (users endpoint requires it)
+    let isAdmin = true;
+    try {
+      await this._get('/user/v202211/users', true);
+    } catch (e: any) {
+      if (e.status === 403) {
+        isAdmin = false;
+      } else {
+        throw e;
+      }
+    }
+    return { ok: true, isAdmin };
+  }
+
   async getFieldValues(field: string): Promise<any> {
     const query = `SELECT DISTINCT ${field} FROM all_devices WHERE i_start_time >= now() - interval '24 hours' ORDER BY ${field} ASC LIMIT 1000`;
     try {

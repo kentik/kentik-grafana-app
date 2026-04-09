@@ -1,31 +1,54 @@
 # Kentik for Grafana
 
-The Kentik datasource plugin allows you to query the Kentik API and visualize network traffic data directly in Grafana. It leverages the **Kentik Network Observability Platform** to provide real-time, Internet-scale ingest and querying of network data including flow records (NetFlow, IPFIX, sFlow), BGP, GeoIP, and SNMP.
+Bring the full power of the **Kentik Network Observability Platform**
+into Grafana. Query flow records (NetFlow, IPFIX, sFlow), BGP, GeoIP,
+SNMP, and streaming telemetry - all from a single datasource - and
+visualize network traffic alongside the rest of your infrastructure.
 
-The plugin provides instant access to the **Kentik Data Engine (KDE)**, enabling you to seamlessly integrate network activity metrics into your Grafana dashboards.
+## Why Kentik for Grafana?
 
-## Requirements
-
-- A Grafana instance (v10.4 or later)
-- An active **Kentik account** with API access
-- Devices registered in the Kentik portal
+- **Fast dashboards** - a built-in batch query scheduler combines
+  multi-panel dashboards into a single API call, cutting load times
+  by 3–5×.
+- **290+ dimensions** - group traffic by IP, port, protocol, AS,
+  geography, cloud resource, Kubernetes workload, OTT provider,
+  SNMP interface, and more.
+- **One-click portal drilldown** - every panel links directly to
+  the Kentik portal scoped to the same query, time range, and
+  filters.
+- **Four ready-to-use dashboards** - Home, Top Talkers, Network
+  Health (OSI layers), and Site & Device Overview are provisioned
+  automatically.
+- **Multi-region** - first-class support for US, EU, and
+  custom-hosted Kentik deployments.
 
 ## Getting Started
 
-1. Navigate to **Data Sources** in Grafana.
-2. Add **Kentik**.
-3. Select the appropriate **Region** (US, EU, or Custom).
+1. Navigate to **Connections → Data sources** in Grafana.
+2. Search for **Kentik** and add the datasource.
+3. Select your **Region** (US, EU, or Custom).
 4. Enter your Kentik **Email** and **API Token**.
-5. Click **Save & Test** to verify connectivity.
+5. Click **Save & Test** - the plugin validates connectivity
+   with the Kentik API.
+6. Explore the dashboards in the **Kentik** folder, or build
+   your own.
 
-## Features
+## Requirements
 
-- **Granular Visibility**: View traffic by time range, devices, sites, and over 200 dimensions across 20+ categories.
-- **Multi-Select Support**: Select multiple sites, devices, and up to 8 dimensions simultaneously.
-- **NMS / SNMP Support**: Query SNMP device and interface metrics alongside traditional flow data.
-- **Smart Labeling**: Customize graph legends using Alias and Prefix fields with autocomplete (e.g., `{{Source Interface}}`, `$col`, `$metric_group`).
-- **Drilldown Workflows**: Deep-link URLs to the Kentik Portal for detailed investigation.
+- Grafana **11.6** or later
+- An active [Kentik account](https://www.kentik.com/get-started/)
+  with API access
+
+## Upgrading from kentik-connect-app?
+
+If you're migrating from the v1.x `kentik-connect-app` plugin,
+the transition is seamless - your existing dashboards continue to
+work without changes. Update to `kentik-connect-app` v1.8.0
+first (a bridge that auto-installs v2.0), then configure the new
+datasource with your credentials.
 
 ## Documentation
 
-For more information, visit [Kentik Documentation](https://kb.kentik.com/).
+- [Kentik Documentation](https://kb.kentik.com/)
+- [GitHub](https://github.com/kentik/kentik-grafana-app)
+

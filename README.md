@@ -1,6 +1,6 @@
 # Kentik for Grafana
 
-> **Upgrading from v1.7.0 (`kentik-connect-app`)?** v2.0.0 is published as a new plugin (`kentik-connect-datasource`) because Grafana requires datasource plugins to use the `-datasource` ID suffix, the two plugins can coexist on the same Grafana instance without conflict. Your existing v1.7.0 dashboards and configuration remain fully functional while you migrate at your own pace. See the [v2.0.0 release notes](docs/v2.0.0-release.md) for migration steps.
+> **Upgrading from v1.7.0 (`kentik-connect-app`)?** v2.0.0 is a standalone datasource plugin (`kentik-connect-datasource`). The underlying datasource plugin ID is unchanged, so existing dashboards continue to work. Update to `kentik-connect-app` v1.8.0 first - it's a bridge that auto-installs v2.0 - then configure the new datasource with your credentials.
 
 The Kentik datasource plugin allows you to query the Kentik API and visualize network traffic data directly in Grafana. It leverages the **Kentik Network Observability Platform** to provide real-time, Internet-scale ingest and querying of network data including flow records (NetFlow, IPFIX, sFlow), BGP, GeoIP, and SNMP.
 

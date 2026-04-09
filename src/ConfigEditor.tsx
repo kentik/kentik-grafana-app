@@ -104,23 +104,18 @@ export function ConfigEditor(props: Props) {
     const backendSrv = getBackendSrv();
     const kentik = new KentikAPI(backendSrv, options.uid);
     try {
-      await kentik.getSites();
+      const { isAdmin } = await kentik.validateCredentials();
+      if (!isAdmin) {
+        setState({ ...state, apiValidated: true, apiMemberWarning: true });
+      } else {
+        setState({ ...state, apiValidated: true });
+      }
+      showCustomAlert('API working!', '', 'success');
+      return true;
     } catch {
       _onApiError();
       return false;
     }
-    try {
-      await kentik.getUsers();
-    } catch (e: any) {
-      if (e.status !== 403) {
-        _onApiError();
-        return false;
-      }
-      setState({ ...state, apiMemberWarning: true });
-    }
-    setState({ ...state, apiValidated: true });
-    showCustomAlert('API working!', '', 'success');
-    return true;
   };
 
   const [saving, setSaving] = useState(false);
@@ -143,12 +138,20 @@ export function ConfigEditor(props: Props) {
     // Build a minimal payload – only the fields the PUT endpoint needs.
     // Setting version to 0 tells Grafana to skip the optimistic-lock check,
     // which avoids 409 conflicts caused by provisioning version drift.
+    //
+    // timeout: Grafana's data proxy default is 30s, which is too short for
+    // large Kentik accounts. We default to 1800s (30m) so queries against
+    // accounts with many devices/interfaces don't hit proxy timeouts.
+    const KENTIK_PROXY_TIMEOUT_SECONDS = 1800;
     const payload: Record<string, any> = {
       name: options.name,
       type: options.type,
       access: options.access,
       uid: options.uid,
-      jsonData: updatedJsonData,
+      jsonData: {
+        ...updatedJsonData,
+        timeout: KENTIK_PROXY_TIMEOUT_SECONDS,
+      },
       version: 0,
       ...(state.token ? { secureJsonData: { token: state.token } } : {}),
     };

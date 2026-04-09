@@ -36,10 +36,18 @@ All notable changes to this project will be documented in this file.
 - Updated documentation link in `plugin.json`
 - Fixed `.gitignore` to track E2E test files
 
-**Breaking changes:**
+**Migration:**
 
 - Minimum Grafana version: 11.6.0
-- Plugin type changed from `app` to `datasource`; plugin ID changed from `kentik-connect-app` to `kentik-connect-datasource` (required by Grafana's validator — datasource plugins must use the `-datasource` suffix). Both plugins can run side-by-side; existing `kentik-connect-app` v1.7.0 dashboards remain functional while you migrate at your own pace. See [v2.0.0 release notes](docs/v2.0.0-release.md) for migration steps.
+- Plugin type changed from `app` to standalone `datasource`. The
+  underlying datasource plugin ID (`kentik-connect-datasource`)
+  is unchanged - existing dashboards continue to work without
+  modification. Credentials must be re-entered on the new
+  datasource configuration page.
+- A v1.8.0 bridge release of `kentik-connect-app` auto-installs
+  `kentik-connect-datasource` v2.0.0 for existing users.
+  Credentials must be re-entered on the new datasource
+  configuration page.
 
 ## [1.7.0] - 2023-06-27
 

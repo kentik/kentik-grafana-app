@@ -45,7 +45,8 @@
       "headers": [
         {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
         {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
-        {"name": "Accept", "content": "application/json"}        
+        {"name": "Accept", "content": "application/json"},
+        {"name": "User-Agent", "content": "kentik-connect-datasource/%VERSION% (region={{.JsonData.region}})"}
       ]
     },
     {
@@ -55,7 +56,8 @@
       "headers": [
         {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
         {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
-        {"name": "Accept", "content": "application/json"}        
+        {"name": "Accept", "content": "application/json"},
+        {"name": "User-Agent", "content": "kentik-connect-datasource/%VERSION% (region={{.JsonData.region}})"}
       ]
     },
     {
@@ -65,7 +67,8 @@
       "headers": [
         {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
         {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
-        {"name": "Accept", "content": "application/json"}       
+        {"name": "Accept", "content": "application/json"},
+        {"name": "User-Agent", "content": "kentik-connect-datasource/%VERSION% (region={{.JsonData.region}})"}
       ]
     },
     {
@@ -75,7 +78,8 @@
       "headers": [
         {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
         {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
-        {"name": "Accept", "content": "application/json"}        
+        {"name": "Accept", "content": "application/json"},
+        {"name": "User-Agent", "content": "kentik-connect-datasource/%VERSION% (region={{.JsonData.region}})"}
       ]
     },
     {
@@ -85,7 +89,8 @@
       "headers": [
         {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
         {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
-        {"name": "Accept", "content": "application/json"}        
+        {"name": "Accept", "content": "application/json"},
+        {"name": "User-Agent", "content": "kentik-connect-datasource/%VERSION% (region={{.JsonData.region}})"}
       ]
     },
     {
@@ -95,7 +100,8 @@
       "headers": [
         {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
         {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
-        {"name": "Accept", "content": "application/json"}
+        {"name": "Accept", "content": "application/json"},
+        {"name": "User-Agent", "content": "kentik-connect-datasource/%VERSION% (region={{.JsonData.region}})"}
       ]
     }
   ],
