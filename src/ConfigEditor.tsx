@@ -143,12 +143,20 @@ export function ConfigEditor(props: Props) {
     // Build a minimal payload – only the fields the PUT endpoint needs.
     // Setting version to 0 tells Grafana to skip the optimistic-lock check,
     // which avoids 409 conflicts caused by provisioning version drift.
+    //
+    // timeout: Grafana's data proxy default is 30s, which is too short for
+    // large Kentik accounts. We set 1800s (30m) so queries against accounts
+    // with many devices/interfaces don't hit proxy timeouts.
+    const KENTIK_PROXY_TIMEOUT_SECONDS = 1800;
     const payload: Record<string, any> = {
       name: options.name,
       type: options.type,
       access: options.access,
       uid: options.uid,
-      jsonData: updatedJsonData,
+      jsonData: {
+        ...updatedJsonData,
+        timeout: KENTIK_PROXY_TIMEOUT_SECONDS,
+      },
       version: 0,
       ...(state.token ? { secureJsonData: { token: state.token } } : {}),
     };

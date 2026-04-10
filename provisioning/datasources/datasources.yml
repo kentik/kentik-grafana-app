@@ -11,6 +11,7 @@ datasources:
     editable: true
     jsonData:
       region: 'default'
+      timeout: 1800
       url:
         v6: 'https://grpc.api.kentik.com'
         v5: 'https://api.kentik.com'
