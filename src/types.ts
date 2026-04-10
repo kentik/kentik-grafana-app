@@ -39,6 +39,7 @@ export type JsonData = {
   region?: Region;
   dynamicUrl?: string;
   tokenSet?: boolean;
+  timeout?: number;
 };
 
 export interface MyDataSourceOptions extends JsonData, DataSourceJsonData {

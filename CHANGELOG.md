@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.0.1 (2026-04-09)
+
+**Fixes:**
+
+- Increase proxy timeout from 30s to 1800s (30m) to prevent 502 errors on large Kentik accounts
+
 ## 2.0.0 (2026-03-15)
 
 **Features:**

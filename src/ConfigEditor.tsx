@@ -45,12 +45,15 @@ export function ConfigEditor(props: Props) {
   const s = useStyles2(getStyles);
   const { jsonData, secureJsonFields } = options;
 
+  const KENTIK_PROXY_TIMEOUT_SECONDS = 1800;
+
   const [state, setState] = useState<State>({
     url: jsonData?.url || getUrlByRegion(jsonData?.region, jsonData?.dynamicUrl),
     email: jsonData?.email || '',
     region: jsonData?.region || Region.DEFAULT,
     dynamicUrl: jsonData?.dynamicUrl || '',
     tokenSet: Boolean(jsonData?.tokenSet || secureJsonFields?.token),
+    timeout: jsonData?.timeout ?? KENTIK_PROXY_TIMEOUT_SECONDS,
     token: '',
     apiValidated: false,
     apiMemberWarning: false,
@@ -138,6 +141,7 @@ export function ConfigEditor(props: Props) {
       region: state.region,
       dynamicUrl: state.dynamicUrl,
       tokenSet: !!state.token || state.tokenSet,
+      timeout: KENTIK_PROXY_TIMEOUT_SECONDS,
     };
 
     // Build a minimal payload – only the fields the PUT endpoint needs.
