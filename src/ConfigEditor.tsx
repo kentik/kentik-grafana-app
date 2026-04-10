@@ -45,12 +45,15 @@ export function ConfigEditor(props: Props) {
   const s = useStyles2(getStyles);
   const { jsonData, secureJsonFields } = options;
 
+  const KENTIK_PROXY_TIMEOUT_SECONDS = 1800;
+
   const [state, setState] = useState<State>({
     url: jsonData?.url || getUrlByRegion(jsonData?.region, jsonData?.dynamicUrl),
     email: jsonData?.email || '',
     region: jsonData?.region || Region.DEFAULT,
     dynamicUrl: jsonData?.dynamicUrl || '',
     tokenSet: Boolean(jsonData?.tokenSet || secureJsonFields?.token),
+    timeout: jsonData?.timeout ?? KENTIK_PROXY_TIMEOUT_SECONDS,
     token: '',
     apiValidated: false,
     apiMemberWarning: false,
@@ -138,25 +141,18 @@ export function ConfigEditor(props: Props) {
       region: state.region,
       dynamicUrl: state.dynamicUrl,
       tokenSet: !!state.token || state.tokenSet,
+      timeout: KENTIK_PROXY_TIMEOUT_SECONDS,
     };
 
     // Build a minimal payload – only the fields the PUT endpoint needs.
     // Setting version to 0 tells Grafana to skip the optimistic-lock check,
     // which avoids 409 conflicts caused by provisioning version drift.
-    //
-    // timeout: Grafana's data proxy default is 30s, which is too short for
-    // large Kentik accounts. We set 1800s (30m) so queries against accounts
-    // with many devices/interfaces don't hit proxy timeouts.
-    const KENTIK_PROXY_TIMEOUT_SECONDS = 1800;
     const payload: Record<string, any> = {
       name: options.name,
       type: options.type,
       access: options.access,
       uid: options.uid,
-      jsonData: {
-        ...updatedJsonData,
-        timeout: KENTIK_PROXY_TIMEOUT_SECONDS,
-      },
+      jsonData: updatedJsonData,
       version: 0,
       ...(state.token ? { secureJsonData: { token: state.token } } : {}),
     };
