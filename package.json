@@ -2,7 +2,8 @@
   "name": "kentik-datasource",
   "version": "1.8.0",
   "scripts": {
-    "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
+    "build": "bash scripts/build-bridge-v1.8.sh && mkdir -p dist && cp -r bridge-dist/kentik-connect-app/* dist/",
+    "build:datasource": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
     "test": "jest --watch --onlyChanged",
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
@@ -62,7 +63,11 @@
     "webpack-virtual-modules": "^0.6.2"
   },
   "engines": {
-    "node": ">=24"
+    "node": ">=18"
+  },
+  "resolutions": {
+    "braces": ">=3.0.3",
+    "cross-spawn": ">=7.0.5"
   },
   "overrides": {
     "glob": "^13.0.0",
@@ -78,6 +83,5 @@
     "@grafana/ui": "^12.4.1",
     "react": "^18.3.0",
     "react-dom": "^18.3.0"
-  },
-  "packageManager": "npm@10.9.2"
+  }
 }
