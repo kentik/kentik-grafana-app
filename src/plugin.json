@@ -99,6 +99,28 @@
       ]
     }
   ],
+  "includes": [
+    {
+      "type": "dashboard",
+      "name": "Kentik: Home",
+      "path": "dashboards/kentik-home.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Kentik Top Talkers",
+      "path": "dashboards/kentik-top-talkers.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Kentik: Network Health & Traffic Overview",
+      "path": "dashboards/kentik-osi-health.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Kentik: Site & Device Overview",
+      "path": "dashboards/kentik-site-overview.json"
+    }
+  ],
   "dependencies": {
     "grafanaDependency": ">=11.6.0",
     "plugins": []
