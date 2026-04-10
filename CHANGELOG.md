@@ -1,11 +1,51 @@
-# Change Log
+# Changelog
 
 All notable changes to this project will be documented in this file.
+
+## 2.0.0 (2026-03-15)
+
+**Features:**
+
+- Batch topXdata queries to reduce API calls and improve dashboard load time
+- New OSI Health dashboard with per-layer network panels and alias patterns
+- New Site & Device Overview dashboard with heatmap, status history, and bar chart panels
+- "Open in Kentik" panel links for direct portal navigation
+- Support for custom/on-prem portal URL derivation from region config
+
+**Improvements:**
+
+- Client-side Kentik portal URL eliminates separate /query/url API calls
+- Dynamic query depth scales with topx setting for faster server processing
+- Null safety in batch response handling
+- Home dashboard modernized (schemaVersion 39, replaced broken custom panel with standard text panel)
+- Dashboards now included in plugin zip for provisioning support
+- Updated create-plugin tooling from 6.1.3 → 7.0.8
+- All ESLint errors resolved (24 → 0)
+- Provisioning README with full reviewer setup guide
+
+**CI/CD:**
+
+- Fixed duplicate `env:` block and stale `working-directory` refs in release workflow
+- Added Playwright E2E test job with Grafana version matrix to CI
+- Plugin validator runs in CI on every PR
+
+**Cleanup:**
+
+- Removed dead code: DescriptionPanel, unused SCSS styles, stale `.eslintrc`
+- Fixed `.prettierrc.js` reference to removed `@grafana/toolkit`
+- Updated documentation link in `plugin.json`
+- Fixed `.gitignore` to track E2E test files
+
+**Breaking changes:**
+
+- Minimum Grafana version: 11.6.0
+- Plugin type changed from `app` to `datasource`; plugin ID changed from `kentik-connect-app` to `kentik-connect-datasource` (required by Grafana's validator — datasource plugins must use the `-datasource` suffix). Both plugins can run side-by-side; existing `kentik-connect-app` v1.7.0 dashboards remain functional while you migrate at your own pace. See [v2.0.0 release notes](docs/v2.0.0-release.md) for migration steps.
 
 ## [1.7.0] - 2023-06-27
 
 **Please note, the release contains breaking changes.**
 After the update, it's necessary to:
+
 - **restart Grafana**
 - go to Plugins -> Kentik Connect Pro, **click Disable button, then click Enable**
 
@@ -49,6 +89,7 @@ It's important to **remove the existing plugin** and **enable the plugin in Graf
 - Filter field "inet_dst_addr" does not support the operator "=" error [#36](https://github.com/kentik/kentik-grafana-app/pull/36)
 
 ### Changed
+
 - Remove old unsupported filters
 
 ## [1.4.1] - 2020-09-25
@@ -64,6 +105,7 @@ It's important to **remove the existing plugin** and **enable the plugin in Graf
 Fixed "Permission denied" error for Viewers and Editors [#28](https://github.com/kentik/kentik-grafana-app/pull/28).
 
 Because of [#28](https://github.com/kentik/kentik-grafana-app/pull/28) it's required to do after update:
+
 - restart Grafana
 - go to the plugin config (e.g. http://localhost:3000/plugins/kentik-app/) and click "Update"
 
@@ -81,22 +123,25 @@ Autocomplete for plugin #4
 
 - Added support for custom api endpoints, [#71](https://github.com/grafana/kentik-app/issues/71)
 
-
 ## [1.3.3] - 2019-02-01
 
 ### New Features
+
 - Added support for EU api endpoint, [#64](https://github.com/grafana/kentik-app/issues/64)
 
 ### Fixed
+
 - click-through to device-details page now works correctly
 
 ### Changed
+
 - Updated device-details page to show more data
 - device-details page now displays more informative messages when updating fails
 
 ## [1.3.2] - 2018-12-18
 
 ### New Features
+
 - Added better error messaging for API issues, [#61](https://github.com/grafana/kentik-app/issues/61)
 
 ## [1.3.1] - 2018-11-13

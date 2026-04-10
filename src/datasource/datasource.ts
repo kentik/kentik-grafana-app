@@ -103,11 +103,9 @@ export class KentikDataSource extends DataSourceApi<KentikQuery, MyDataSourceOpt
       _.map(
         _.filter(
           templateSrv.getVariables(),
-          // @ts-expect-error
-          (variable: VariableModel) => variable.type === 'adhoc' && variable.datasource.type === this.datasourceType
+          (variable: VariableModel) => variable.type === 'adhoc' && (variable as any).datasource?.type === this.datasourceType
         ),
-        // @ts-expect-error
-        (variable: VariableModel) => variable.filters
+        (variable: VariableModel) => (variable as any).filters
       )
     );
 

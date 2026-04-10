@@ -1,0 +1,25 @@
+services:
+  grafana:
+    user: root
+    container_name: 'kentik-connect-datasource'
+
+    build:
+      context: .
+      args:
+        grafana_image: ${GRAFANA_IMAGE:-grafana-enterprise}
+        grafana_version: ${GRAFANA_VERSION:-12.4.1}
+        development: ${DEVELOPMENT:-false}
+        anonymous_auth_enabled: ${ANONYMOUS_AUTH_ENABLED:-true}
+    ports:
+      - 3000:3000/tcp
+    volumes:
+      - ../dist:/var/lib/grafana/plugins/kentik-connect-datasource
+      - ../provisioning:/etc/grafana/provisioning
+      - ..:/root/kentik-connect-datasource
+
+    environment:
+      NODE_ENV: production
+      GF_LOG_FILTERS: plugin.kentik-connect-datasource:debug
+      GF_LOG_LEVEL: debug
+      GF_DATAPROXY_LOGGING: 1
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: kentik-connect-datasource

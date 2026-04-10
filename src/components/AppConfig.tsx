@@ -275,7 +275,7 @@ export const AppConfig = ({ plugin }: Props) => {
         </Field>
 
         {isConfigured() && state.apiError && (
-          <div className="gf-form">
+          <div className={s.errorBox}>
             <i className={`fa fa-exclamation-circle ${s.colorError}`}>
               <span className={s.marginLeft}>
                 Invalid API credentials. This app won`t work until the credentials are updated.
@@ -348,13 +348,17 @@ const getStyles = (theme: GrafanaTheme2) => ({
   marginLeft: css`
     margin-left: ${theme.spacing(1)};
   `,
+  errorBox: css`
+    display: flex;
+    align-items: center;
+    margin: ${theme.spacing(1)} 0;
+  `,
 });
 
 const updatePlugin = async (pluginId: string, data: Partial<PluginMeta>): Promise<void> => {
-  await getBackendSrv().post(
+  await (getBackendSrv() as any).post(
     `/api/plugins/${pluginId}/settings`,
     data,
-    // @ts-ignore
     { showSuccessAlert: false }
   );
 };

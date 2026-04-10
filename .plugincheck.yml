@@ -1,0 +1,10 @@
+global:
+  enabled: true
+
+analyzers:
+  # The plugin will be signed during the Grafana release process.
+  # Suppress the unsigned-plugin warning for local validation.
+  manifest:
+    rules:
+      unsigned-plugin:
+        severity: ok

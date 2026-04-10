@@ -154,8 +154,7 @@ export const QueryEditor: React.FC<Props> = (props: Props) => {
       return;
     }
     const query: KentikQuery = _.cloneDeep(props.query);
-    // @ts-ignore
-    query[field] = option.value;
+    (query as any)[field] = option.value;
     props.onChange(query);
     if (field === 'site') {
       query.device = null;
