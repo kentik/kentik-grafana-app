@@ -141,7 +141,7 @@ export function ConfigEditor(props: Props) {
       region: state.region,
       dynamicUrl: state.dynamicUrl,
       tokenSet: !!state.token || state.tokenSet,
-      timeout: KENTIK_PROXY_TIMEOUT_SECONDS,
+      timeout: state.timeout,
     };
 
     // Build a minimal payload – only the fields the PUT endpoint needs.
