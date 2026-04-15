@@ -6,7 +6,7 @@ The plugin provides instant access to the **Kentik Data Engine (KDE)**, enabling
 
 ## Requirements
 
-- A Grafana instance (v10.4 or later)
+- A Grafana instance (v11.6 or later)
 - An active **Kentik account** with API access
 - Devices registered in the Kentik portal
 
