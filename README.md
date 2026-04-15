@@ -1,6 +1,12 @@
 # Kentik for Grafana
 
-> **Upgrading from v1.7.0 (`kentik-connect-app`)?** v2.0.0 is published as a new plugin (`kentik-connect-datasource`) because Grafana requires datasource plugins to use the `-datasource` ID suffix, the two plugins can coexist on the same Grafana instance without conflict. Your existing v1.7.0 dashboards and configuration remain fully functional while you migrate at your own pace. See the [v2.0.0 release notes](docs/v2.0.0-release.md) for migration steps.
+> **Upgrading from v1.7.0 (`kentik-connect-app`)?** Update to
+> `kentik-connect-app` v1.8.0 — a bridge release that automatically
+> installs `kentik-connect-datasource` v2.0.x. Both plugins coexist
+> without conflict. See the
+> [Migration Guide](docs/migration-guide.md) for step-by-step
+> instructions and the
+> [v2.0.0 release notes](docs/v2.0.0-release.md) for what's new.
 
 The Kentik datasource plugin allows you to query the Kentik API and visualize network traffic data directly in Grafana. It leverages the **Kentik Network Observability Platform** to provide real-time, Internet-scale ingest and querying of network data including flow records (NetFlow, IPFIX, sFlow), BGP, GeoIP, and SNMP.
 
@@ -42,7 +48,7 @@ To enable the datasource:
 
 ## Development
 
-This project requires **Node.js v22** or higher and **Docker**.
+This project requires **Node.js v18** or higher and **Docker**.
 
 1.  **Install dependencies**:
 
@@ -72,35 +78,33 @@ This project requires **Node.js v22** or higher and **Docker**.
 
 ## Build
 
-To produce a development build:
+To produce a production build:
 
 ```bash
 npm run build
 ```
 
-### Signed Build
+### Release (Signed + Attested)
 
-To build, sign, and package the plugin for distribution, use the signing script. A **Grafana API key** is required:
+Releases are automated via GitHub Actions. Pushing a version tag
+triggers the
+[release workflow](.github/workflows/release.yml), which:
 
-```bash
-GRAFANA_API_KEY=<your-key> ./scripts/build-signed.sh
-```
-
-This produces `kentik-datasource-dev.zip`.
-
-To specify a version:
-
-```bash
-GRAFANA_API_KEY=<your-key> ./scripts/build-signed.sh --version 1.5.0
-```
-
-This produces `kentik-datasource-1.5.0.zip`.
-
-To restrict signing to a specific Grafana instance:
+1. Builds the plugin (`npm run build`)
+2. Signs it with `@grafana/sign-plugin`
+   (requires the `GRAFANA_ACCESS_POLICY_TOKEN` repository secret)
+3. Creates a provenance attestation via sigstore
+4. Publishes a draft GitHub release with the signed zip and checksums
 
 ```bash
-GRAFANA_API_KEY=<your-key> ./scripts/build-signed.sh --root-urls https://grafana-test.kentiklabs.com
+# Create a tag matching package.json version and push
+npm version patch   # or minor / major
+git push origin main --follow-tags
 ```
+
+After the workflow completes, publish the draft release on GitHub
+and submit the zip URL to the
+[Grafana plugin catalog](https://grafana.com/plugins).
 
 ## Useful links
 
