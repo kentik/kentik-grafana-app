@@ -214,49 +214,10 @@ describe('NMS metric[] uses correct wire prefix', () => {
 });
 
 // -- 5. NMS aggregate columns follow gauge/counter convention ---------------
-
-describe('NMS aggregate columns follow gauge/counter convention', () => {
-  it('SNMP Device groups use f_avg_ columns, interface groups use f_sum_', () => {
-    const failures: string[] = [];
-    for (const group of metricNestedList) {
-      if (!group.compatibleCategory) {
-        continue;
-      }
-      if (group.unit.startsWith('ktappprotocol__snmp_device_metrics__')) {
-        if (!/^f_avg_/.test(group.column)) {
-          failures.push('SNMP Device "' + group.label + '": column "' + group.column + '" should start with f_avg_');
-        }
-      } else if (group.unit.startsWith('ktappprotocol__snmp__') || group.unit.startsWith('ktappprotocol__st__')) {
-        if (!/^f_sum_/.test(group.column)) {
-          failures.push('Interface "' + group.label + '": column "' + group.column + '" should start with f_sum_');
-        }
-      }
-    }
-    expect(failures).toEqual([]);
-  });
-});
+// (Removed: SNMP and ST metrics have been deprecated and removed from the catalogue.)
 
 // -- 6. Multi-metric de-duplication -----------------------------------------
-
-describe('Multi-metric de-duplication', () => {
-  it('NMS groups with multiple agg functions de-dup to a single metric[] entry', () => {
-    const multiOptionNmsGroups = metricNestedList.filter(
-      (g) => g.compatibleCategory && g.options.length >= 2
-    );
-    const failures: string[] = [];
-    for (const group of multiOptionNmsGroups) {
-      const allValues = group.options.map((o) => o.value).join(',');
-      const query = queryBuilder.buildTopXdataQuery({ ...baseOptions, metric: allValues });
-      if (query.metric.length !== 1) {
-        failures.push(group.label + ': expected 1 metric[] entry, got ' + query.metric.length);
-      }
-      if (query.aggregates.length !== group.options.length) {
-        failures.push(group.label + ': expected ' + group.options.length + ' aggregates, got ' + query.aggregates.length);
-      }
-    }
-    expect(failures).toEqual([]);
-  });
-});
+// (Removed: depended on SNMP metric groups which have been deprecated.)
 
 // -- 7. Metric option flattening: labels contain group name -----------------
 
@@ -291,11 +252,6 @@ describe('Metric option flattening: labels contain group name', () => {
     expect(failures).toEqual([]);
   });
 
-  it('searching "SNMP" matches at least 3 labels', () => {
-    const count = flattened.filter((o) => o.label.toLowerCase().includes('snmp')).length;
-    expect(count).toBeGreaterThanOrEqual(3);
-  });
-
   it('searching "Bits" matches at least 3 labels', () => {
     const count = flattened.filter((o) => o.label.toLowerCase().includes('bits')).length;
     expect(count).toBeGreaterThanOrEqual(3);
@@ -324,29 +280,5 @@ describe('Cross-metric-type combinations', () => {
     expect(query.aggregates).toHaveLength(2);
     expect(query.metric).toEqual(expect.arrayContaining(['bytes', 'packets']));
     expect(query.fastData).toBe('Auto');
-  });
-
-  it('two SNMP device metrics from different columns build successfully', () => {
-    const query = queryBuilder.buildTopXdataQuery({
-      ...baseOptions,
-      metric: 'avg_ktappprotocol__snmp_device_metrics__INT64_00,avg_ktappprotocol__snmp_device_metrics__INT64_01',
-    });
-    expect(query.aggregates).toHaveLength(2);
-    expect(query.fastData).toBe('Full');
-    for (const agg of query.aggregates) {
-      expect(agg.raw).toBe(true);
-    }
-  });
-
-  it('three aggregation functions for one SNMP metric build with correct count', () => {
-    const query = queryBuilder.buildTopXdataQuery({
-      ...baseOptions,
-      metric: 'avg_ktappprotocol__snmp_device_metrics__INT64_00,p95th_ktappprotocol__snmp_device_metrics__INT64_00,max_ktappprotocol__snmp_device_metrics__INT64_00',
-    });
-    expect(query.aggregates).toHaveLength(3);
-    expect(query.metric).toHaveLength(1);
-    for (const agg of query.aggregates) {
-      expect(agg.raw).toBe(true);
-    }
   });
 });

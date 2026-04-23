@@ -17,7 +17,6 @@ import { dimensions as dnsDims } from './dns';
 import { dimensions as httpDims } from './http';
 import { dimensions as ottDims } from './ott';
 import { dimensions as vendor_specificDims } from './vendor_specific';
-import { dimensions as snmp_stDims } from './snmp_st';
 
 export const dimensionList: Dimension[] = [
   ...generalDims,
@@ -36,5 +35,4 @@ export const dimensionList: Dimension[] = [
   ...httpDims,
   ...ottDims,
   ...vendor_specificDims,
-  ...snmp_stDims,
 ];

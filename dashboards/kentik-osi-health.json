@@ -34,8 +34,8 @@
       "type": "row"
     },
     {
-      "title": "SNMP Interface Inbound Errors",
-      "description": "Tracking Layer 1 hardware interface RX errors",
+      "title": "Traffic by Source Interface ID",
+      "description": "Top source interfaces by bits/s (interface index from flow export)",
       "type": "timeseries",
       "gridPos": {
         "h": 8,
@@ -53,15 +53,14 @@
           "refId": "A",
           "mode": "graph",
           "dimension": [
-            "ktappprotocol__snmp__i_device_name",
-            "ktappprotocol__snmp__output_port"
+            "InterfaceID_src"
           ],
           "metric": [
-            "max_ktappprotocol__snmp__INT64_04"
+            "p95th_bits_per_sec"
           ],
           "hostnameLookup": "enabled",
-          "prefix": "Src Intf",
-          "aliasBy": "{{ktappprotocol__snmp__i_device_name}} ({{ktappprotocol__snmp__output_port}}) - Rx Errors",
+          "prefix": "",
+          "aliasBy": "",
           "topx": "10",
           "customFilters": [],
           "conjunctionOperator": "AND",
@@ -73,7 +72,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "unit": "bps",
           "custom": {
             "fillOpacity": 15,
             "lineWidth": 2,
@@ -100,8 +99,8 @@
       "links": []
     },
     {
-      "title": "SNMP Interface Outbound Errors",
-      "description": "Tracking Layer 1 hardware interface TX errors",
+      "title": "Traffic by Destination Interface ID",
+      "description": "Top destination interfaces by bits/s (interface index from flow export)",
       "type": "timeseries",
       "gridPos": {
         "h": 8,
@@ -119,15 +118,14 @@
           "refId": "A",
           "mode": "graph",
           "dimension": [
-            "ktappprotocol__snmp__i_device_name",
-            "ktappprotocol__snmp__output_port"
+            "InterfaceID_dst"
           ],
           "metric": [
-            "max_ktappprotocol__snmp__INT64_05"
+            "p95th_bits_per_sec"
           ],
           "hostnameLookup": "enabled",
-          "prefix": "Dst Intf",
-          "aliasBy": "{{ktappprotocol__snmp__i_device_name}} ({{ktappprotocol__snmp__output_port}}) - Tx Errors",
+          "prefix": "",
+          "aliasBy": "",
           "topx": "10",
           "customFilters": [],
           "conjunctionOperator": "AND",
@@ -139,7 +137,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "unit": "bps",
           "custom": {
             "fillOpacity": 15,
             "lineWidth": 2,
@@ -166,8 +164,8 @@
       "links": []
     },
     {
-      "title": "Device Memory Utilization",
-      "description": "SNMP Memory utilization across devices",
+      "title": "Traffic by Device (Bits/s)",
+      "description": "Per-device traffic throughput \u2014 the flow-based view of device health",
       "type": "timeseries",
       "gridPos": {
         "h": 8,
@@ -188,11 +186,11 @@
             "i_device_id"
           ],
           "metric": [
-            "avg_ktappprotocol__snmp_device_metrics__INT64_01"
+            "p95th_bits_per_sec"
           ],
           "hostnameLookup": "enabled",
-          "prefix": "Memory",
-          "aliasBy": "{{i_device_id}} \u2014 Memory",
+          "prefix": "",
+          "aliasBy": "",
           "topx": "10",
           "customFilters": [],
           "conjunctionOperator": "AND",
@@ -204,8 +202,12 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "bytes",
-          "custom": {}
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
         },
         "overrides": []
       },
@@ -227,8 +229,8 @@
       "links": []
     },
     {
-      "title": "Device CPU Utilization",
-      "description": "SNMP CPU utilization across devices",
+      "title": "Packets/s by Device",
+      "description": "Per-device packet rate \u2014 complements bits/s for detecting small-packet floods",
       "type": "timeseries",
       "gridPos": {
         "h": 8,
@@ -249,11 +251,11 @@
             "i_device_id"
           ],
           "metric": [
-            "avg_ktappprotocol__snmp_device_metrics__INT64_00"
+            "p95th_pkts_per_sec"
           ],
           "hostnameLookup": "enabled",
-          "prefix": "CPU",
-          "aliasBy": "{{i_device_id}} \u2014 CPU %",
+          "prefix": "",
+          "aliasBy": "",
           "topx": "10",
           "customFilters": [],
           "conjunctionOperator": "AND",
@@ -265,8 +267,12 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percentunit",
-          "custom": {}
+          "unit": "pps",
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
         },
         "overrides": []
       },
