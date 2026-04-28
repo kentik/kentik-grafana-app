@@ -90,6 +90,13 @@ const FIELDS_VALIDATION_MESSAGES = {
 
 const MAX_DIMENSIONS = 8;
 
+/** NMS dimension categories that require matched dimensions and metrics. */
+const NMS_CATEGORIES = new Set<string>([
+  DimensionCategory.SNMP_DEVICE,
+  DimensionCategory.SNMP_INTERFACE,
+  DimensionCategory.ST_INTERFACE,
+]);
+
 // Helper to append a variable option if it exists in Grafana variables
 function appendVariableIfExists(options: QueryItem[], variableName: string): QueryItem[] {
   const templateSrv = getTemplateSrv();
@@ -193,7 +200,8 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       options = result.map((item: any) => ({
         label: item.text || item.label,
         value: item.value,
-        ...item
+        ...item,
+        ...(item.category ? { group: item.category } : {}),
       }));
     }
 
@@ -533,6 +541,37 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
     const query: Query = _.cloneDeep(props.query);
     query['metric'] = value;
 
+    // Auto-clear incompatible NMS dimensions when metric category changes.
+    // Flow dimensions are compatible with both flow and NMS metrics, so they are
+    // never auto-cleared. Only NMS dimensions whose category does not match any
+    // currently-selected NMS metric category need to be removed.
+    const newMetricCompat = new Set(
+      value
+        .map((m) => {
+          const opt = state.metrics.find((o: any) => o.value === m.value);
+          return (opt as any)?.compatibleCategory;
+        })
+        .filter(Boolean) as string[]
+    );
+    const newHasNmsMetric = [...newMetricCompat].some((c) => NMS_CATEGORIES.has(c));
+
+    if (value.length > 0) {
+      const currentDims = ensureArray(query.dimension);
+      const filteredDims = currentDims.filter((d) => {
+        const dim = dimensionList.find((dl) => dl.value === d.value);
+        const isNmsDim = dim?.category && NMS_CATEGORIES.has(dim.category);
+        if (!isNmsDim) {
+          // Flow dimension — always compatible.
+          return true;
+        }
+        // NMS dimension — only valid if at least one selected NMS metric matches.
+        return newHasNmsMetric && newMetricCompat.has(dim!.category!);
+      });
+      if (filteredDims.length !== currentDims.length) {
+        query.dimension = filteredDims as Query['dimension'];
+      }
+    }
+
     onQueryChange(query);
     const queryValid = isQueryValid(query);
     onRunQuery(queryValid);
@@ -621,6 +660,38 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
 
     if (newAliasBy !== props.query.aliasBy) {
       query.aliasBy = newAliasBy;
+    }
+
+    // Auto-clear incompatible metrics when dimension category changes.
+    // Rules (mirroring buildTopXdataQuery validation):
+    //   • flow dim    + flow metric   → OK
+    //   • flow dim    + NMS metric    → OK (flow dims don't constrain metrics)
+    //   • NMS dim     + flow metric   → invalid (NMS dim requires SNMP/ST metric)
+    //   • NMS dim     + NMS metric    → OK only if categories match
+    const newDimCategories = new Set(
+      value
+        .map((d) => {
+          const dim = dimensionList.find((dl) => dl.value === d.value);
+          return dim?.category;
+        })
+        .filter((c): c is DimensionCategory => !!c && NMS_CATEGORIES.has(c))
+    );
+    const newHasNmsDim = newDimCategories.size > 0;
+
+    if (newHasNmsDim) {
+      const currentMetrics = ensureArray(query.metric);
+      const filteredMetrics = currentMetrics.filter((m) => {
+        const opt = state.metrics.find((o: any) => o.value === m.value);
+        const compatCat = (opt as any)?.compatibleCategory;
+        const isNmsMetric = compatCat && NMS_CATEGORIES.has(compatCat);
+        // Flow metric is invalid when any NMS dim is selected.
+        if (!isNmsMetric) { return false; }
+        // NMS metric must match one of the selected NMS dim categories.
+        return newDimCategories.has(compatCat);
+      });
+      if (filteredMetrics.length !== currentMetrics.length) {
+        query.metric = filteredMetrics as Query['metric'];
+      }
     }
 
     onQueryChange(query);
@@ -924,11 +995,6 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
   // ── Dimension ↔ Metric cross-filtering ──────────────────────────────────
   // NMS categories require matched dimensions and metrics AND specific devices;
   // flow categories (no compatibleCategory / no category) are always mutually compatible.
-  const NMS_CATEGORIES = new Set<string>([
-    DimensionCategory.SNMP_DEVICE,
-    DimensionCategory.SNMP_INTERFACE,
-    DimensionCategory.ST_INTERFACE,
-  ]);
 
   const selectedDimensions = ensureArray(props.query.dimension);
   const selectedMetrics = ensureArray(props.query.metric);
@@ -943,11 +1009,6 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       .filter(Boolean) as string[]
   );
   const hasNmsDim = [...selectedDimCategories].some((c) => NMS_CATEGORIES.has(c));
-  const hasFlowDim = selectedDimensions.length === 0 ||
-    selectedDimensions.some((d) => {
-      const dim = dimensionList.find((dl) => dl.value === d.value);
-      return !dim?.category || !NMS_CATEGORIES.has(dim.category);
-    });
 
   // compatibleCategory values present in the currently selected metrics
   const selectedMetricCompat = new Set(
@@ -965,48 +1026,62 @@ export const QueryEditor: React.FC<QueryEditorComponentProps> = (props) => {
       return !(opt as any)?.compatibleCategory;
     });
 
-  // Grey-out (disable) incompatible metrics based on selected dimensions
-  // AND selected metrics (can't mix flow + NMS metric types).
-  const filteredMetrics = state.metrics.map((metric: any) => {
-    let compatible = true;
+  // Restrict to NMS dim categories only — flow dims do not constrain metric choice.
+  const selectedNmsDimCategories = new Set(
+    [...selectedDimCategories].filter((c) => NMS_CATEGORIES.has(c))
+  );
+  const selectedNmsMetricCompat = new Set(
+    [...selectedMetricCompat].filter((c) => NMS_CATEGORIES.has(c))
+  );
 
-    // Dimension-based constraints
-    if (selectedDimensions.length > 0) {
-      if (!metric.compatibleCategory) {
-        compatible = hasFlowDim && !hasNmsDim;
-      } else {
-        compatible = selectedDimCategories.has(metric.compatibleCategory);
-      }
+  // Remove incompatible metrics based on selected dimensions
+  // AND selected metrics (can't mix flow + NMS metric types).
+  const filteredMetrics = state.metrics.filter((metric: any) => {
+    const isNmsMetricOption = metric.compatibleCategory && NMS_CATEGORIES.has(metric.compatibleCategory);
+
+    // Dimension-based constraints — only NMS dims constrain metrics.
+    // Flow dims are compatible with both flow and NMS metrics (matches
+    // buildTopXdataQuery validation).
+    if (hasNmsDim) {
+      // Any NMS dim selected → flow metrics are invalid.
+      if (!isNmsMetricOption) { return false; }
+      // NMS metric must match one of the selected NMS dim categories.
+      if (!selectedNmsDimCategories.has(metric.compatibleCategory)) { return false; }
     }
 
     // Metric-to-metric constraints: once a metric type is chosen,
-    // disable metrics of incompatible types (flow vs NMS).
-    if (compatible && selectedMetrics.length > 0) {
-      const isNmsMetricOption = metric.compatibleCategory && NMS_CATEGORIES.has(metric.compatibleCategory);
+    // hide metrics of incompatible types (flow vs NMS).
+    if (selectedMetrics.length > 0) {
       if (!isNmsMetricOption) {
         // This is a flow metric — only compatible if existing selection includes flow
-        compatible = hasFlowMetric && !hasNmsMetric;
+        if (!(hasFlowMetric && !hasNmsMetric)) { return false; }
       } else {
         // This is an NMS metric — only compatible if existing selection matches its category
-        compatible = !hasFlowMetric && (!hasNmsMetric || selectedMetricCompat.has(metric.compatibleCategory));
+        if (!(!hasFlowMetric && (!hasNmsMetric || selectedNmsMetricCompat.has(metric.compatibleCategory)))) { return false; }
       }
     }
 
-    return compatible ? metric : { ...metric, isDisabled: true };
+    return true;
   });
 
-  // Grey-out (disable) incompatible dimensions based on selected metrics
-  const filteredDimensions = state.dimensions.map((dim: any) => {
-    let compatible = true;
-    if (selectedMetrics.length > 0) {
-      const isNmsDim = dim.category && NMS_CATEGORIES.has(dim.category);
-      if (!isNmsDim) {
-        compatible = hasFlowMetric && !hasNmsMetric;
-      } else {
-        compatible = selectedMetricCompat.has(dim.category);
-      }
+  // Remove incompatible dimensions based on selected metrics.
+  // Flow dimensions remain available for any metric selection (matches
+  // buildTopXdataQuery validation: flow dim + NMS metric is supported).
+  // Only NMS dimensions need to be filtered to match the selected NMS metric
+  // category, and they are hidden entirely when no NMS metric is selected
+  // (since picking one would force metric clearing).
+  const filteredDimensions = state.dimensions.filter((dim: any) => {
+    const isNmsDim = dim.category && NMS_CATEGORIES.has(dim.category);
+    if (!isNmsDim) {
+      // Flow dimension — always compatible.
+      return true;
     }
-    return compatible ? dim : { ...dim, isDisabled: true };
+    if (selectedMetrics.length > 0) {
+      // NMS dim requires at least one selected NMS metric whose category matches.
+      if (!hasNmsMetric) { return false; }
+      if (!selectedNmsMetricCompat.has(dim.category)) { return false; }
+    }
+    return true;
   });
 
   return (

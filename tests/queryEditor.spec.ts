@@ -1,8 +1,15 @@
 import { test, expect } from '@grafana/plugin-e2e';
 
-test('smoke: query editor renders all field sections', async ({ panelEditPage, readProvisionedDataSource }) => {
-  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
-  await panelEditPage.datasource.set(ds.name);
+test('smoke: query editor renders all field sections', async ({
+  gotoPanelEditPage,
+  readProvisionedDashboard,
+}) => {
+  // Navigate directly to a provisioned dashboard's panel edit page. This avoids the
+  // brittle DashboardPage.addPanel() UI flow which has compatibility issues across
+  // Grafana 11.x/12.x/13.x and the various plugin-e2e versions (the toolbar "Add"
+  // button is not reliably present on a freshly-created empty dashboard with scenes).
+  const dashboard = await readProvisionedDashboard({ fileName: 'kentik-e2e-test.json' });
+  const panelEditPage = await gotoPanelEditPage({ dashboard, id: '1' });
 
   const queryRow = panelEditPage.getQueryEditorRow('A');
 
@@ -20,12 +27,12 @@ test('smoke: query editor renders all field sections', async ({ panelEditPage, r
 });
 
 test('smoke: data mode toggle switches between graph and table', async ({
-  panelEditPage,
-  readProvisionedDataSource,
+  gotoPanelEditPage,
+  readProvisionedDashboard,
   page,
 }) => {
-  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
-  await panelEditPage.datasource.set(ds.name);
+  const dashboard = await readProvisionedDashboard({ fileName: 'kentik-e2e-test.json' });
+  const panelEditPage = await gotoPanelEditPage({ dashboard, id: '1' });
 
   const queryRow = panelEditPage.getQueryEditorRow('A');
 
