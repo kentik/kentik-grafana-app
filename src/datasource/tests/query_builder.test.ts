@@ -548,4 +548,137 @@ describe('Kentik Query Builder', () => {
       ]);
     });
   });
+
+  // ── Dimension ↔ Metric category compatibility validation ────────────────
+  //
+  // SNMP/ST dimensions and metrics must belong to the same category.
+  // Crossing categories (e.g. SNMP Device dimension + SNMP Interface metric)
+  // queries different KDE partitions and returns zero rows, so the query
+  // builder must reject these combinations with a clear error.
+
+  describe('Dimension ↔ Metric category compatibility', () => {
+    let baseOptions: any;
+
+    beforeEach(() => {
+      baseOptions = {
+        deviceNames: 'router1',
+        siteNames: null,
+        range: ctx.range,
+        kentikFilterGroups: [],
+        topx: '8',
+      };
+    });
+
+    it('SNMP Device dimension + SNMP Device metric → succeeds', () => {
+      expect(() =>
+        queryBuilder.buildTopXdataQuery({
+          ...baseOptions,
+          dimension: 'ktappprotocol__snmp_device_metrics__i_device_name',
+          metric: 'avg_ktappprotocol__snmp_device_metrics__INT64_00',
+        })
+      ).not.toThrow();
+    });
+
+    it('SNMP Interface dimension + SNMP Interface metric → succeeds', () => {
+      expect(() =>
+        queryBuilder.buildTopXdataQuery({
+          ...baseOptions,
+          dimension: 'ktappprotocol__snmp__output_port',
+          metric: 'avg_ktappprotocol__snmp__INT64_00',
+        })
+      ).not.toThrow();
+    });
+
+    it('ST Interface dimension + ST Interface metric → succeeds', () => {
+      expect(() =>
+        queryBuilder.buildTopXdataQuery({
+          ...baseOptions,
+          dimension: 'ktappprotocol__st__output_port',
+          metric: 'avg_ktappprotocol__st__INT64_00',
+        })
+      ).not.toThrow();
+    });
+
+    it('flow dimension + flow metric → succeeds', () => {
+      expect(() =>
+        queryBuilder.buildTopXdataQuery({
+          ...baseOptions,
+          dimension: 'src_geo_region',
+          metric: 'avg_bits_per_sec',
+        })
+      ).not.toThrow();
+    });
+
+    it('flow dimension + SNMP metric → succeeds (existing pattern)', () => {
+      // Flow dimensions have no NMS category, so this is allowed.
+      // The API routes on the metric prefix alone.
+      expect(() =>
+        queryBuilder.buildTopXdataQuery({
+          ...baseOptions,
+          dimension: 'src_geo_region',
+          metric: 'avg_ktappprotocol__snmp_device_metrics__INT64_00',
+        })
+      ).not.toThrow();
+    });
+
+    it('SNMP Device dimension + SNMP Interface metric → throws', () => {
+      expect(() =>
+        queryBuilder.buildTopXdataQuery({
+          ...baseOptions,
+          dimension: 'ktappprotocol__snmp_device_metrics__i_device_name',
+          metric: 'avg_ktappprotocol__snmp__INT64_00',
+        })
+      ).toThrow(/not compatible/);
+    });
+
+    it('SNMP Interface dimension + SNMP Device metric → throws', () => {
+      expect(() =>
+        queryBuilder.buildTopXdataQuery({
+          ...baseOptions,
+          dimension: 'ktappprotocol__snmp__output_port',
+          metric: 'avg_ktappprotocol__snmp_device_metrics__INT64_00',
+        })
+      ).toThrow(/not compatible/);
+    });
+
+    it('SNMP Device dimension + ST Interface metric → throws', () => {
+      expect(() =>
+        queryBuilder.buildTopXdataQuery({
+          ...baseOptions,
+          dimension: 'ktappprotocol__snmp_device_metrics__i_device_name',
+          metric: 'avg_ktappprotocol__st__INT64_00',
+        })
+      ).toThrow(/not compatible/);
+    });
+
+    it('SNMP Device dimension + flow metric → throws', () => {
+      expect(() =>
+        queryBuilder.buildTopXdataQuery({
+          ...baseOptions,
+          dimension: 'ktappprotocol__snmp_device_metrics__i_device_name',
+          metric: 'avg_bits_per_sec',
+        })
+      ).toThrow(/require SNMP\/ST metrics/);
+    });
+
+    it('SNMP Interface dimension + flow metric → throws', () => {
+      expect(() =>
+        queryBuilder.buildTopXdataQuery({
+          ...baseOptions,
+          dimension: 'ktappprotocol__snmp__output_port',
+          metric: 'avg_bits_per_sec',
+        })
+      ).toThrow(/require SNMP\/ST metrics/);
+    });
+
+    it('error message includes both category names', () => {
+      expect(() =>
+        queryBuilder.buildTopXdataQuery({
+          ...baseOptions,
+          dimension: 'ktappprotocol__snmp_device_metrics__i_device_name',
+          metric: 'avg_ktappprotocol__snmp__INT64_00',
+        })
+      ).toThrow(/SNMP Device Metrics.*SNMP Interface Metrics/);
+    });
+  });
 });

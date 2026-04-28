@@ -1,5 +1,6 @@
 import { ALL_DEVICES_LABEL, ALL_SITES_LABEL } from './DataSource';
-import { filterFieldList, FilterField, allMetricOptions } from './metric_def';
+import { filterFieldList, FilterField, allMetricOptions, dimensionList } from './metric_def';
+import { DimensionCategory } from './metric_types';
 
 import * as _ from 'lodash';
 
@@ -176,6 +177,64 @@ function buildTopXdataQuery(options: any, panelId?: string) {
   if (_.isEmpty(metricDefs)) {
     throw new Error('Query error: Metric field is required');
   }
+
+  // ── Dimension ↔ Metric category compatibility check ─────────────────────
+  // SNMP/ST dimensions and metrics must belong to the same category.
+  // Crossing categories (e.g. SNMP Device dimension + SNMP Interface metric)
+  // queries different KDE partitions and silently returns zero rows.
+  const NMS_DIM_CATEGORIES = new Set<string>([
+    DimensionCategory.SNMP_DEVICE,
+    DimensionCategory.SNMP_INTERFACE,
+    DimensionCategory.ST_INTERFACE,
+  ]);
+
+  const dimensionValues: string[] = options.dimension?.split(',') || [];
+  const dimCategories = new Set<DimensionCategory>(
+    dimensionValues
+      .map((v: string) => dimensionList.find((d) => d.value === normaliseKtPrefix(v))?.category)
+      .filter((c): c is DimensionCategory => !!c && NMS_DIM_CATEGORIES.has(c))
+  );
+
+  const metricCategories = new Set<DimensionCategory>(
+    metricDefs
+      .map((m: any): DimensionCategory | null => {
+        const unit: string = m.unit || '';
+        if (unit.startsWith('ktappprotocol__snmp_device_metrics__')) { return DimensionCategory.SNMP_DEVICE; }
+        if (unit.startsWith('ktappprotocol__snmp__')) { return DimensionCategory.SNMP_INTERFACE; }
+        if (unit.startsWith('ktappprotocol__st__')) { return DimensionCategory.ST_INTERFACE; }
+        return null;
+      })
+      .filter((c): c is DimensionCategory => c !== null)
+  );
+
+  if (dimCategories.size > 0 && metricCategories.size > 0) {
+    // Both sides are NMS — they must share the same category.
+    for (const mc of metricCategories) {
+      if (!dimCategories.has(mc)) {
+        const dimCat = [...dimCategories][0];
+        throw new Error(
+          `Query error: ${dimCat} dimensions are not compatible with ${mc} metrics. ` +
+          `SNMP/ST dimensions must be paired with metrics from the same category.`
+        );
+      }
+    }
+    for (const dc of dimCategories) {
+      if (!metricCategories.has(dc)) {
+        const metricCat = [...metricCategories][0];
+        throw new Error(
+          `Query error: ${dc} dimensions are not compatible with ${metricCat} metrics. ` +
+          `SNMP/ST dimensions must be paired with metrics from the same category.`
+        );
+      }
+    }
+  } else if (dimCategories.size > 0 && metricCategories.size === 0) {
+    // NMS dimensions with flow metrics — invalid.
+    const dimCat = [...dimCategories][0];
+    throw new Error(
+      `Query error: ${dimCat} dimensions require SNMP/ST metrics, not flow metrics.`
+    );
+  }
+  // Note: flow dimensions + NMS metrics is allowed (existing pattern in tests/dashboards).
 
 
   const startingTime = options.range.from.utc().format(KENTIK_TIME_FORMAT);
