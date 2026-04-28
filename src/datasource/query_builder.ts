@@ -213,7 +213,7 @@ function buildTopXdataQuery(options: any, panelId?: string) {
       if (!dimCategories.has(mc)) {
         const dimCat = [...dimCategories][0];
         throw new Error(
-          `Query error: ${dimCat} dimensions are not compatible with ${mc} metrics. ` +
+          `Query error: dimensions from category "${dimCat}" are not compatible with metrics from category "${mc}". ` +
           `SNMP/ST dimensions must be paired with metrics from the same category.`
         );
       }
@@ -222,7 +222,7 @@ function buildTopXdataQuery(options: any, panelId?: string) {
       if (!metricCategories.has(dc)) {
         const metricCat = [...metricCategories][0];
         throw new Error(
-          `Query error: ${dc} dimensions are not compatible with ${metricCat} metrics. ` +
+          `Query error: dimensions from category "${dc}" are not compatible with metrics from category "${metricCat}". ` +
           `SNMP/ST dimensions must be paired with metrics from the same category.`
         );
       }
@@ -231,7 +231,7 @@ function buildTopXdataQuery(options: any, panelId?: string) {
     // NMS dimensions with flow metrics — invalid.
     const dimCat = [...dimCategories][0];
     throw new Error(
-      `Query error: ${dimCat} dimensions require SNMP/ST metrics, not flow metrics.`
+      `Query error: dimensions from category "${dimCat}" require SNMP/ST metrics, not flow metrics.`
     );
   }
   // Note: flow dimensions + NMS metrics is allowed (existing pattern in tests/dashboards).
