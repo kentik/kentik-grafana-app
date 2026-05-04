@@ -85,6 +85,22 @@ The test imports `migration-test/dashboards/legacy-v17-test.json`, runs the
 migration script, and verifies that legacy datasource references were rewritten
 to `kentik-connect-datasource` (`uid: kentik`).
 
+## Release validation example
+
+Example apply-mode summary from a local mixed-dashboard test:
+
+```text
+Discovered dashboards: 8
+UPDATED  custom-mixed-migration-test (Custom Mixed Migration Test) refs=2
+UNCHANGED non-kentik-control-test (Non Kentik Control Test)
+Summary: updated=1, dryRun=0, unchanged=7, skipped=0, refsRewritten=2
+```
+
+Interpretation:
+
+- Only dashboards/panels with legacy Kentik references are rewritten.
+- Dashboards that do not reference legacy Kentik datasource IDs remain unchanged.
+
 ## What's new in kentik-connect-datasource v2.0.0
 
 - Batch query scheduler (3–5× faster dashboards)

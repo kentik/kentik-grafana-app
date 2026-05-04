@@ -245,7 +245,8 @@ async function migrateDashboard(args, item) {
   if (!args.dryRun) {
     await grafanaRequest(args, 'POST', '/api/dashboards/db', {
       dashboard: workingCopy,
-      folderId: dashboard.folderId || 0,
+      // Grafana returns folder ownership in meta, not dashboard.
+      folderId: meta.folderId || 0,
       overwrite: true,
       message: 'kentik datasource migration: auto-rewrite datasource references',
     });
