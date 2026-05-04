@@ -6,7 +6,7 @@
     "description": "This plugin has been replaced by the Kentik Connect Datasource (kentik-connect-datasource). It is kept as a bridge to auto-install the new datasource for existing users. Please configure and use kentik-connect-datasource directly.",
     "author": {
       "name": "Kentik",
-      "url": "https://kentik.com"
+      "url": "https://www.kentik.com"
     },
     "keywords": [
       "kentik"
