@@ -1,6 +1,7 @@
-import { appEvents } from 'grafana/app/core/core';
-
+import { getAppEvents } from '@grafana/runtime';
 import * as _ from 'lodash';
+
+const appEvents = getAppEvents();
 
 function showAlert(error: any) {
   let message = '';
@@ -14,7 +15,10 @@ function showAlert(error: any) {
     message += error;
   }
 
-  appEvents.emit('alert-error', ['Kentik API Error', message]);
+  appEvents.publish({
+    type: 'alert-error',
+    payload: ['Kentik API Error', message],
+  });
 }
 
 function showCustomAlert(message: string, exceptionData: any, exceptionType: any) {
@@ -28,7 +32,7 @@ function showCustomAlert(message: string, exceptionData: any, exceptionType: any
   } else if (_.isString(exceptionData)) {
     errMessage += exceptionData;
   }
-  appEvents.emit(`alert-${exceptionType}`, [message, errMessage]);
+  appEvents.publish({type: `alert-${exceptionType}`, payload: [message, errMessage]});
 }
 
 export { showAlert, showCustomAlert };

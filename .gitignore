@@ -1,19 +1,69 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
 coverage/
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
 
-.DS_Store
-
-node_modules
-tmp/*
-npm-debug.log
+# Production / Build
 dist/
+build/
 
-# Editor junk
+# IDE / Editor
+.idea/
+.vscode/
 *.sublime-project
 *.sublime-workspace
 *.swp
-.idea/
+*.swo
 *.iml
 *.tmp
-.vscode/
 
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Caches
 .eslintcache
+*.tsbuildinfo
+
+# Archives and Packages
+*.zip
+*.tar.gz
+*.tgz
+*.gz
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Temp
+tmp/
+
+# Mac / System
+.*
+!.gitignore
+!.github/
+!.config/
+!.prettierrc*
+!.nvmrc
+!.cprc.json
+!.gitattributes
+
+# Playwright auth state (contains tokens)
+playwright/.auth/

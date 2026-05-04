@@ -1,0 +1,54 @@
+import { DataSourceJsonData } from '@grafana/data';
+import { DataQuery } from '@grafana/schema';
+
+export interface MyQuery extends DataQuery {
+  queryText?: string;
+  constant: number;
+}
+
+export const DEFAULT_QUERY: Partial<MyQuery> = {
+  constant: 6.5,
+};
+
+export interface DataPoint {
+  Time: number;
+  Value: number;
+}
+
+export interface DataSourceResponse {
+  datapoints: DataPoint[];
+}
+
+/**
+ * These are options configured for each DataSource instance
+ */
+export enum Region {
+  DEFAULT = 'default',
+  EU = 'eu',
+  CUSTOM = 'custom',
+}
+
+export type Url = {
+  v6: string; 
+  v5: string 
+}
+
+export type JsonData = {
+  url?: Url;
+  email?: string;
+  region?: Region;
+  dynamicUrl?: string;
+  tokenSet?: boolean;
+  timeout?: number;
+};
+
+export interface MyDataSourceOptions extends JsonData, DataSourceJsonData {
+  path?: string;
+}
+
+/**
+ * Value that is used in the backend, but never sent over HTTP to the frontend
+ */
+export interface MySecureJsonData {
+  token?: string;
+}

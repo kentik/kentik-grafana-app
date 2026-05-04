@@ -3,7 +3,11 @@ name: Release
 on:
   push:
     tags:
-      - "v*" # Run workflow on version tags, e.g. v1.8.0
+      - 'v*' # Run workflow on version tags, e.g. v2.0.0
+
+env:
+  PLUGIN_ID: kentik-connect-datasource
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   release:
@@ -13,9 +17,51 @@ jobs:
       attestations: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: grafana/plugin-actions/build-plugin@build-plugin/v1.2.0
+      - uses: actions/checkout@v5
         with:
-          policy_token: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
-          attestation: true
+          fetch-depth: 0 # Full history for changelog generation
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build plugin
+        run: npm run build
+
+      - name: Run tests
+        run: npx jest --no-coverage
+
+      - name: Sign plugin
+        run: npx @grafana/sign-plugin@latest
+        env:
+          GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
+
+      - name: Package plugin
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          mkdir -p "/tmp/pkg/${{ env.PLUGIN_ID }}"
+          cp -r dist/* "/tmp/pkg/${{ env.PLUGIN_ID }}/"
+          cd /tmp/pkg
+          zip -r "${{ github.workspace }}/${{ env.PLUGIN_ID }}-${VERSION}.zip" "${{ env.PLUGIN_ID }}"
+          cd "${{ github.workspace }}"
+          sha1sum "${{ env.PLUGIN_ID }}-${VERSION}.zip" > "${{ env.PLUGIN_ID }}-${VERSION}.zip.sha1"
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: ${{ env.PLUGIN_ID }}-*.zip
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          files: |
+            ${{ env.PLUGIN_ID }}-*.zip
+            ${{ env.PLUGIN_ID }}-*.sha1
+

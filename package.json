@@ -1,9 +1,8 @@
 {
   "name": "kentik-datasource",
-  "version": "1.8.0",
+  "version": "2.0.1",
   "scripts": {
-    "build": "bash scripts/build-bridge-v1.8.sh && mkdir -p dist && cp -r bridge-dist/kentik-connect-app/* dist/",
-    "build:datasource": "webpack -c ./.config/webpack/webpack.config.ts --env production",
+    "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
     "test": "jest --watch --onlyChanged",
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
@@ -18,7 +17,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@grafana/eslint-config": "^9.0.0",
-    "@grafana/plugin-e2e": "^3.4.8",
+    "@grafana/plugin-e2e": "^3.6.1",
     "@grafana/tsconfig": "^2.0.1",
     "@playwright/test": "^1.52.0",
     "@stylistic/eslint-plugin-ts": "^2.9.0",
@@ -63,11 +62,7 @@
     "webpack-virtual-modules": "^0.6.2"
   },
   "engines": {
-    "node": ">=18"
-  },
-  "resolutions": {
-    "braces": ">=3.0.3",
-    "cross-spawn": ">=7.0.5"
+    "node": ">=24"
   },
   "overrides": {
     "glob": "^13.0.0",
@@ -83,5 +78,6 @@
     "@grafana/ui": "^12.4.1",
     "react": "^18.3.0",
     "react-dom": "^18.3.0"
-  }
+  },
+  "packageManager": "npm@10.9.2"
 }

@@ -1,0 +1,255 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "Protocol Traffic Density (Heatmap)",
+      "description": "Heatmap showing traffic volume distribution across protocols over time \u2014 bright cells indicate burst activity",
+      "type": "heatmap",
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "kentik"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "mode": "graph",
+          "dimension": [
+            "Proto"
+          ],
+          "metric": [
+            "avg_bits_per_sec"
+          ],
+          "hostnameLookup": "disabled",
+          "prefix": "",
+          "aliasBy": "{{Proto}}",
+          "topx": "25",
+          "customFilters": [],
+          "conjunctionOperator": "AND",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "kentik"
+          }
+        }
+      ],
+      "options": {
+        "calculate": false,
+        "color": {
+          "mode": "scheme",
+          "scheme": "Oranges",
+          "reverse": false
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "show": true,
+          "yHistogram": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            }
+          }
+        },
+        "overrides": []
+      },
+      "links": []
+    },
+    {
+      "title": "Device Flow Activity (Status History)",
+      "description": "Status history showing per-device flow rates over time \u2014 red indicates low/no flows (possible collection outage), green indicates healthy activity",
+      "type": "status-history",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 2,
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "kentik"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "mode": "graph",
+          "dimension": [
+            "i_device_id"
+          ],
+          "metric": [
+            "avg_flows_per_sec"
+          ],
+          "hostnameLookup": "enabled",
+          "prefix": "",
+          "aliasBy": "{{i_device_id}}",
+          "topx": "10",
+          "customFilters": [],
+          "conjunctionOperator": "AND",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "kentik"
+          }
+        }
+      ],
+      "options": {
+        "colWidth": 0.9,
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "fps",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 10
+              },
+              {
+                "color": "green",
+                "value": 100
+              }
+            ]
+          },
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 70
+          }
+        },
+        "overrides": []
+      },
+      "links": []
+    },
+    {
+      "title": "Site Traffic Overview (Bar Chart)",
+      "description": "Traffic volume by site \u2014 quickly identify which sites are driving the most bandwidth",
+      "type": "barchart",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 3,
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "kentik"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "mode": "graph",
+          "dimension": [
+            "i_device_site_name"
+          ],
+          "metric": [
+            "avg_bits_per_sec"
+          ],
+          "hostnameLookup": "enabled",
+          "prefix": "Site",
+          "aliasBy": "{{i_device_site_name}}",
+          "topx": "15",
+          "customFilters": [],
+          "conjunctionOperator": "AND",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "kentik"
+          }
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "stacking": "none",
+        "barWidth": 0.8,
+        "tooltip": {
+          "mode": "multi"
+        },
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "min",
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 80
+          }
+        },
+        "overrides": []
+      },
+      "links": []
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": [
+    "kentik",
+    "site",
+    "overview"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Kentik: Site & Device Overview",
+  "uid": "kentik-site-overview",
+  "version": 1
+}

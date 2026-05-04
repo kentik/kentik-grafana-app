@@ -1,0 +1,353 @@
+{
+  "uid": "NS58GIo71",
+  "title": "Kentik Top Talkers",
+  "originalTitle": "Kentik Top Talkers",
+  "tags": [
+    "kentik"
+  ],
+  "style": "dark",
+  "timezone": "",
+  "editable": true,
+  "hideControls": false,
+  "sharedCrosshair": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "kentik"
+      },
+      "id": 1,
+      "links": [],
+      "targets": [
+        {
+          "devices": "$devices",
+          "hostnameLookup": "$dns_lookup",
+          "dimension": "$dimension",
+          "mode": "graph",
+          "refId": "A",
+          "target": "",
+          "metric": "$metric",
+          "aliasBy": "",
+          "prefix": "",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "kentik"
+          }
+        }
+      ],
+      "title": "Kentik Network Flow Data",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 11
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": []
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": true,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "axisCenteredZero": false,
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "pluginVersion": "10.1.0-118674pre",
+      "timeFrom": null,
+      "timeShift": null
+    },
+    {
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "kentik"
+      },
+      "id": 2,
+      "links": [],
+      "targets": [
+        {
+          "devices": "$devices",
+          "hostnameLookup": "$dns_lookup",
+          "dimension": "$dimension",
+          "mode": "table",
+          "refId": "A",
+          "target": "",
+          "metric": "$metric",
+          "aliasBy": "",
+          "prefix": "",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "kentik"
+          }
+        }
+      ],
+      "type": "table",
+      "gridPos": {
+        "x": 0,
+        "y": 11,
+        "w": 24,
+        "h": 9
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/^(Max|95th|p95th|Avg|Average)/"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false,
+          "fields": ""
+        }
+      },
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {
+            "reducers": []
+          }
+        }
+      ],
+      "pluginVersion": "10.1.0-118674pre"
+    }
+  ],
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
+  },
+  "templating": {
+    "list": [
+      {
+        "allValue": null,
+        "current": {
+          "tags": [],
+          "text": "disabled",
+          "value": "disabled"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "DNS Lookup",
+        "multi": false,
+        "name": "dns_lookup",
+        "options": [
+          {
+            "selected": false,
+            "text": "enabled",
+            "value": "enabled"
+          },
+          {
+            "selected": true,
+            "text": "disabled",
+            "value": "disabled"
+          }
+        ],
+        "query": "enabled,disabled",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {
+          "tags": [],
+          "text": "All",
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "kentik-connect-datasource",
+          "uid": "kentik"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Devices",
+        "multi": true,
+        "name": "devices",
+        "options": [],
+        "query": "devices()",
+        "refresh": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "value": "InterfaceID_src",
+          "text": "Source Interface"
+        },
+        "datasource": {
+          "type": "kentik-connect-datasource",
+          "uid": "kentik"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Group By",
+        "multi": false,
+        "name": "dimension",
+        "options": [],
+        "query": "dimensions()",
+        "refresh": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "kentik-connect-datasource",
+          "uid": "kentik"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Metric",
+        "multi": false,
+        "name": "metric",
+        "options": [],
+        "query": "metricsOptions()",
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "datasource": {
+          "type": "kentik-connect-datasource",
+          "uid": "kentik"
+        },
+        "filters": [],
+        "hide": 0,
+        "label": "",
+        "name": "Filters",
+        "type": "adhoc"
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "refresh": false,
+  "schemaVersion": 12,
+  "revision": 4,
+  "links": []
+}

@@ -1,145 +1,50 @@
-export type TransformFunction = (value: number, row: any, rangeSeconds: number) => number;
-export type Metric = { text: string; value: string; field: string };
-export type Unit = {
-  text: string;
-  value: string;
-  field: string;
-  outsort: string;
-  gfUnit: string;
-  gfAxisLabel: string;
-  transform?: TransformFunction;
-  tableFields: Array<{ text: string; field: string; unit: string; transform?: TransformFunction }>;
-};
-export type FilterField = { text: string; field: string; unequatable?: boolean };
+// Re-export types from metric_types.ts (single source of truth)
+export type { TransformFunction, Dimension, Metric, MetricGroup, FilterField } from './metric_types';
 
-export const metricList: Metric[] = [
-  { text: 'Traffic', value: 'Traffic', field: 'traffic' },
-  { text: 'TopFlow', value: 'TopFlow', field: 'TopFlow' },
-  { text: 'Top flow IP', value: 'TopFlowsIP', field: 'TopFlowsIP' },
-  { text: 'Source Country', value: 'Geography_src', field: 'src_geo' },
-  { text: 'Source Geo Region', value: 'src_geo_region', field: 'src_geo_region' },
-  { text: 'Source Geo City', value: 'src_geo_city', field: 'src_geo_city' },
-  { text: 'Source As Number', value: 'AS_src', field: 'src_as' },
-  { text: 'Source Interface', value: 'InterfaceID_src', field: 'input_port' },
-  { text: 'Source Port', value: 'Port_src', field: 'l4_src_port' },
-  { text: 'Source VLAN', value: 'VLAN_src', field: 'vlan_in' },
-  { text: 'Source IP/CIDR', value: 'IP_src', field: 'ipv4_src_addr' },
-  { text: 'Source MAC Address', value: 'src_eth_mac', field: 'src_eth_mac' },
-  { text: 'Source Route Prefix/LEN', value: 'src_route_prefix_len', field: 'src_route_prefix_len' },
-  { text: 'Source Route LEN', value: 'src_route_length', field: 'src_route_length' },
-  { text: 'Source BGP Community', value: 'src_bgp_community', field: 'src_bgp_community' },
-  { text: 'Source BGP AS_Path', value: 'src_bgp_aspath', field: 'src_bgp_aspath' },
-  { text: 'Source BGP Next Hop IP/CIDR', value: 'src_nexthop_ip', field: 'ipv4_src_next_hop' },
-  { text: 'Source Next Hop AS Number', value: 'src_nexthop_asn', field: 'src_nexthop_as' },
-  { text: 'Source 2nd BGP_HOP AS Number', value: 'src_second_asn', field: 'src_second_asn' },
-  { text: 'Source 3nd BGP_HOP AS Number', value: 'src_third_asn', field: 'src_third_asn' },
-  { text: 'Source Protocol:IP Port', value: 'src_proto_port', field: 'src_proto_port' },
-  { text: 'Destination Country', value: 'Geography_dst', field: 'dst_geo' },
-  { text: 'Destination Region', value: 'dst_geo_region', field: 'dst_geo_region' },
-  { text: 'Destination City', value: 'dst_geo_city', field: 'dst_geo_city' },
-  { text: 'Destination As Number', value: 'AS_dst', field: 'dst_as' },
-  { text: 'Destination Interface', value: 'InterfaceID_dst', field: 'output_port' },
-  { text: 'Destination Port', value: 'Port_dst', field: 'l4_dst_port' },
-  { text: 'Destination VLAN', value: 'VLAN_dst', field: 'vlan_out' },
-  { text: 'Destination IP/CIDR', value: 'IP_dst', field: 'ipv4_dst_addr' },
-  { text: 'Destination MAC Address', value: 'dst_eth_mac', field: 'dst_eth_mac' },
-  { text: 'Destination Route Prefix/LEN', value: 'dst_route_prefix_len', field: 'dst_route_prefix_len' },
-  { text: 'Destination Route LEN', value: 'dst_route_length', field: 'dst_route_length' },
-  { text: 'Destination BGP Community', value: 'dst_bgp_community', field: 'dst_bgp_community' },
-  { text: 'Destination BGP AS_Path', value: 'dst_bgp_aspath', field: 'dst_bgp_aspath' },
-  { text: 'Destination BGP Next Hop IP/CIDR', value: 'dst_nexthop_ip', field: 'ipv4_dst_next_hop' },
-  { text: 'Destination Next Hop AS Number', value: 'dst_nexthop_asn', field: 'dst_nexthop_as' },
-  { text: 'Destination 2nd BGP_HOP AS Number', value: 'dst_second_asn', field: 'dst_second_asn' },
-  { text: 'Destination 3nd BGP_HOP AS Number', value: 'dst_third_asn', field: 'dst_third_asn' },
-  { text: 'Destination Protocol:IP Port', value: 'dst_proto_port', field: 'dst_proto_port' },
-  { text: 'Full Device', value: 'i_device_id', field: 'i_device_id' },
-  { text: 'Full Site', value: 'i_device_site_name', field: 'i_device_site_name' },
-  { text: 'Full Protocol', value: 'Proto', field: 'protocl' },
-  { text: 'Full INET Family', value: 'inet_family', field: 'inet_family' },
-  { text: 'Full TOS', value: 'TOS', field: 'tos' },
-  { text: 'Full TCP flags', value: 'tcp_flags', field: 'tcp_flags' },
-  { text: 'AS Top Talkers', value: 'ASTopTalkers', field: 'ASTopTalkers' },
-  { text: 'Interface Top Talkers', value: 'InterfaceTopTalkers', field: 'InterfaceTopTalkers' },
-  { text: 'Port to Port Talkers', value: 'PortPortTalkers', field: 'PortPortTalkers' },
-  { text: 'Region Top Talkers', value: 'RegionTopTalkers', field: 'RegionTopTalkers' },
-];
+export { DimensionClass, DimensionCategory, MetricCategory, METRIC_TYPE } from './metric_types';
 
-function toBitsPerSecond(value: number, row: any): number {
-  return (value * 8) / row.i_duration;
+import { METRIC_TYPE, DimensionCategory, type Dimension, type Metric, type MetricGroup, type FilterField, type MetricOptionInput } from './metric_types';
+
+// Import dimensionList from the modular dimension files
+import { dimensionList as _dimensionList } from './dimensions/index';
+
+/**
+ * Flatten metricNestedList groups into a flat array of fully-resolved Metric objects.
+ *
+ * This is the SINGLE place where derived / default fields are applied.
+ * Individual option definitions only need to specify what's unique to them
+ * (value, fn, label, and optionally rank or sample_rate override).
+ *
+ * Fields injected here:
+ *   • raw: true          — tells the Kentik API to return timeSeries data
+ *   • name               — always equals value
+ *   • origLabel          — always equals label
+ *   • group              — always equals the parent group's label
+ *   • sample_rate        — defaults to 1 (option can override, e.g. 0.01)
+ *   • unit               — from the group level (option can override)
+ *   • column             — from the group level (option can override)
+ */
+export function flattenMetricOptions(groups: MetricGroup[]): Metric[] {
+  return groups.flatMap((group) =>
+    group.options.map((opt: MetricOptionInput): Metric => ({
+      value: opt.value,
+      column: opt.column ?? group.column,
+      fn: opt.fn,
+      label: opt.label,
+      unit: opt.unit ?? group.unit,
+      group: group.label,
+      origLabel: opt.label,
+      sample_rate: opt.sample_rate ?? 1,
+      raw: true,
+      name: opt.value,
+      ...(opt.rank !== undefined ? { rank: opt.rank } : {}),
+      ...(opt.tableField ? { tableField: opt.tableField } : {}),
+    }))
+  );
 }
 
-function toPerSecondRate(value: number, row: any): number {
-  return value / row.i_duration;
-}
-
-function totalToAvgPerSecond(value: number, row: any, rangeSeconds: number): number {
-  return value / rangeSeconds;
-}
-
-function totalToBitsPerSecond(value: number, row: any, rangeSeconds: number): number {
-  return (value * 8) / rangeSeconds;
-}
-
-export const unitList: Unit[] = [
-  {
-    text: 'Bits/s',
-    value: 'bytes',
-    field: 'f_sum_both_bytes',
-    outsort: 'avg_both',
-    gfUnit: 'bps',
-    gfAxisLabel: 'Bits/s',
-    transform: toBitsPerSecond,
-    tableFields: [
-      { text: 'Avg', field: 'avg_both', unit: 'bps', transform: totalToBitsPerSecond },
-      { text: '95th Percentile', field: 'p95th_both', unit: 'bps' },
-      { text: 'Max', field: 'max_both', unit: 'bps' },
-    ],
-  },
-  {
-    text: 'Packets/s',
-    value: 'packets',
-    field: 'f_sum_both_pkts',
-    outsort: 'avg_both',
-    gfUnit: 'pps',
-    gfAxisLabel: 'Packets/s',
-    transform: toPerSecondRate,
-    tableFields: [
-      { text: 'Avg', field: 'avg_both', unit: 'pps', transform: totalToAvgPerSecond },
-      { text: '95th Percentile', field: 'p95th_both', unit: 'pps' },
-      { text: 'Max', field: 'max_both', unit: 'pps' },
-    ],
-  },
-  {
-    text: 'Unique Src IPs',
-    value: 'unique_src_ip',
-    field: 'f_hll(inet_src_addr,0.0001)',
-    outsort: 'avg_ips',
-    gfUnit: 'short',
-    gfAxisLabel: 'Unique Src IPs',
-    tableFields: [
-      { text: 'Average', field: 'avg_ips', unit: 'none' },
-      { text: 'p95th', field: 'p95th_ips', unit: 'none' },
-      { text: 'Max', field: 'max_ips', unit: 'none' },
-      { text: 'p95th mbps', field: 'p95th_bits_per_sec', unit: 'bps' },
-      { text: 'p95th pps', field: 'p95th_pkts_per_sec', unit: 'pps' },
-    ],
-  },
-  {
-    text: 'Unique Dst IPs',
-    value: 'unique_dst_ip',
-    field: 'f_hll(inet_dst_addr,0.0001)',
-    outsort: 'avg_ips',
-    gfUnit: 'short',
-    gfAxisLabel: 'Unique Dst IPs',
-    tableFields: [
-      { text: 'Average', field: 'avg_ips', unit: 'none' },
-      { text: 'p95th', field: 'p95th_ips', unit: 'none' },
-      { text: 'Max', field: 'max_ips', unit: 'none' },
-      { text: 'p95th mbps', field: 'p95th_bits_per_sec', unit: 'bps' },
-      { text: 'p95th pps', field: 'p95th_pkts_per_sec', unit: 'pps' },
-    ],
-  },
-];
+// dimensionList is now imported from the modular dimension files (dimensions/index.ts)
+export const dimensionList: Dimension[] = _dimensionList;
 
 export const filterFieldList: FilterField[] = [
   { text: 'Source City', field: 'src_geo_city' },
@@ -185,3 +90,1025 @@ export const filterFieldList: FilterField[] = [
   { text: 'Device Name', field: 'i_device_name' },
   { text: 'TOS/Diffserv', field: 'tos' },
 ];
+
+export const metricNestedList = [
+  {
+    label: 'Bits/s',
+    column: 'f_sum_both_bytes',
+    unit: 'bytes',
+    options: [
+      {
+        value: 'avg_bits_per_sec',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_bits_per_sec',
+        fn: 'percentile',
+        label: '95th Percentile',
+        rank: 95,
+      },
+      {
+        value: 'p99th_bits_per_sec',
+        fn: 'percentile',
+        label: '99th Percentile',
+        rank: 99,
+      },
+      {
+        value: 'max_bits_per_sec',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.RATE,
+  },
+  {
+    label: 'Packets/s',
+    column: 'f_sum_both_pkts',
+    unit: 'packets',
+    options: [
+      {
+        value: 'avg_pkts_per_sec',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_pkts_per_sec',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_pkts_per_sec',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_pkts_per_sec',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.RATE,
+  },
+  {
+    label: 'Flows/s',
+    column: 'trautocount',
+    unit: 'fps',
+    options: [
+      {
+        value: 'avg_flows_per_sec',
+        columnPrefixes: ['f_fumlat', 'f_fsumloc'],
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_flows_per_sec',
+        columnPrefixes: ['f_fumlat', 'f_fsumloc'],
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_flows_per_sec',
+        columnPrefixes: ['f_fumlat', 'f_fsumloc'],
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_flows_per_sec',
+        columnPrefixes: ['f_fumlat', 'f_fsumloc'],
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.RATE,
+  },
+  {
+    label: 'Unique IPs Source IPs Unique Count',
+    column: 'f_hll(inet_src_addr,0.0001)',
+    unit: 'unique_src_ip',
+    options: [
+      {
+        value: 'avg_src_ip',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_src_ip',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_src_ip',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_src_ip',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Unique IPs Source IPs Bitrate Per IP',
+    column: 'bytes_per_src_ip',
+    unit: 'bytes_per_src_ip',
+    options: [
+      {
+        value: 'avg_bytes_per_src_ip',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_bytes_per_src_ip',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_bytes_per_src_ip',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_bytes_per_src_ip',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Unique IPs Destination IPs Unique Count',
+    column: 'f_hll(inet_dst_addr,0.0001)',
+    unit: 'unique_dst_ip',
+    options: [
+      {
+        value: 'avg_dst_ip',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_dst_ip',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_dst_ip',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_dst_ip',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Unique IPs Destination IPs Bitrate Per IP',
+    column: 'bytes_per_dst_ip',
+    unit: 'bytes_per_dst_ip',
+    options: [
+      {
+        value: 'avg_bytes_per_dst_ip',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_bytes_per_dst_ip',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_bytes_per_dst_ip',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_bytes_per_dst_ip',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Unique Route Prefixes Source',
+    column: 'f_hll(inet_src_route_prefix,0.0001)',
+    unit: 'unique_src_route_prefix',
+    options: [
+      {
+        value: 'avg_src_route_prefix',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_src_route_prefix',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_src_route_prefix',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_src_route_prefix',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Unique Route Prefixes Destination',
+    column: 'f_hll(inet_dst_route_prefix,0.0001)',
+    unit: 'unique_dst_route_prefix',
+    options: [
+      {
+        value: 'avg_dst_route_prefix',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_dst_route_prefix',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_dst_route_prefix',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_dst_route_prefix',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Unique Ports Source',
+    column: 'f_hll(l4_src_port.agg0,0.0001)',
+    unit: 'unique_src_port',
+    options: [
+      {
+        value: 'avg_src_port',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_src_port',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_src_port',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_src_port',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Unique Ports Destination',
+    column: 'f_hll(l4_dst_port.agg0,0.0001)',
+    unit: 'unique_dst_port',
+    options: [
+      {
+        value: 'avg_dst_port',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_dst_port',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_dst_port',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_dst_port',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Unique ASNs Source',
+    column: 'f_hll(src_as.agg0,0.0001)',
+    unit: 'unique_src_as',
+    options: [
+      {
+        value: 'avg_src_as',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_src_as',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_src_as',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_src_as',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Unique ASNs Destination',
+    column: 'f_hll(dst_as.agg0,0.0001)',
+    unit: 'unique_dst_as',
+    options: [
+      {
+        value: 'avg_dst_as',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_dst_as',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_dst_as',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_dst_as',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Unique ASNs Next Hop Destination',
+    column: 'f_hll(dst_nexthop_as.agg0,0.0001)',
+    unit: 'unique_dst_nexthop_asn',
+    options: [
+      {
+        value: 'avg_dst_nexthop_as',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_dst_nexthop_as',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_dst_nexthop_as',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_dst_nexthop_as',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Unique Countries Source',
+    column: 'f_hll(src_geo.agg0,0.0001)',
+    unit: 'unique_src_geo',
+    options: [
+      {
+        value: 'avg_src_countries',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_src_countries',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_src_countries',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_src_countries',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Unique Countries Destination',
+    column: 'f_hll(dst_geo.agg0,0.0001)',
+    unit: 'unique_dst_geo',
+    options: [
+      {
+        value: 'avg_dst_countries',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_dst_countries',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_dst_countries',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_dst_countries',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Unique Regions Source',
+    column: 'f_hll(src_geo_region.agg0,0.0001)',
+    unit: 'unique_src_geo_region',
+    options: [
+      {
+        value: 'avg_src_regions',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_src_regions',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_src_regions',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_src_regions',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Unique Regions Destination',
+    column: 'f_hll(dst_geo_region.agg0,0.0001)',
+    unit: 'unique_dst_geo_region',
+    options: [
+      {
+        value: 'avg_dst_regions',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_dst_regions',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_dst_regions',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_dst_regions',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Unique Cities Source',
+    column: 'f_hll(src_geo_city.agg0,0.0001)',
+    unit: 'unique_src_geo_city',
+    options: [
+      {
+        value: 'avg_src_cities',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_src_cities',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_src_cities',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_src_cities',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Unique Cities Destination',
+    column: 'f_hll(dst_geo_city.agg0,0.0001)',
+    unit: 'unique_dst_geo_city',
+    options: [
+      {
+        value: 'avg_dst_cities',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_dst_cities',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'p99th_dst_cities',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+      },
+      {
+        value: 'max_dst_cities',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Sample Rate Max',
+    column: 'f_max_sample_rate',
+    unit: 'max_sample_rate',
+    options: [
+      {
+        value: 'avg_max_sample_rate',
+        fn: 'average',
+        label: 'Average',
+        sample_rate: 0.01,
+      },
+      {
+        value: 'p95th_max_sample_rate',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+        sample_rate: 0.01,
+      },
+      {
+        value: 'p99th_max_sample_rate',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+        sample_rate: 0.01,
+      },
+      {
+        value: 'max_max_sample_rate',
+        fn: 'max',
+        label: 'Max',
+        sample_rate: 0.01,
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Sample Rate Average',
+    column: 'f_avg_sample_rate',
+    unit: 'avg_sample_rate',
+    options: [
+      {
+        value: 'avg_avg_sample_rate',
+        fn: 'average',
+        label: 'Average',
+        sample_rate: 0.01,
+      },
+      {
+        value: 'p95th_avg_sample_rate',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+        sample_rate: 0.01,
+      },
+      {
+        value: 'p99th_avg_sample_rate',
+        fn: 'percentile',
+        rank: 99,
+        label: '99th Percentile',
+        sample_rate: 0.01,
+      },
+      {
+        value: 'max_avg_sample_rate',
+        fn: 'max',
+        label: 'Max',
+        sample_rate: 0.01,
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Cisco Meraki Out Bytes',
+    column: 'f_sum_int64_00',
+    unit: 'ktsubtype__meraki__INT64_00',
+    options: [
+      {
+        value: 'avg_ktsubtype__meraki__INT64_00',
+        fn: 'average',
+        label: 'Average',
+        fix: 0,
+      },
+      {
+        value: 'p95th_ktsubtype__meraki__INT64_00',
+        fn: 'percentile',
+        label: '95th Percentile',
+        rank: 95,
+        fix: 0,
+      },
+      {
+        value: 'max_ktsubtype__meraki__INT64_00',
+        fn: 'max',
+        label: 'Max',
+        fix: 0,
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Cisco Meraki Out Packets',
+    column: 'f_sum_int64_01',
+    unit: 'ktsubtype__meraki__INT64_01',
+    options: [
+      {
+        value: 'avg_ktsubtype__meraki__INT64_01',
+        fn: 'average',
+        label: 'Average',
+        fix: 0,
+      },
+      {
+        value: 'max_ktsubtype__meraki__INT64_01',
+        fn: 'max',
+        label: 'Max',
+        fix: 0,
+      },
+      {
+        value: 'p95th_ktsubtype__meraki__INT64_01',
+        fn: 'percentile',
+        label: '95th Percentile',
+        rank: 95,
+        fix: 0,
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Silver Peak EdgeConnect Network To Server Delay',
+    column: 'f_sum_int02',
+    unit: 'ktsubtype__silverpeak__INT02',
+    options: [
+      {
+        value: 'avg_ktsubtype__silverpeak__INT02',
+        fn: 'average',
+        label: 'Average',
+        fix: 0,
+      },
+      {
+        value: 'p95th_ktsubtype__silverpeak__INT02',
+        fn: 'percentile',
+        label: '95th Percentile',
+        rank: 95,
+        fix: 0,
+      },
+      {
+        value: 'max_ktsubtype__silverpeak__INT02',
+        fn: 'max',
+        label: 'Max',
+        fix: 0,
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Silver Peak EdgeConnect Network To Client Delay',
+    column: 'f_sum_int03',
+    unit: 'ktsubtype__silverpeak__INT03',
+    options: [
+      {
+        value: 'avg_ktsubtype__silverpeak__INT03',
+        fn: 'average',
+        label: 'Average',
+        fix: 0,
+      },
+      {
+        value: 'p95th_ktsubtype__silverpeak__INT03',
+        fn: 'percentile',
+        label: '95th Percentile',
+        rank: 95,
+        fix: 0,
+      },
+      {
+        value: 'max_ktsubtype__silverpeak__INT03',
+        fn: 'max',
+        label: 'Max',
+        fix: 0,
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  {
+    label: 'Silver Peak EdgeConnect Client To Server Response Delay',
+    column: 'f_sum_int04',
+    unit: 'ktsubtype__silverpeak__INT04',
+    options: [
+      {
+        value: 'avg_ktsubtype__silverpeak__INT04',
+        fn: 'average',
+        label: 'Average',
+        fix: 0,
+      },
+      {
+        value: 'p95th_ktsubtype__silverpeak__INT04',
+        fn: 'percentile',
+        label: '95th Percentile',
+        rank: 95,
+        fix: 0,
+      },
+      {
+        value: 'max_ktsubtype__silverpeak__INT04',
+        fn: 'max',
+        label: 'Max',
+        fix: 0,
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+  },
+  // ── SNMP Device Metrics ──────────────────────────────────────────────────
+  {
+    label: 'SNMP Device CPU (%)',
+    column: 'f_avg_int64_00',
+    unit: 'ktappprotocol__snmp_device_metrics__INT64_00',
+    options: [
+      {
+        value: 'avg_ktappprotocol__snmp_device_metrics__INT64_00',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_ktappprotocol__snmp_device_metrics__INT64_00',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'max_ktappprotocol__snmp_device_metrics__INT64_00',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+    compatibleCategory: DimensionCategory.SNMP_DEVICE,
+  },
+  {
+    label: 'SNMP Device Memory Utilization (%)',
+    column: 'f_avg_int64_01',
+    unit: 'ktappprotocol__snmp_device_metrics__INT64_01',
+    options: [
+      {
+        value: 'avg_ktappprotocol__snmp_device_metrics__INT64_01',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_ktappprotocol__snmp_device_metrics__INT64_01',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'max_ktappprotocol__snmp_device_metrics__INT64_01',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+    compatibleCategory: DimensionCategory.SNMP_DEVICE,
+  },
+  {
+    label: 'SNMP Device Uptime (s)',
+    column: 'f_avg_int64_05',
+    unit: 'ktappprotocol__snmp_device_metrics__INT64_05',
+    options: [
+      {
+        value: 'avg_ktappprotocol__snmp_device_metrics__INT64_05',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'max_ktappprotocol__snmp_device_metrics__INT64_05',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+    compatibleCategory: DimensionCategory.SNMP_DEVICE,
+  },
+  // ── SNMP Interface Metrics ───────────────────────────────────────────────
+  {
+    label: 'SNMP Interface Inbound Traffic (bytes)',
+    column: 'f_sum_int64_00',
+    unit: 'ktappprotocol__snmp__INT64_00',
+    options: [
+      {
+        value: 'avg_ktappprotocol__snmp__INT64_00',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_ktappprotocol__snmp__INT64_00',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'max_ktappprotocol__snmp__INT64_00',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+    compatibleCategory: DimensionCategory.SNMP_INTERFACE,
+  },
+  {
+    label: 'SNMP Interface Outbound Traffic (bytes)',
+    column: 'f_sum_int64_01',
+    unit: 'ktappprotocol__snmp__INT64_01',
+    options: [
+      {
+        value: 'avg_ktappprotocol__snmp__INT64_01',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_ktappprotocol__snmp__INT64_01',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'max_ktappprotocol__snmp__INT64_01',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+    compatibleCategory: DimensionCategory.SNMP_INTERFACE,
+  },
+  {
+    label: 'SNMP Interface Inbound Errors',
+    column: 'f_sum_int64_04',
+    unit: 'ktappprotocol__snmp__INT64_04',
+    options: [
+      {
+        value: 'avg_ktappprotocol__snmp__INT64_04',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'max_ktappprotocol__snmp__INT64_04',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+    compatibleCategory: DimensionCategory.SNMP_INTERFACE,
+  },
+  {
+    label: 'SNMP Interface Outbound Errors',
+    column: 'f_sum_int64_05',
+    unit: 'ktappprotocol__snmp__INT64_05',
+    options: [
+      {
+        value: 'avg_ktappprotocol__snmp__INT64_05',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'max_ktappprotocol__snmp__INT64_05',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+    compatibleCategory: DimensionCategory.SNMP_INTERFACE,
+  },
+  // ── ST (Streaming Telemetry) Interface Metrics ───────────────────────────
+  {
+    label: 'ST Interface Inbound Traffic (bytes)',
+    column: 'f_sum_int64_00',
+    unit: 'ktappprotocol__st__INT64_00',
+    options: [
+      {
+        value: 'avg_ktappprotocol__st__INT64_00',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_ktappprotocol__st__INT64_00',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'max_ktappprotocol__st__INT64_00',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+    compatibleCategory: DimensionCategory.ST_INTERFACE,
+  },
+  {
+    label: 'ST Interface Outbound Traffic (bytes)',
+    column: 'f_sum_int64_01',
+    unit: 'ktappprotocol__st__INT64_01',
+    options: [
+      {
+        value: 'avg_ktappprotocol__st__INT64_01',
+        fn: 'average',
+        label: 'Average',
+      },
+      {
+        value: 'p95th_ktappprotocol__st__INT64_01',
+        fn: 'percentile',
+        rank: 95,
+        label: '95th Percentile',
+      },
+      {
+        value: 'max_ktappprotocol__st__INT64_01',
+        fn: 'max',
+        label: 'Max',
+      },
+    ],
+    type: METRIC_TYPE.COUNTER,
+    compatibleCategory: DimensionCategory.ST_INTERFACE,
+  },
+];
+
+export const allMetricOptions = flattenMetricOptions(metricNestedList);
