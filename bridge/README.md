@@ -9,7 +9,7 @@ users. It contains no functionality of its own.
 
 ## Migration
 
-See the [Migration Guide](https://github.com/kentik/kentik-grafana-app/blob/bridge/kentik-connect-app-v1.8.0/docs/migration-guide.md) for upgrade instructions.
+See the [Migration Guide](https://github.com/kentik/kentik-grafana-app/blob/master/docs/migration-guide.md) for upgrade instructions.
 
 ## What's new in kentik-connect-datasource v2.0.0
 

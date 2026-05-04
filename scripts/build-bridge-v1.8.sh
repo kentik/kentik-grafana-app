@@ -93,7 +93,7 @@ for (let i = 0; i < lines.length; i++) {
 const map = {
   version       : 3,
   file          : 'module.js',
-  sources       : ['../bridge/src/module.js'],
+  sources       : ['module.js'],
   sourcesContent: [src],
   names         : [],
   mappings      : segments.join(';')
