@@ -9,7 +9,13 @@ users. It contains no functionality of its own.
 
 ## Migration
 
-See the [Migration Guide](https://github.com/kentik/kentik-grafana-app/blob/master/docs/migration-guide.md) for upgrade instructions.
+Quick steps:
+
+1. Install/upgrade this bridge plugin (`kentik-connect-app` v1.8.0).
+2. Open Grafana once so it can auto-install `kentik-connect-datasource` v2.0.0.
+3. Move dashboards and datasource configuration to `kentik-connect-datasource`.
+
+For full details, see the [Migration Guide](https://github.com/kentik/kentik-grafana-app/blob/master/docs/migration-guide.md).
 
 ## What's new in kentik-connect-datasource v2.0.0
 
