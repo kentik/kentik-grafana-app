@@ -4,6 +4,8 @@
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
+    "migrate:dashboards": "node scripts/migrate-dashboards.js",
+    "test:migration:local": "node scripts/test-migration-local.js",
     "test": "jest --watch --onlyChanged",
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
     "typecheck": "tsc --noEmit",

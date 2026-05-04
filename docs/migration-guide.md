@@ -41,6 +41,50 @@ cases you only need to change the datasource selector.
 Once all dashboards are migrated, you can safely disable or uninstall
 `kentik-connect-app`. The new datasource plugin operates independently.
 
+## Programmatic dashboard migration
+
+If you have many dashboards, you can rewrite datasource references through
+the Grafana API.
+
+Dry run (no writes):
+
+```bash
+npm run migrate:dashboards -- \
+	--old-type kentik-connect-app \
+	--old-uid kentik-connect-app \
+	--old-name "Kentik Connect Pro" \
+	--new-type kentik-connect-datasource \
+	--new-uid kentik
+```
+
+Apply changes:
+
+```bash
+npm run migrate:dashboards -- \
+	--old-type kentik-connect-app \
+	--old-uid kentik-connect-app \
+	--old-name "Kentik Connect Pro" \
+	--new-type kentik-connect-datasource \
+	--new-uid kentik \
+	--no-dry-run
+```
+
+The script writes dashboard backups to `migration-test/backups/` before updates.
+
+## Local end-to-end migration test
+
+This repository includes a local validation script for a v1.7-style dashboard
+fixture:
+
+```bash
+docker compose up -d --build
+npm run test:migration:local
+```
+
+The test imports `migration-test/dashboards/legacy-v17-test.json`, runs the
+migration script, and verifies that legacy datasource references were rewritten
+to `kentik-connect-datasource` (`uid: kentik`).
+
 ## What's new in kentik-connect-datasource v2.0.0
 
 - Batch query scheduler (3–5× faster dashboards)

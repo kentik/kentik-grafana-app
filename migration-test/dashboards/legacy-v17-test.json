@@ -1,0 +1,56 @@
+{
+	"annotations": {
+		"list": []
+	},
+	"editable": true,
+	"fiscalYearStartMonth": 0,
+	"graphTooltip": 0,
+	"id": null,
+	"links": [],
+	"panels": [
+		{
+			"type": "timeseries",
+			"title": "Legacy Kentik v1.7 Panel",
+			"gridPos": {
+				"h": 8,
+				"w": 24,
+				"x": 0,
+				"y": 0
+			},
+			"id": 1,
+			"datasource": {
+				"type": "kentik-connect-app",
+				"uid": "kentik-connect-app"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": "Kentik Connect Pro"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {},
+				"overrides": []
+			},
+			"options": {}
+		}
+	],
+	"schemaVersion": 39,
+	"tags": [
+		"kentik",
+		"migration",
+		"legacy"
+	],
+	"templating": {
+		"list": []
+	},
+	"time": {
+		"from": "now-6h",
+		"to": "now"
+	},
+	"timepicker": {},
+	"timezone": "browser",
+	"title": "Kentik Legacy v1.7 Migration Test",
+	"uid": "legacy-v17-test",
+	"version": 1
+}
