@@ -1,0 +1,53 @@
+{
+  "type": "app",
+  "name": "Kentik Connect Pro",
+  "id": "kentik-connect-app",
+  "info": {
+    "description": "This plugin has been replaced by the Kentik Connect Datasource (kentik-connect-datasource). It is kept as a bridge to auto-install the new datasource for existing users. Please configure and use kentik-connect-datasource directly.",
+    "author": {
+      "name": "Kentik",
+      "url": "https://kentik.com"
+    },
+    "keywords": [
+      "kentik"
+    ],
+    "logos": {
+      "small": "img/logo_small.png",
+      "large": "img/logo_large.png"
+    },
+    "links": [
+      {
+        "name": "Kentik",
+        "url": "https://www.kentik.com"
+      },
+      {
+        "name": "Kentik Connect Datasource",
+        "url": "https://grafana.com/grafana/plugins/kentik-connect-datasource/"
+      },
+      {
+        "name": "sponsor",
+        "url": "https://www.kentik.com/get-started/"
+      }
+    ],
+    "version": "1.8.0",
+    "updated": "2026-04-10",
+    "screenshots": [
+      {
+        "name": "Migration Bridge",
+        "path": "img/logo_large.png"
+      }
+    ]
+  },
+  "includes": [],
+  "dependencies": {
+    "grafanaDependency": ">=11.6.0",
+    "plugins": [
+      {
+        "type": "datasource",
+        "id": "kentik-connect-datasource",
+        "name": "Kentik Connect Datasource",
+        "version": "2.0.0"
+      }
+    ]
+  }
+}
