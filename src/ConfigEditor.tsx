@@ -158,7 +158,8 @@ export function ConfigEditor(props: Props) {
     };
 
     try {
-      await getBackendSrv().put(`/api/datasources/${options.id}`, payload);
+      // Use UID-based endpoint for Grafana 13+ compatibility (numeric ID endpoint was removed).
+      await getBackendSrv().put(`/api/datasources/uid/${options.uid}`, payload);
 
       // Keep the parent form state in sync
       onOptionsChange({ ...options, jsonData: updatedJsonData });

@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.0.2 (2026-05-04)
+
+**Fixes:**
+
+- Fix datasource credential save failing on Grafana 13.x (`PUT /api/datasources/:id` returns 404)
+- Use UID-based datasource update endpoint (`/api/datasources/uid/:uid`) for forward compatibility
+
+**Compatibility:**
+
+- Grafana 11.6+ through 13.x now fully supported
+- Backward compatible with Grafana 12.x (no action required for existing installations)
+
 ## 2.0.1 (2026-04-09)
 
 **Fixes:**
