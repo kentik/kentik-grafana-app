@@ -44,6 +44,8 @@ pnpm-debug.log*
 *.tar.gz
 *.tgz
 *.gz
+*.sha1
+*.sha256
 
 # Environment Variables
 .env

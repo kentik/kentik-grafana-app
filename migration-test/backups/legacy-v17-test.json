@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "type": "db",
+    "canSave": true,
+    "canEdit": true,
+    "canAdmin": true,
+    "canStar": false,
+    "canDelete": true,
+    "slug": "kentik-legacy-v1-7-migration-test",
+    "url": "/d/legacy-v17-test/kentik-legacy-v1-7-migration-test",
+    "expires": "0001-01-01T00:00:00Z",
+    "created": "2026-05-04T22:50:59Z",
+    "updated": "2026-05-04T22:59:02Z",
+    "updatedBy": "Anonymous",
+    "createdBy": "Anonymous",
+    "version": 3,
+    "hasAcl": false,
+    "isFolder": false,
+    "apiVersion": "v0alpha1",
+    "folderId": 0,
+    "folderUid": "",
+    "folderTitle": "General",
+    "folderUrl": "",
+    "provisioned": false,
+    "provisionedExternalId": "",
+    "annotationsPermissions": {
+      "dashboard": {
+        "canAdd": true,
+        "canEdit": true,
+        "canDelete": true
+      },
+      "organization": {
+        "canAdd": true,
+        "canEdit": true,
+        "canDelete": true
+      }
+    }
+  },
+  "dashboard": {
+    "annotations": {
+      "list": []
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 2296613184757760,
+    "links": [],
+    "panels": [
+      {
+        "datasource": {
+          "type": "kentik-connect-app",
+          "uid": "kentik-connect-app"
+        },
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 1,
+        "options": {},
+        "targets": [
+          {
+            "datasource": "Kentik Connect Pro",
+            "refId": "A"
+          }
+        ],
+        "title": "Legacy Kentik v1.7 Panel",
+        "type": "timeseries"
+      }
+    ],
+    "schemaVersion": 39,
+    "tags": [
+      "kentik",
+      "migration",
+      "legacy"
+    ],
+    "templating": {
+      "list": []
+    },
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "Kentik Legacy v1.7 Migration Test",
+    "uid": "legacy-v17-test",
+    "version": 3
+  }
+}

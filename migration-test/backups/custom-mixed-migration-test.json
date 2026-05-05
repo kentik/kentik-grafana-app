@@ -1,0 +1,124 @@
+{
+  "meta": {
+    "type": "db",
+    "canSave": true,
+    "canEdit": true,
+    "canAdmin": true,
+    "canStar": false,
+    "canDelete": true,
+    "slug": "custom-mixed-migration-test",
+    "url": "/d/custom-mixed-migration-test/custom-mixed-migration-test",
+    "expires": "0001-01-01T00:00:00Z",
+    "created": "2026-05-04T22:57:18Z",
+    "updated": "2026-05-04T22:57:18Z",
+    "updatedBy": "Anonymous",
+    "createdBy": "Anonymous",
+    "version": 1,
+    "hasAcl": false,
+    "isFolder": false,
+    "apiVersion": "v0alpha1",
+    "folderId": 0,
+    "folderUid": "",
+    "folderTitle": "General",
+    "folderUrl": "",
+    "provisioned": false,
+    "provisionedExternalId": "",
+    "annotationsPermissions": {
+      "dashboard": {
+        "canAdd": true,
+        "canEdit": true,
+        "canDelete": true
+      },
+      "organization": {
+        "canAdd": true,
+        "canEdit": true,
+        "canDelete": true
+      }
+    }
+  },
+  "dashboard": {
+    "annotations": {
+      "list": []
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 2298203018911744,
+    "links": [],
+    "panels": [
+      {
+        "datasource": {
+          "type": "kentik-connect-app",
+          "uid": "kentik-connect-app"
+        },
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "id": 1,
+        "options": {},
+        "targets": [
+          {
+            "datasource": "Kentik Connect Pro",
+            "refId": "A"
+          }
+        ],
+        "title": "Legacy Kentik Panel",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "grafana-testdata-datasource",
+          "uid": "grafana-testdata"
+        },
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        },
+        "id": 2,
+        "options": {},
+        "targets": [
+          {
+            "datasource": {
+              "type": "grafana-testdata-datasource",
+              "uid": "grafana-testdata"
+            },
+            "refId": "B"
+          }
+        ],
+        "title": "Non-Kentik Control Panel",
+        "type": "timeseries"
+      }
+    ],
+    "schemaVersion": 39,
+    "tags": [
+      "kentik",
+      "migration",
+      "custom"
+    ],
+    "templating": {
+      "list": []
+    },
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "Custom Mixed Migration Test",
+    "uid": "custom-mixed-migration-test",
+    "version": 1
+  }
+}
