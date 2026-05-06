@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Increase proxy timeout from 30s to 1800s (30m) to prevent 502 errors on large Kentik accounts
 - Add dashboard `includes` to plugin.json so bundled dashboards appear on the datasource config page
 - Sync timeout field between server state and UI state in ConfigEditor
+- Add `ignoreDeprecations: "6.0"` to `tsconfig.json` to suppress TypeScript 6 deprecation diagnostics inherited from Grafana scaffold configs
 
 ## 2.0.0 (2026-03-15)
 
