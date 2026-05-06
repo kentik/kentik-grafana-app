@@ -15,7 +15,7 @@ Quick steps:
 2. Open Grafana once so it can auto-install `kentik-connect-datasource` v2.0.0.
 3. Move dashboards and datasource configuration to `kentik-connect-datasource`.
 
-For full details, see the [Migration Guide](https://github.com/kentik/kentik-grafana-app/blob/master/docs/migration-guide.md).
+For full details, see the [Migration Guide](https://github.com/kentik/kentik-grafana-app/blob/bridge/kentik-connect-app-v1.8.0-clean/docs/migration-guide.md).
 
 ## What's new in kentik-connect-datasource v2.0.0
 
