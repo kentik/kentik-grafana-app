@@ -33,7 +33,6 @@ cp "$BRIDGE_DIR/src/module.js" "$STAGE_DIR/module.js"
 # embed sourcesContent so the map is fully self-contained.
 node -e "
 const fs   = require('fs');
-const repoSrc = fs.readFileSync('$BRIDGE_DIR/src/module.js', 'utf8');
 const src  = fs.readFileSync('$STAGE_DIR/module.js', 'utf8');
 const lines = src.split('\n');
 
@@ -94,13 +93,20 @@ for (let i = 0; i < lines.length; i++) {
 const map = {
   version       : 3,
   file          : 'module.js',
-  sources       : ['bridge/src/module.js'],
-  sourcesContent: [repoSrc],
+  sources       : ['../bridge/src/module.js'],
+  sourcesContent: [src],
   names         : [],
   mappings      : segments.join(';')
 };
 
 fs.writeFileSync('$STAGE_DIR/module.js.map', JSON.stringify(map));
+
+// Append sourceMappingURL to module.js
+let js = fs.readFileSync('$STAGE_DIR/module.js', 'utf8');
+if (!js.includes('sourceMappingURL')) {
+  js = js.trimEnd() + '\n//# sourceMappingURL=module.js.map\n';
+  fs.writeFileSync('$STAGE_DIR/module.js', js);
+}
 "
 
 # ---- Static assets ------------------------------------------------
