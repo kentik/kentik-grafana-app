@@ -54,6 +54,7 @@ pnpm-debug.log*
 
 # Temp
 tmp/
+migration-test/backups/
 
 # Mac / System
 .*

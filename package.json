@@ -1,9 +1,11 @@
 {
   "name": "kentik-datasource",
-  "version": "2.0.1",
+  "version": "1.8.0",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
+    "migrate:dashboards": "node scripts/migrate-dashboards.js",
+    "test:migration:local": "node scripts/test-migration-local.js",
     "test": "jest --watch --onlyChanged",
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
     "typecheck": "tsc --noEmit",
@@ -66,7 +68,8 @@
   },
   "overrides": {
     "glob": "^13.0.0",
-    "inflight": "npm:lru-cache@^11.0.0"
+    "inflight": "npm:lru-cache@^11.0.0",
+    "fast-uri": "3.1.2"
   },
   "dependencies": {
     "@emotion/css": "11.10.6",
