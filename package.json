@@ -67,7 +67,10 @@
   "overrides": {
     "glob": "^13.0.0",
     "inflight": "npm:lru-cache@^11.0.0",
-    "fast-uri": "3.1.2"
+    "fast-uri": "3.1.2",
+    "dompurify": "^3.4.0",
+    "immutable": "^5.1.5",
+    "uuid": "^11.1.1"
   },
   "dependencies": {
     "@emotion/css": "11.10.6",

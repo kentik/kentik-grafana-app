@@ -107,6 +107,22 @@ jobs:
             -sourceCodeUri file://${{ github.workspace }} \
             ${{ github.workspace }}/kentik-connect-datasource.zip
 
+  security:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Run OSV Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
+        with:
+          scan-args: |-
+            --lockfile=./package-lock.json
+            --fail-on-vuln
+
   e2e:
     runs-on: ubuntu-latest
     needs: build
