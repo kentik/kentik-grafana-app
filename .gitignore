@@ -48,6 +48,9 @@ pnpm-debug.log*
 # Environment Variables
 .env
 .env.local
+
+# External publication (not committed)
+docs/migration-guidance-*.md
 .env.development.local
 .env.test.local
 .env.production.local
