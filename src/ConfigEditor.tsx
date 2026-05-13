@@ -158,7 +158,13 @@ export function ConfigEditor(props: Props) {
     };
 
     try {
-      await getBackendSrv().put(`/api/datasources/${options.id}`, payload);
+      // Grafana 13+ can reject ID-based datasource updates with 404.
+      // Prefer UID endpoint when available, fall back to ID for older installs.
+      const updatePath = options.uid
+        ? `/api/datasources/uid/${options.uid}`
+        : `/api/datasources/${options.id}`;
+
+      await getBackendSrv().put(updatePath, payload);
 
       // Keep the parent form state in sync
       onOptionsChange({ ...options, jsonData: updatedJsonData });
