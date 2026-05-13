@@ -48,7 +48,10 @@ export function ConfigEditor(props: Props) {
   const KENTIK_PROXY_TIMEOUT_SECONDS = 1800;
 
   const [state, setState] = useState<State>({
-    url: jsonData?.url || getUrlByRegion(jsonData?.region, jsonData?.dynamicUrl),
+    // Always derive url from region/dynamicUrl. Never trust a stored url value
+    // because legacy/v1.x and migration paths can persist it as a string,
+    // which breaks the proxy URL template `{{.JsonData.url.v6}}`.
+    url: getUrlByRegion(jsonData?.region, jsonData?.dynamicUrl),
     email: jsonData?.email || '',
     region: jsonData?.region || Region.DEFAULT,
     dynamicUrl: jsonData?.dynamicUrl || '',
