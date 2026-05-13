@@ -212,7 +212,7 @@ export function ConfigEditor(props: Props) {
               <span className={s.marginLeft}>
                 Successfully enabled.
                 <strong> Next up: </strong>
-                <a href="d/xScUGST71/kentik-home" className="external-link">
+                <a href="/d/kentik-home" className="external-link">
                   Go to Kentik Home Dashboard
                 </a>
               </span>

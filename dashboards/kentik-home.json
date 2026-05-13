@@ -43,7 +43,7 @@
         "showSearch": true,
         "showHeadings": false,
         "maxItems": 10,
-        "query": "",
+        "query": "kentik",
         "folderId": null,
         "tags": [
           "kentik"
