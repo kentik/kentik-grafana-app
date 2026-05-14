@@ -30,6 +30,12 @@ jobs:
 
       - run: npm ci
 
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npx eslint --cache .
+
       - run: npm run build
 
       - run: npx jest --no-coverage
@@ -101,9 +107,10 @@ jobs:
           name: plugin-zip
           path: ${{ github.workspace }}
 
-      - name: Validate plugin
+      - name: Validate plugin (strict)
         run: |
           npx -y @grafana/plugin-validator@latest \
+            -strict \
             -sourceCodeUri file://${{ github.workspace }} \
             ${{ github.workspace }}/kentik-connect-datasource.zip
 
