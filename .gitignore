@@ -49,8 +49,15 @@ pnpm-debug.log*
 .env
 .env.local
 
+# Markdown docs
+*.md
+!README.md
+!docs/docs_primer.md
+!docs/migration-guidance-v1.8-to-v2.md
+
 # External publication (not committed)
 docs/migration-guidance-*.md
+!docs/migration-guidance-v1.8-to-v2.md
 .env.development.local
 .env.test.local
 .env.production.local
