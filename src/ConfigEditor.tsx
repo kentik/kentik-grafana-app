@@ -24,7 +24,8 @@ function getUrlByRegion(region: Region | undefined, dynamicUrl?: string): Url {
     case Region.EU:
       return EU_URL;
     case Region.CUSTOM: {
-      const v6 = dynamicUrl || '';
+      // Strip trailing slashes to prevent double-slash in proxy route URLs
+      const v6 = (dynamicUrl || '').replace(/\/+$/, '');
       // v5 API uses api.* not grpc.api.* — strip the grpc. prefix if present
       const v5 = v6.replace('grpc.api.', 'api.');
       return { v6, v5 };
