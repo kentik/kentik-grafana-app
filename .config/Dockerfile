@@ -26,7 +26,7 @@ WORKDIR $GF_PATHS_HOME
 
 USER root
 
-COPY dist /var/lib/grafana/plugins/kentik-connect-datasource
+COPY dist /opt/grafana-plugins/kentik-connect-datasource
 COPY provisioning /etc/grafana/provisioning
 
 # Installing supervisor and inotify-tools

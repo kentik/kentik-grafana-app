@@ -162,6 +162,10 @@
         {
           "name": "X-CH-Auth-API-Token",
           "content": "{{ .SecureJsonData.token }}"
+        },
+        {
+          "name": "Content-Type",
+          "content": "application/json"
         }
       ]
     },

@@ -10,7 +10,7 @@ providers:
     allowUiUpdates: true
     updateIntervalSeconds: 600
     options:
-      path: /var/lib/grafana/plugins/kentik-connect-datasource/dashboards
+      path: /opt/grafana-plugins/kentik-connect-datasource/dashboards
   # Used by Playwright e2e tests to navigate directly to a panel edit page
   # without relying on the brittle DashboardPage.addPanel() flow.
   - name: "Kentik E2E"

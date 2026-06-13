@@ -16,6 +16,7 @@ services:
 
     environment:
       NODE_ENV: production
+      GF_PATHS_PLUGINS: /opt/grafana-plugins
       GF_LOG_FILTERS: plugin.kentik-connect-datasource:debug
       GF_LOG_LEVEL: debug
       GF_DATAPROXY_LOGGING: 1
