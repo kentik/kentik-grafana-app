@@ -6,6 +6,7 @@ import { getBackendSrv } from '@grafana/runtime';
 import { Input, SecretInput, Button, Field, FieldSet, RadioButtonGroup, Stack, useStyles2, Icon } from '@grafana/ui';
 import { showCustomAlert } from './utils/alert_helper';
 import { KentikAPI } from './datasource/kentik_api';
+import { DictionaryService } from './datasource/dictionary_service';
 
 const REGION_OPTIONS: Array<SelectableValue<Region>> = [
   { label: 'US (default)', value: Region.DEFAULT },
@@ -40,6 +41,7 @@ type State = Required<JsonData> & {
   apiMemberWarning: boolean;
   apiError: boolean;
   apiErrorMessage: string;
+  dictionaryMeasurementCount: number;
 };
 
 interface Props extends DataSourcePluginOptionsEditorProps<MyDataSourceOptions, MySecureJsonData> { }
@@ -64,6 +66,7 @@ export function ConfigEditor(props: Props) {
     apiMemberWarning: false,
     apiError: false,
     apiErrorMessage: '',
+    dictionaryMeasurementCount: 0,
   });
 
   useEffect(() => {
@@ -114,7 +117,13 @@ export function ConfigEditor(props: Props) {
     const backendSrv = getBackendSrv();
     const kentik = new KentikAPI(backendSrv, options.uid, options.url, options.id, state.email, state.token);
     try {
-      await kentik.getSites();
+      const sites = await kentik.getSites();
+      // getSites() returns [] on empty — a valid response. Only flag if response
+      // is somehow null/undefined (indicating a broken proxy or malformed response).
+      if (sites === null || sites === undefined) {
+        _onApiError('Kentik Sites API returned an invalid response. The proxy may not be forwarding correctly.');
+        return false;
+      }
     } catch (e: any) {
       if (e?.status === 400 && e?.data === 'Authentication to data source failed') {
         _onApiError();
@@ -136,8 +145,25 @@ export function ConfigEditor(props: Props) {
       }
       setState({ ...state, apiMemberWarning: true });
     }
-    setState({ ...state, apiValidated: true });
-    showCustomAlert('API working!', '', 'success');
+
+    // Validate Dictionary API access
+    let measurementCount = 0;
+    try {
+      const dictService = new DictionaryService(kentik);
+      const dict = await dictService.getDictionary();
+      measurementCount = dict.measurements?.length || 0;
+      if (measurementCount === 0) {
+        _onApiError('Dictionary API returned no measurements. The UDE Dictionary endpoint may not be available for this account.');
+        return false;
+      }
+    } catch (e: any) {
+      // Dictionary API failure is non-fatal for now — it may not be deployed yet
+      console.warn('Dictionary API not available:', e?.status || e?.message);
+    }
+
+    setState({ ...state, apiValidated: true, dictionaryMeasurementCount: measurementCount });
+    const dictMsg = measurementCount > 0 ? ` (${measurementCount} measurements available)` : '';
+    showCustomAlert(`API working!${dictMsg}`, '', 'success');
     return true;
   };
 
@@ -226,6 +252,9 @@ export function ConfigEditor(props: Props) {
               <Icon name="check-circle" className={s.colorSuccess} />
               <span className={s.marginLeft}>
                 Successfully enabled.
+                {state.dictionaryMeasurementCount > 0 && (
+                  <> UDE Dictionary: <strong>{state.dictionaryMeasurementCount} measurements</strong> available. </>
+                )}
                 <strong> Next up: </strong>
                 <a href="d/xScUGST71/kentik-home" className="external-link">
                   Go to Kentik Home Dashboard
