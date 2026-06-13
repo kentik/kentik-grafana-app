@@ -154,12 +154,12 @@ export function ConfigEditor(props: Props) {
       const dict = await dictService.getDictionary();
       measurementCount = dict.measurements?.length || 0;
       if (measurementCount === 0) {
-        _onApiError('Dictionary API returned no measurements. The UDE Dictionary endpoint may not be available for this account.');
+        _onApiError('Kentik API returned no measurements. The measurement catalog may not be available for this account.');
         return false;
       }
     } catch (e: any) {
       // Dictionary API failure is non-fatal for now — it may not be deployed yet
-      console.warn('Dictionary API not available:', e?.status || e?.message);
+      console.warn('Measurement catalog API not available:', e?.status || e?.message);
     }
 
     setState({ ...state, apiValidated: true, dictionaryMeasurementCount: measurementCount });
@@ -254,7 +254,7 @@ export function ConfigEditor(props: Props) {
               <span className={s.marginLeft}>
                 Successfully enabled.
                 {state.dictionaryMeasurementCount > 0 && (
-                  <> UDE Dictionary: <strong>{state.dictionaryMeasurementCount} measurements</strong> available. </>
+                  <> <strong>{state.dictionaryMeasurementCount} measurements</strong> available for querying. </>
                 )}
                 <strong> Next up: </strong>
                 <a href="d/xScUGST71/kentik-home" className="external-link">
