@@ -26,6 +26,9 @@ WORKDIR $GF_PATHS_HOME
 
 USER root
 
+COPY dist /var/lib/grafana/plugins/kentik-connect-datasource
+COPY provisioning /etc/grafana/provisioning
+
 # Installing supervisor and inotify-tools
 RUN if [ "${development}" = "true" ]; then \
     if grep -i -q alpine /etc/issue; then \
@@ -40,15 +43,17 @@ RUN if [ "${development}" = "true" ]; then \
     fi \
     fi
 
-COPY supervisord/supervisord.conf /etc/supervisor.d/supervisord.ini
-COPY supervisord/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY .config/supervisord/supervisord.conf /etc/supervisor.d/supervisord.ini
+COPY .config/supervisord/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 
 
-# Inject livereload script into grafana index.html
-RUN sed -i 's|</body>|<script src="http://localhost:35729/livereload.js"></script></body>|g' /usr/share/grafana/public/views/index.html
+# Inject livereload script only for development builds.
+RUN if [ "${development}" = "true" ]; then \
+    sed -i 's|</body>|<script src="http://localhost:35729/livereload.js"></script></body>|g' /usr/share/grafana/public/views/index.html; \
+    fi
 
 
-COPY entrypoint.sh /entrypoint.sh
+COPY .config/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

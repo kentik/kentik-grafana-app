@@ -5,19 +5,75 @@ import { FetchError, BackendSrv } from '@grafana/runtime';
 import * as _ from 'lodash';
 import { lastValueFrom } from 'rxjs';
 
+const KENTIK_DEVICE_API_BASE = '/device/v202504beta2/device';
+const KENTIK_SITE_API_BASE = '/site/v202509/sites';
+const KENTIK_USER_API_BASE = '/user/v202211/users';
+const KENTIK_CUSTOM_DIMENSIONS_API_BASE = '/custom_dimensions/v202411alpha1';
+const KENTIK_SAVED_FILTERS_API_BASE = '/saved-filters/v202501alpha1';
+
 export class KentikAPI {
-  baseUrl: string;
+  private baseUrls: string[];
+  private activeBaseUrlIndex = 0;
   backendSrv: BackendSrv;
   private batchScheduler: BatchQueryScheduler;
+  private email: string;
+  private token: string;
 
-  constructor(backendSrv: BackendSrv, uid: string) {
-    this.baseUrl = `/api/datasources/proxy/uid/${uid}`;
+  constructor(backendSrv: BackendSrv, uid?: string, proxyBaseUrl?: string, datasourceId?: number, email?: string, token?: string) {
+    this.baseUrls = this.buildProxyBaseUrls(uid, proxyBaseUrl, datasourceId);
     this.backendSrv = backendSrv;
+    this.email = email || '';
+    this.token = token || '';
     this.batchScheduler = new BatchQueryScheduler(this, '/api/v5/query/topXdata');
   }
 
+  private buildProxyBaseUrls(uid?: string, proxyBaseUrl?: string, datasourceId?: number): string[] {
+    const candidates = [
+      proxyBaseUrl,
+      uid ? `/api/datasources/proxy/uid/${uid}` : undefined,
+      datasourceId !== undefined ? `/api/datasources/proxy/${datasourceId}` : undefined,
+    ].filter((url): url is string => Boolean(url));
+
+    const normalized = candidates.map((url) => url.replace(/\/$/, ''));
+    const deduped = Array.from(new Set(normalized));
+
+    // Keep a safe fallback for tests and for edge-cases where Grafana has not
+    // yet populated uid/url at construction time.
+    if (deduped.length === 0) {
+      deduped.push(`/api/datasources/proxy/uid/${uid || ''}`.replace(/\/$/, ''));
+    }
+
+    return deduped;
+  }
+
+  private isProxyRouteMismatch(error: any): boolean {
+    const status = error?.status;
+    return status === 404 || status === 405;
+  }
+
+  private async requestWithProxyFallback<T>(requestFn: (baseUrl: string) => Promise<T>): Promise<T> {
+    let lastError: any;
+
+    for (let attempt = 0; attempt < this.baseUrls.length; attempt++) {
+      const index = (this.activeBaseUrlIndex + attempt) % this.baseUrls.length;
+      const baseUrl = this.baseUrls[index];
+      try {
+        const result = await requestFn(baseUrl);
+        this.activeBaseUrlIndex = index;
+        return result;
+      } catch (error: any) {
+        lastError = error;
+        if (!this.isProxyRouteMismatch(error) || attempt === this.baseUrls.length - 1) {
+          throw error;
+        }
+      }
+    }
+
+    throw lastError;
+  }
+
   async getDeviceById(deviceId: string): Promise<any> {
-    const resp = await this._get(`/device/v202308beta1/device/${deviceId}`);
+    const resp = await this._get(`${KENTIK_DEVICE_API_BASE}/${deviceId}`);
     if (resp && resp.device) {
       return resp.device;
     } else {
@@ -26,7 +82,7 @@ export class KentikAPI {
   }
 
   async updateDevice(deviceId: string, data: any): Promise<any> {
-    const resp = await this._put(`/device/v202308beta1/device/${deviceId}`, data);
+    const resp = await this._put(`${KENTIK_DEVICE_API_BASE}/${deviceId}`, data);
     if (resp && resp.device) {
       return resp.device;
     } else {
@@ -35,7 +91,7 @@ export class KentikAPI {
   }
 
   async getDevices(): Promise<any> {
-    const resp = await this._get('/device/v202308beta1/device?query.noCustomColumns=true');
+    const resp = await this._get(`${KENTIK_DEVICE_API_BASE}?query.noCustomColumns=true`);
     if (resp && resp.devices) {
       return resp.devices;
     } else {
@@ -44,7 +100,7 @@ export class KentikAPI {
   }
 
   async getSites(): Promise<any> {
-    const resp = await this._get('/site/v202509/sites');
+    const resp = await this._get(KENTIK_SITE_API_BASE);
     if (resp && resp.sites) {
       return resp.sites;
     } else {
@@ -54,7 +110,7 @@ export class KentikAPI {
 
   async getUsers(): Promise<any> {
     const requiresAdminLevel = true;
-    return this._get('/user/v202211/users', requiresAdminLevel);
+    return this._get(KENTIK_USER_API_BASE, requiresAdminLevel);
   }
 
   async getFieldValues(field: string): Promise<any> {
@@ -71,7 +127,7 @@ export class KentikAPI {
 
   async getCustomDimensions(): Promise<any[]> {
     try {
-      const resp = await this._get('/custom_dimensions/v202411alpha1', false, true);
+      const resp = await this._get(KENTIK_CUSTOM_DIMENSIONS_API_BASE, false, true);
       return Array.isArray(resp?.dimensions) ? resp.dimensions : [];
     } catch (e: any) {
       if (e.status === 403) {
@@ -83,7 +139,7 @@ export class KentikAPI {
 
   async getSavedFilters(): Promise<any> {
     try {
-      const data = await this._get('/saved-filters/v202501alpha1', false, true);
+      const data = await this._get(KENTIK_SAVED_FILTERS_API_BASE, false, true);
       return Array.isArray(data?.filters) ? data.filters : Array.isArray(data) ? data : [];
     } catch (e: any) {
       if (e.status === 403) {
@@ -121,20 +177,28 @@ export class KentikAPI {
 
   private async _get(url: string, requiresAdminLevel = false, silentOnForbidden = false): Promise<any> {
     const requestFn = () =>
-      lastValueFrom(
-        this.backendSrv.fetch<any>({
-          method: 'GET',
-          url: this.baseUrl + url,
-          showErrorAlert: !requiresAdminLevel && !silentOnForbidden,
-        })
-      ).then((result) => result.data);
+      this.requestWithProxyFallback((baseUrl) =>
+        lastValueFrom(
+          this.backendSrv.fetch<any>({
+            method: 'GET',
+            url: baseUrl + url,
+            showErrorAlert: !requiresAdminLevel && !silentOnForbidden,
+            headers: {
+              'X-CH-Auth-Email': this.email,
+              'X-CH-Auth-API-Token': this.token,
+              'Accept': 'application/json',
+            },
+          })
+        ).then((result) => result.data)
+      );
 
     return retry(requestFn, (error: FetchError) => {
-      if (error.status === 429) {
+      const status = error?.status;
+      if (status === 429) {
         showAlert(error);
         return true;
       }
-      if (error.status === 403 && (requiresAdminLevel || silentOnForbidden)) {
+      if (status === 403 && (requiresAdminLevel || silentOnForbidden)) {
         return false;
       }
       showAlert(error);
@@ -144,21 +208,29 @@ export class KentikAPI {
 
   private async _post(url: string, data: any, silentOnForbidden = false): Promise<any> {
     const requestFn = () =>
-      lastValueFrom(
-        this.backendSrv.fetch<any>({
-          method: 'POST',
-          url: this.baseUrl + url,
-          data,
-          showErrorAlert: !silentOnForbidden,
-        })
-      ).then((result) => result.data);
+      this.requestWithProxyFallback((baseUrl) =>
+        lastValueFrom(
+          this.backendSrv.fetch<any>({
+            method: 'POST',
+            url: baseUrl + url,
+            data,
+            showErrorAlert: !silentOnForbidden,
+            headers: {
+              'X-CH-Auth-Email': this.email,
+              'X-CH-Auth-API-Token': this.token,
+              'Accept': 'application/json',
+            },
+          })
+        ).then((result) => result.data)
+      );
 
     return retry(requestFn, (error: FetchError) => {
       // Retry on rate-limit and transient gateway errors
-      if (error.status === 429 || error.status === 502) {
+      const status = error?.status;
+      if (status === 429 || status === 502) {
         return true;
       }
-      if (error.status === 403 && silentOnForbidden) {
+      if (status === 403 && silentOnForbidden) {
         return false;
       }
       showAlert(error);
@@ -168,7 +240,16 @@ export class KentikAPI {
 
   private async _put(url: string, data: any): Promise<any> {
     try {
-      const resp = await this.backendSrv.put(this.baseUrl + url, data);
+      const resp = await this.requestWithProxyFallback((baseUrl) =>
+        lastValueFrom(
+          this.backendSrv.fetch<any>({
+            method: 'PUT',
+            url: baseUrl + url,
+            data,
+            showErrorAlert: true,
+          })
+        ).then((result) => result.data)
+      );
 
       if (resp) {
         return resp;

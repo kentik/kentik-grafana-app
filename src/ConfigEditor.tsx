@@ -22,8 +22,12 @@ function getUrlByRegion(region: Region | undefined, dynamicUrl?: string): Url {
   switch (region) {
     case Region.EU:
       return EU_URL;
-    case Region.CUSTOM:
-      return { v6: dynamicUrl || '', v5: dynamicUrl || '' };
+    case Region.CUSTOM: {
+      const v6 = dynamicUrl || '';
+      // v5 API uses api.* not grpc.api.* — strip the grpc. prefix if present
+      const v5 = v6.replace('grpc.api.', 'api.');
+      return { v6, v5 };
+    }
     case Region.DEFAULT:
     default:
       return DEFAULT_URL;
@@ -35,6 +39,7 @@ type State = Required<JsonData> & {
   apiValidated: boolean;
   apiMemberWarning: boolean;
   apiError: boolean;
+  apiErrorMessage: string;
 };
 
 interface Props extends DataSourcePluginOptionsEditorProps<MyDataSourceOptions, MySecureJsonData> { }
@@ -58,6 +63,7 @@ export function ConfigEditor(props: Props) {
     apiValidated: false,
     apiMemberWarning: false,
     apiError: false,
+    apiErrorMessage: '',
   });
 
   useEffect(() => {
@@ -97,26 +103,35 @@ export function ConfigEditor(props: Props) {
     onOptionsChange({ ...options, secureJsonData: { token } });
   };
   const onResetToken = () => {
-    setState({ ...state, token: '', tokenSet: false, apiValidated: false, apiMemberWarning: false, apiError: false });
+    setState({ ...state, token: '', tokenSet: false, apiValidated: false, apiMemberWarning: false, apiError: false, apiErrorMessage: '' });
     onOptionsChange({ ...options, secureJsonFields: { ...options.secureJsonFields, token: false }, secureJsonData: {} });
   };
 
-  const _onApiError = () => setState({ ...state, apiValidated: false, apiError: true });
+  const _onApiError = (message = 'Grafana reached Kentik, but Kentik rejected the configured email or API token.') =>
+    setState({ ...state, apiValidated: false, apiError: true, apiErrorMessage: message });
 
   const validateApiConnection = async (): Promise<boolean> => {
     const backendSrv = getBackendSrv();
-    const kentik = new KentikAPI(backendSrv, options.uid);
+    const kentik = new KentikAPI(backendSrv, options.uid, options.url, options.id, state.email, state.token);
     try {
       await kentik.getSites();
-    } catch {
-      _onApiError();
+    } catch (e: any) {
+      if (e?.status === 400 && e?.data === 'Authentication to data source failed') {
+        _onApiError();
+      } else {
+        _onApiError('Unable to validate the Kentik API connection from Grafana. Check the datasource region, URL, and Grafana proxy logs.');
+      }
       return false;
     }
     try {
       await kentik.getUsers();
     } catch (e: any) {
       if (e.status !== 403) {
-        _onApiError();
+        if (e?.status === 400 && e?.data === 'Authentication to data source failed') {
+          _onApiError();
+        } else {
+          _onApiError('Unable to validate the Kentik API connection from Grafana. Check the datasource region, URL, and Grafana proxy logs.');
+        }
         return false;
       }
       setState({ ...state, apiMemberWarning: true });
@@ -200,7 +215,7 @@ export function ConfigEditor(props: Props) {
           <Stack direction="row" alignItems="center" gap={1}>
             <Icon name="exclamation-circle" className={s.colorError} />
             <span className={s.marginLeft}>
-              Invalid API credentials. This app won&apos;t work until the credentials are updated.
+              {state.apiErrorMessage || 'Invalid API credentials. This app won\'t work until the credentials are updated.'}
             </span>
           </Stack>
         )}

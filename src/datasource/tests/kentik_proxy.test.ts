@@ -40,6 +40,41 @@ describe('KentikProxy', () => {
       });
     });
   });
+
+  describe('KentikAPI endpoint versions', () => {
+    const makeObservable = (data: any) => ({
+      subscribe: (observer: any) => {
+        observer.next({ status: 200, data });
+        observer.complete();
+      },
+    });
+
+    it('uses the current device API family for list, get, and update', async () => {
+      const fetch = jest.fn()
+        .mockImplementationOnce(() => makeObservable({ devices: [] }))
+        .mockImplementationOnce(() => makeObservable({ device: { id: 'device-1' } }))
+        .mockImplementationOnce(() => makeObservable({ device: { id: 'device-1' } }));
+
+      const api = new KentikAPI({ fetch } as any, 'uid');
+
+      await api.getDevices();
+      await api.getDeviceById('device-1');
+      await api.updateDevice('device-1', { name: 'updated' });
+
+      expect(fetch).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ url: '/api/datasources/proxy/uid/uid/device/v202504beta2/device?query.noCustomColumns=true' })
+      );
+      expect(fetch).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ url: '/api/datasources/proxy/uid/uid/device/v202504beta2/device/device-1' })
+      );
+      expect(fetch).toHaveBeenNthCalledWith(
+        3,
+        expect.objectContaining({ url: '/api/datasources/proxy/uid/uid/device/v202504beta2/device/device-1', method: 'PUT' })
+      );
+    });
+  });
 });
 
 function getKentikProxyInstance(ctx: any, data: any) {

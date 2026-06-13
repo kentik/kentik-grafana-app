@@ -3,3 +3,8 @@ services:
     extends:
       file: .config/docker-compose-base.yaml
       service: grafana
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+volumes:
+  grafana-storage:

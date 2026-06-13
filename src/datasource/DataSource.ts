@@ -12,7 +12,6 @@ import { KentikAPI } from './kentik_api';
 import { KentikProxy } from './kentik_proxy';
 import {
   DataSourceInstanceSettings,
-  DataSourceJsonData,
   DataSourceApi,
   AdHocVariableFilter,
   FieldType,
@@ -22,12 +21,12 @@ import {
   PartialDataFrame,
 } from '@grafana/data';
 import { getTemplateSrv, TemplateSrv, getBackendSrv } from '@grafana/runtime';
+import { MyDataSourceOptions } from '../types';
+import { CustomFilter, DEFAULT_QUERY, Query } from './QueryEditor';
 
 import * as _ from 'lodash';
 import { Observable } from 'rxjs';
-import { CustomFilter, DEFAULT_QUERY, Query } from './QueryEditor';
 
-export interface MyDataSourceOptions extends DataSourceJsonData {}
 export const ALL_SITES_LABEL = 'All';
 export const ALL_DEVICES_LABEL = 'All';
 export const KENTIK_DESCRIPTION_PANEL = 'kentik-description-panel';
@@ -158,7 +157,14 @@ export class DataSource extends DataSourceApi<Query, MyDataSourceOptions> {
     this.initialRun = true;
 
     // `arguments[1]` is a hack used by `datasource.test.ts`
-    const kentikApi = new KentikAPI(arguments[1] || getBackendSrv(), instanceSettings.uid);
+    const kentikApi = new KentikAPI(
+      arguments[1] || getBackendSrv(),
+      instanceSettings.uid,
+      instanceSettings.url,
+      instanceSettings.id,
+      instanceSettings.jsonData?.email,
+      '' // Token is encrypted and not available on frontend; proxy will add it
+    );
     this.kentik = new KentikProxy(kentikApi, instanceSettings.uid);
     this.templateSrv = getTemplateSrv();
 

@@ -9,8 +9,12 @@ function showAlert(error: any) {
   message += error.statusText ? error.statusText + ': ' : '';
   if (error.data && error.data.error) {
     message += error.data.error;
+  } else if (_.isString(error.data)) {
+    message += error.data;
   } else if (error.err) {
     message += error.err;
+  } else if (error.message) {
+    message += error.message;
   } else if (_.isString(error)) {
     message += error;
   }
@@ -27,8 +31,12 @@ function showCustomAlert(message: string, exceptionData: any, exceptionType: any
   errMessage += exceptionData.statusText ? exceptionData.statusText + ': ' : '';
   if (exceptionData.data && exceptionData.data.error) {
     errMessage += exceptionData.data.error;
+  } else if (_.isString(exceptionData.data)) {
+    errMessage += exceptionData.data;
   } else if (exceptionData.err) {
     errMessage += exceptionData.err;
+  } else if (exceptionData.message) {
+    errMessage += exceptionData.message;
   } else if (_.isString(exceptionData)) {
     errMessage += exceptionData;
   }
