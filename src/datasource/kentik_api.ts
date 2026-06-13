@@ -10,6 +10,8 @@ const KENTIK_SITE_API_BASE = '/site/v202509/sites';
 const KENTIK_USER_API_BASE = '/user/v202211/users';
 const KENTIK_CUSTOM_DIMENSIONS_API_BASE = '/custom_dimensions/v202411alpha1';
 const KENTIK_SAVED_FILTERS_API_BASE = '/saved-filters/v202501alpha1';
+const KENTIK_DICTIONARY_API = '/dictionary/v20260604alpha1';
+const KENTIK_QUERY_API = '/query/v20251204alpha1/execute';
 
 export class KentikAPI {
   private baseUrls: string[];
@@ -147,6 +149,16 @@ export class KentikAPI {
       }
       throw e;
     }
+  }
+
+  /** Fetch the UDE dictionary (measurements, dimensions, metrics, operators). */
+  async getDictionary(): Promise<any> {
+    return this._get(KENTIK_DICTIONARY_API);
+  }
+
+  /** Execute a UDE query via the Query API. */
+  async executeQuery(queryPayload: any): Promise<any> {
+    return this._post(KENTIK_QUERY_API, queryPayload);
   }
 
   async invokeTopXDataQuery(query: any): Promise<any> {

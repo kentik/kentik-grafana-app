@@ -149,6 +149,40 @@
           "content": "application/json"
         }
       ]
+    },
+    {
+      "path": "dictionary",
+      "method": "*",
+      "url": "{{ .JsonData.url.v6 }}/dictionary",
+      "headers": [
+        {
+          "name": "X-CH-Auth-Email",
+          "content": "{{ .JsonData.email }}"
+        },
+        {
+          "name": "X-CH-Auth-API-Token",
+          "content": "{{ .SecureJsonData.token }}"
+        }
+      ]
+    },
+    {
+      "path": "query",
+      "method": "*",
+      "url": "{{ .JsonData.url.v6 }}/query",
+      "headers": [
+        {
+          "name": "X-CH-Auth-Email",
+          "content": "{{ .JsonData.email }}"
+        },
+        {
+          "name": "X-CH-Auth-API-Token",
+          "content": "{{ .SecureJsonData.token }}"
+        },
+        {
+          "name": "Content-Type",
+          "content": "application/json"
+        }
+      ]
     }
   ],
   "includes": [
