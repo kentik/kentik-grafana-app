@@ -161,6 +161,29 @@ export interface GrafanaUDEQuery {
   cidr6?: number;
 }
 
+function normalizeFieldList(value: any): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .map((v) => {
+        if (typeof v === 'string') {
+          return v;
+        }
+        if (v && typeof v.name === 'string') {
+          return v.name;
+        }
+        if (v && typeof v.value === 'string') {
+          return v.value;
+        }
+        return '';
+      })
+      .filter((v) => v.length > 0);
+  }
+  if (typeof value === 'string' && value.length > 0) {
+    return [value];
+  }
+  return [];
+}
+
 // ── Builder ────────────────────────────────────────────────────────────────
 
 function generateRequestId(): string {
@@ -175,13 +198,16 @@ function generateRequestId(): string {
  * Build an ExecuteQueryRequest from a Grafana panel query model.
  */
 export function buildExecuteQueryRequest(query: GrafanaUDEQuery): ExecuteQueryRequest {
-  const dimensions: QueryDimension[] = query.dimensions.map((name) => ({
+  const dimensionNames = normalizeFieldList((query as any).dimensions);
+  const metricNames = normalizeFieldList((query as any).metrics);
+
+  const dimensions: QueryDimension[] = dimensionNames.map((name) => ({
     name,
     ...(query.cidr ? { cidr: query.cidr } : {}),
     ...(query.cidr6 ? { cidr6: query.cidr6 } : {}),
   }));
 
-  const metrics: QueryMetric[] = query.metrics.map((name) => ({ name }));
+  const metrics: QueryMetric[] = metricNames.map((name) => ({ name }));
 
   const time: QueryTimeRange = {
     lookback: 0,

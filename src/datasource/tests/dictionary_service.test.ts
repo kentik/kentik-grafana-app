@@ -127,4 +127,166 @@ describe('DictionaryService', () => {
     expect(dict.operator_sets).toEqual([]);
     expect(dict.metric_families).toEqual([]);
   });
+
+  // Real Dictionary API responses come from a gRPC-gateway that serializes
+  // proto fields as camelCase and enums as their string names. These tests
+  // mirror the actual captured response shape (see /traffic measurement).
+  describe('camelCase normalization (real gRPC-gateway shape)', () => {
+    const CAMEL_DICTIONARY = {
+      measurements: [
+        {
+          name: '/traffic',
+          displayName: 'Traffic',
+          family: 'MEASUREMENT_FAMILY_TRAFFIC',
+          description: 'Network traffic data',
+          dimensions: [
+            {
+              key: 'src_geo_city',
+              label: 'Source City',
+              dataType: 'STRING',
+              category: 'Geography',
+              column: 'src_geo_city',
+              direction: 'src',
+              inverse: 'dst_geo_city',
+              values: {},
+              operatorSetKey: 'OPERATOR_SET_KEY_STRING',
+              filterOnly: false,
+              filterColumn: '',
+              queryColumn: 'src_geo_city',
+            },
+            {
+              key: 'i_device_name',
+              label: 'Device',
+              dataType: 'STRING',
+              category: 'Device',
+              column: 'i_device_name',
+              direction: '',
+              inverse: '',
+              values: {},
+              operatorSetKey: 'OPERATOR_SET_KEY_STRING',
+              filterOnly: true,
+              filterColumn: 'i_device_name',
+              queryColumn: '',
+            },
+          ],
+          metrics: [
+            {
+              key: 'avg_bits_per_sec',
+              label: 'Bits/s',
+              dataType: 'FLOAT',
+              category: 'Throughput',
+              column: 'f_sum_both_bytes',
+              direction: 'bi',
+              inverse: '',
+              values: {},
+              windowFn: 'avg',
+              aggregateFn: 'sum',
+              expression: '',
+              dependsOn: ['both_bytes'],
+              toBits: true,
+              rollup: true,
+              healthyValue: '',
+              familyKey: 'throughput',
+              baseUnit: 'BITS_PER_SECOND',
+            },
+          ],
+        },
+        {
+          name: '/synthetics/results',
+          displayName: 'Synthetics Results',
+          family: 'MEASUREMENT_FAMILY_SYNTHETICS',
+          description: 'Synthetic test results',
+          dimensions: [],
+          metrics: [],
+        },
+      ],
+      operatorSets: [
+        {
+          key: 'OPERATOR_SET_KEY_STRING',
+          operators: [
+            { key: '=', label: 'equals' },
+            { key: '<>', label: 'does not equal' },
+          ],
+        },
+      ],
+      metricFamilies: [
+        {
+          key: 'throughput',
+          label: 'Throughput',
+          quantity: 1,
+          baseUnit: 2,
+          dualAxisCompatible: ['packets'],
+          incompatibleWith: [],
+        },
+      ],
+    };
+
+    beforeEach(() => {
+      mockApi.getDictionary.mockResolvedValue(CAMEL_DICTIONARY);
+      service.invalidateCache();
+    });
+
+    it('normalizes top-level camelCase keys', async () => {
+      const dict = await service.getDictionary();
+      expect(dict.measurements).toHaveLength(2);
+      expect(dict.operator_sets).toHaveLength(1);
+      expect(dict.metric_families).toHaveLength(1);
+    });
+
+    it('maps displayName → display_name', async () => {
+      const measurements = await service.getMeasurements();
+      expect(measurements[0].display_name).toBe('Traffic');
+      expect(measurements[1].display_name).toBe('Synthetics Results');
+    });
+
+    it('maps string family enum → numeric MeasurementFamily', async () => {
+      const measurements = await service.getMeasurements();
+      expect(measurements[0].family).toBe(MeasurementFamily.TRAFFIC);
+      expect(measurements[1].family).toBe(MeasurementFamily.SYNTHETICS);
+    });
+
+    it('getMeasurementsByFamily works with normalized numeric family', async () => {
+      const traffic = await service.getMeasurementsByFamily(MeasurementFamily.TRAFFIC);
+      expect(traffic).toHaveLength(1);
+      expect(traffic[0].name).toBe('/traffic');
+    });
+
+    it('normalizes dimension camelCase fields', async () => {
+      const dims = await service.getDimensions('/traffic');
+      expect(dims).toHaveLength(2);
+      expect(dims[0].data_type).toBe('STRING');
+      expect(dims[0].operator_set_key).toBe('OPERATOR_SET_KEY_STRING');
+      expect(dims[0].filter_only).toBe(false);
+      expect(dims[0].query_column).toBe('src_geo_city');
+      // filter_only dimension preserved (editor filters it out for picker, keeps for filters)
+      expect(dims[1].filter_only).toBe(true);
+      expect(dims[1].filter_column).toBe('i_device_name');
+    });
+
+    it('normalizes metric camelCase fields', async () => {
+      const metrics = await service.getMetrics('/traffic');
+      expect(metrics).toHaveLength(1);
+      expect(metrics[0].data_type).toBe('FLOAT');
+      expect(metrics[0].window_fn).toBe('avg');
+      expect(metrics[0].aggregate_fn).toBe('sum');
+      expect(metrics[0].to_bits).toBe(true);
+      expect(metrics[0].depends_on).toEqual(['both_bytes']);
+      expect(metrics[0].family_key).toBe('throughput');
+      expect(metrics[0].base_unit).toBe('BITS_PER_SECOND');
+    });
+
+    it('normalizes operator set fields', async () => {
+      const sets = await service.getOperatorSets();
+      expect(sets[0].key).toBe('OPERATOR_SET_KEY_STRING');
+      expect(sets[0].operators).toHaveLength(2);
+      expect(sets[0].operators[0]).toEqual({ key: '=', label: 'equals' });
+    });
+
+    it('normalizes metric family camelCase fields', async () => {
+      const families = await service.getMetricFamilies();
+      expect(families[0].base_unit).toBe(2);
+      expect(families[0].dual_axis_compatible).toEqual(['packets']);
+      expect(families[0].incompatible_with).toEqual([]);
+    });
+  });
 });

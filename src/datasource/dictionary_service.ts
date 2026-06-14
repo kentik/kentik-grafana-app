@@ -88,6 +88,128 @@ export interface DictionaryResponse {
 
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
+/**
+ * Map the Dictionary API's string family enum to the numeric MeasurementFamily.
+ * The gRPC-gateway serializes proto enums as their string names
+ * (e.g. "MEASUREMENT_FAMILY_TRAFFIC").
+ */
+const FAMILY_ENUM_MAP: Record<string, MeasurementFamily> = {
+  MEASUREMENT_FAMILY_UNSPECIFIED: MeasurementFamily.UNSPECIFIED,
+  MEASUREMENT_FAMILY_TRAFFIC: MeasurementFamily.TRAFFIC,
+  MEASUREMENT_FAMILY_NMS: MeasurementFamily.NMS,
+  MEASUREMENT_FAMILY_NMS_INTERFACES: MeasurementFamily.NMS_INTERFACES,
+  MEASUREMENT_FAMILY_SYNTHETICS: MeasurementFamily.SYNTHETICS,
+  MEASUREMENT_FAMILY_BGP: MeasurementFamily.BGP,
+  MEASUREMENT_FAMILY_EVENTS: MeasurementFamily.EVENTS,
+};
+
+function normalizeFamily(family: any): number {
+  if (typeof family === 'number') {
+    return family;
+  }
+  if (typeof family === 'string') {
+    return FAMILY_ENUM_MAP[family] ?? MeasurementFamily.UNSPECIFIED;
+  }
+  return MeasurementFamily.UNSPECIFIED;
+}
+
+function normalizeDimension(d: any): DimensionField {
+  return {
+    key: d.key ?? '',
+    label: d.label ?? '',
+    data_type: d.dataType ?? d.data_type ?? '',
+    category: d.category ?? '',
+    column: d.column ?? '',
+    direction: d.direction ?? '',
+    inverse: d.inverse ?? '',
+    values: d.values ?? {},
+    last_seen: d.lastSeen ?? d.last_seen,
+    operator_set_key: d.operatorSetKey ?? d.operator_set_key ?? '',
+    filter_only: d.filterOnly ?? d.filter_only ?? false,
+    filter_column: d.filterColumn ?? d.filter_column ?? '',
+    query_column: d.queryColumn ?? d.query_column ?? '',
+  };
+}
+
+function normalizeMetric(m: any): MetricField {
+  return {
+    key: m.key ?? '',
+    label: m.label ?? '',
+    data_type: m.dataType ?? m.data_type ?? '',
+    category: m.category ?? '',
+    column: m.column ?? '',
+    direction: m.direction ?? '',
+    inverse: m.inverse ?? '',
+    values: m.values ?? {},
+    last_seen: m.lastSeen ?? m.last_seen,
+    window_fn: m.windowFn ?? m.window_fn ?? '',
+    aggregate_fn: m.aggregateFn ?? m.aggregate_fn ?? '',
+    expression: m.expression ?? '',
+    depends_on: m.dependsOn ?? m.depends_on ?? [],
+    to_bits: m.toBits ?? m.to_bits ?? false,
+    rollup: m.rollup ?? false,
+    healthy_value: m.healthyValue ?? m.healthy_value ?? '',
+    family_key: m.familyKey ?? m.family_key ?? '',
+    base_unit: m.baseUnit ?? m.base_unit ?? '',
+  };
+}
+
+function normalizeMeasurement(m: any): MeasurementDetail {
+  return {
+    name: m.name ?? '',
+    display_name: m.displayName ?? m.display_name ?? m.name ?? '',
+    family: normalizeFamily(m.family),
+    description: m.description ?? '',
+    last_seen: m.lastSeen ?? m.last_seen,
+    dimensions: Array.isArray(m.dimensions) ? m.dimensions.map(normalizeDimension) : [],
+    metrics: Array.isArray(m.metrics) ? m.metrics.map(normalizeMetric) : [],
+  };
+}
+
+function normalizeOperatorSet(o: any): OperatorSet {
+  return {
+    key: o.key ?? '',
+    operators: Array.isArray(o.operators)
+      ? o.operators.map((op: any) => ({ key: op.key ?? '', label: op.label ?? '' }))
+      : [],
+  };
+}
+
+function normalizeMetricFamily(f: any): MetricFamilyDef {
+  return {
+    key: f.key ?? '',
+    label: f.label ?? '',
+    quantity: f.quantity ?? 0,
+    base_unit: f.baseUnit ?? f.base_unit ?? 0,
+    dual_axis_compatible: f.dualAxisCompatible ?? f.dual_axis_compatible ?? [],
+    incompatible_with: f.incompatibleWith ?? f.incompatible_with ?? [],
+  };
+}
+
+/**
+ * Normalize a raw Dictionary API response (camelCase, string enums) into the
+ * documented snake_case DictionaryResponse shape used throughout the plugin.
+ */
+export function normalizeDictionaryResponse(data: any): DictionaryResponse {
+  const measurements = Array.isArray(data?.measurements) ? data.measurements : [];
+  const operatorSets = Array.isArray(data?.operatorSets)
+    ? data.operatorSets
+    : Array.isArray(data?.operator_sets)
+      ? data.operator_sets
+      : [];
+  const metricFamilies = Array.isArray(data?.metricFamilies)
+    ? data.metricFamilies
+    : Array.isArray(data?.metric_families)
+      ? data.metric_families
+      : [];
+
+  return {
+    measurements: measurements.map(normalizeMeasurement),
+    operator_sets: operatorSets.map(normalizeOperatorSet),
+    metric_families: metricFamilies.map(normalizeMetricFamily),
+  };
+}
+
 export class DictionaryService {
   private cache: DictionaryResponse | null = null;
   private cacheTimestamp = 0;
@@ -105,11 +227,7 @@ export class DictionaryService {
     // Deduplicate concurrent fetches
     if (!this.fetchPromise) {
       this.fetchPromise = this.api.getDictionary().then((data: any) => {
-        const result: DictionaryResponse = {
-          measurements: Array.isArray(data?.measurements) ? data.measurements : [],
-          operator_sets: Array.isArray(data?.operator_sets) ? data.operator_sets : [],
-          metric_families: Array.isArray(data?.metric_families) ? data.metric_families : [],
-        };
+        const result = normalizeDictionaryResponse(data);
         this.cache = result;
         this.cacheTimestamp = Date.now();
         this.fetchPromise = null;

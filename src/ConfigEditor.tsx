@@ -1,12 +1,8 @@
-import React, { ChangeEvent, useState, useEffect } from 'react';
-import { JsonData, MyDataSourceOptions, MySecureJsonData, Region, Url } from './types';
+import React, { ChangeEvent } from 'react';
+import { MyDataSourceOptions, MySecureJsonData, Region, Url } from './types';
 import { css } from '@emotion/css';
 import { GrafanaTheme2, SelectableValue, DataSourcePluginOptionsEditorProps } from '@grafana/data';
-import { getBackendSrv } from '@grafana/runtime';
-import { Input, SecretInput, Button, Field, FieldSet, RadioButtonGroup, Stack, useStyles2, Icon } from '@grafana/ui';
-import { showCustomAlert } from './utils/alert_helper';
-import { KentikAPI } from './datasource/kentik_api';
-import { DictionaryService } from './datasource/dictionary_service';
+import { Input, SecretInput, Field, FieldSet, RadioButtonGroup, Stack, useStyles2, Icon } from '@grafana/ui';
 
 const REGION_OPTIONS: Array<SelectableValue<Region>> = [
   { label: 'US (default)', value: Region.DEFAULT },
@@ -16,6 +12,8 @@ const REGION_OPTIONS: Array<SelectableValue<Region>> = [
 
 const DEFAULT_URL: Url = { v6: 'https://grpc.api.kentik.com', v5: 'https://api.kentik.com' };
 const EU_URL: Url = { v6: 'https://grpc.api.kentik.eu', v5: 'https://api.kentik.eu' };
+
+const KENTIK_PROXY_TIMEOUT_SECONDS = 1800;
 
 /** Derive the Kentik API URLs from the selected region. Pure function so it can
  *  be used both during state initialisation and inside event handlers. */
@@ -36,255 +34,108 @@ function getUrlByRegion(region: Region | undefined, dynamicUrl?: string): Url {
   }
 }
 
-type State = Required<JsonData> & {
-  token: string;
-  apiValidated: boolean;
-  apiMemberWarning: boolean;
-  apiError: boolean;
-  apiErrorMessage: string;
-  dictionaryMeasurementCount: number;
-};
-
 interface Props extends DataSourcePluginOptionsEditorProps<MyDataSourceOptions, MySecureJsonData> { }
 
+/**
+ * ConfigEditor follows the standard Grafana datasource pattern: it is a
+ * controlled form that reports changes via `onOptionsChange`. Persistence,
+ * secret lifecycle management, and validation are handled natively by
+ * Grafana's "Save & test" button (which invokes DataSource.testDatasource()).
+ *
+ * This avoids the previous homegrown `jsonData.tokenSet` flag and manual PUT,
+ * which could drift out of sync with the real `secureJsonFields.token` and
+ * silently drop the token on save.
+ */
 export function ConfigEditor(props: Props) {
   const { options, onOptionsChange } = props;
-
   const s = useStyles2(getStyles);
   const { jsonData, secureJsonFields } = options;
+  const secureJsonData = (options.secureJsonData || {}) as MySecureJsonData;
 
-  const KENTIK_PROXY_TIMEOUT_SECONDS = 1800;
-
-  const [state, setState] = useState<State>({
-    url: jsonData?.url || getUrlByRegion(jsonData?.region, jsonData?.dynamicUrl),
-    email: jsonData?.email || '',
-    region: jsonData?.region || Region.DEFAULT,
-    dynamicUrl: jsonData?.dynamicUrl || '',
-    tokenSet: Boolean(jsonData?.tokenSet || secureJsonFields?.token),
-    timeout: jsonData?.timeout ?? KENTIK_PROXY_TIMEOUT_SECONDS,
-    token: '',
-    apiValidated: false,
-    apiMemberWarning: false,
-    apiError: false,
-    apiErrorMessage: '',
-    dictionaryMeasurementCount: 0,
-  });
-
-  useEffect(() => {
-    if (isConfigured()) {
-      validateApiConnection();
-    }
-    // eslint-disable-next-line
-  }, []);
-
-  const isConfigured = (): boolean => {
-    return (!!state.tokenSet || !!state.token) && !!state.email && !!state.region;
-  };
-
-  const _getUrlByRegion = (region?: Region): Url => {
-    return getUrlByRegion(region, state.dynamicUrl);
-  };
+  const region = jsonData?.region || Region.DEFAULT;
+  const dynamicUrl = jsonData?.dynamicUrl || '';
+  const isTokenConfigured = Boolean(secureJsonFields?.token);
 
   const onChangeEmail = (e: ChangeEvent<HTMLInputElement>) => {
-    const email = e.target.value.trim();
-    setState({ ...state, email });
-    onOptionsChange({ ...options, jsonData: { ...options.jsonData, email } });
+    onOptionsChange({
+      ...options,
+      jsonData: { ...jsonData, email: e.target.value.trim() },
+    });
   };
+
+  const onChangeRegion = (newRegion: Region) => {
+    const url = getUrlByRegion(newRegion, '');
+    onOptionsChange({
+      ...options,
+      jsonData: {
+        ...jsonData,
+        region: newRegion,
+        url,
+        dynamicUrl: '',
+        timeout: jsonData?.timeout ?? KENTIK_PROXY_TIMEOUT_SECONDS,
+      },
+    });
+  };
+
   const onChangeCustomUrl = (e: ChangeEvent<HTMLInputElement>) => {
     const newUrl = e.target.value.trim();
     const url = getUrlByRegion(Region.CUSTOM, newUrl);
-    setState({ ...state, dynamicUrl: newUrl, url });
-    onOptionsChange({ ...options, jsonData: { ...options.jsonData, dynamicUrl: newUrl, url } });
+    onOptionsChange({
+      ...options,
+      jsonData: { ...jsonData, dynamicUrl: newUrl, url },
+    });
   };
-  const onChangeRegion = (region: Region) => {
-    const url = _getUrlByRegion(region);
-    setState({ ...state, region, url, dynamicUrl: '' });
-    onOptionsChange({ ...options, jsonData: { ...options.jsonData, region, url, dynamicUrl: '' } });
-  };
+
   const onChangeToken = (e: ChangeEvent<HTMLInputElement>) => {
-    const token = e.target.value.trim();
-    setState({ ...state, token });
-    onOptionsChange({ ...options, secureJsonData: { token } });
+    onOptionsChange({
+      ...options,
+      secureJsonData: { ...secureJsonData, token: e.target.value.trim() },
+    });
   };
+
   const onResetToken = () => {
-    setState({ ...state, token: '', tokenSet: false, apiValidated: false, apiMemberWarning: false, apiError: false, apiErrorMessage: '' });
-    onOptionsChange({ ...options, secureJsonFields: { ...options.secureJsonFields, token: false }, secureJsonData: {} });
+    onOptionsChange({
+      ...options,
+      secureJsonFields: { ...secureJsonFields, token: false },
+      secureJsonData: { ...secureJsonData, token: '' },
+    });
   };
-
-  const _onApiError = (message = 'Grafana reached Kentik, but Kentik rejected the configured email or API token.') =>
-    setState({ ...state, apiValidated: false, apiError: true, apiErrorMessage: message });
-
-  const validateApiConnection = async (): Promise<boolean> => {
-    const backendSrv = getBackendSrv();
-    const kentik = new KentikAPI(backendSrv, options.uid, options.url, options.id, state.email, state.token);
-    try {
-      const sites = await kentik.getSites();
-      // getSites() returns [] on empty — a valid response. Only flag if response
-      // is somehow null/undefined (indicating a broken proxy or malformed response).
-      if (sites === null || sites === undefined) {
-        _onApiError('Kentik Sites API returned an invalid response. The proxy may not be forwarding correctly.');
-        return false;
-      }
-    } catch (e: any) {
-      if (e?.status === 400 && e?.data === 'Authentication to data source failed') {
-        _onApiError();
-      } else {
-        _onApiError('Unable to validate the Kentik API connection from Grafana. Check the datasource region, URL, and Grafana proxy logs.');
-      }
-      return false;
-    }
-    try {
-      await kentik.getUsers();
-    } catch (e: any) {
-      if (e.status !== 403) {
-        if (e?.status === 400 && e?.data === 'Authentication to data source failed') {
-          _onApiError();
-        } else {
-          _onApiError('Unable to validate the Kentik API connection from Grafana. Check the datasource region, URL, and Grafana proxy logs.');
-        }
-        return false;
-      }
-      setState({ ...state, apiMemberWarning: true });
-    }
-
-    // Validate Dictionary API access
-    let measurementCount = 0;
-    try {
-      const dictService = new DictionaryService(kentik);
-      const dict = await dictService.getDictionary();
-      measurementCount = dict.measurements?.length || 0;
-      if (measurementCount === 0) {
-        _onApiError('Kentik API returned no measurements. The measurement catalog may not be available for this account.');
-        return false;
-      }
-    } catch (e: any) {
-      // Dictionary API failure is non-fatal for now — it may not be deployed yet
-      console.warn('Measurement catalog API not available:', e?.status || e?.message);
-    }
-
-    setState({ ...state, apiValidated: true, dictionaryMeasurementCount: measurementCount });
-    const dictMsg = measurementCount > 0 ? ` (${measurementCount} measurements available)` : '';
-    showCustomAlert(`API working!${dictMsg}`, '', 'success');
-    return true;
-  };
-
-  const [saving, setSaving] = useState(false);
-
-  const saveSettings = async () => {
-    if (saving) {
-      return;
-    }
-    setSaving(true);
-
-    const updatedJsonData = {
-      ...options.jsonData,
-      url: state.url,
-      email: state.email,
-      region: state.region,
-      dynamicUrl: state.dynamicUrl,
-      tokenSet: !!state.token || state.tokenSet,
-      timeout: state.timeout,
-    };
-
-    // Build a minimal payload – only the fields the PUT endpoint needs.
-    // Setting version to 0 tells Grafana to skip the optimistic-lock check,
-    // which avoids 409 conflicts caused by provisioning version drift.
-    const payload: Record<string, any> = {
-      name: options.name,
-      type: options.type,
-      access: options.access,
-      uid: options.uid,
-      jsonData: updatedJsonData,
-      version: 0,
-      ...(state.token ? { secureJsonData: { token: state.token } } : {}),
-    };
-
-    try {
-      await getBackendSrv().put(`/api/datasources/uid/${options.uid}`, payload);
-
-      // Keep the parent form state in sync
-      onOptionsChange({ ...options, jsonData: updatedJsonData });
-
-      showCustomAlert('Settings saved!', '', 'success');
-      setTimeout(() => window.location.reload(), 800);
-    } catch (err: any) {
-      const msg = err?.data?.message || 'Unknown error';
-      showCustomAlert(`Error saving settings: ${msg}`, '', 'error');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const isSubmitDisabled = !isConfigured();
 
   return (
     <div>
       <FieldSet label="Enter your Kentik Credentials" className={s.marginTop}>
         <Field label="Email">
-          <Input value={state.email} placeholder="email" onChange={onChangeEmail} width={60} />
+          <Input value={jsonData?.email || ''} placeholder="email" onChange={onChangeEmail} width={60} />
         </Field>
 
         <Field label="Region">
-          <RadioButtonGroup value={state.region} options={REGION_OPTIONS} onChange={onChangeRegion} />
+          <RadioButtonGroup value={region} options={REGION_OPTIONS} onChange={onChangeRegion} />
         </Field>
 
-        {state.region === Region.CUSTOM && (
+        {region === Region.CUSTOM && (
           <Field label="Custom URL">
-            <Input value={state.dynamicUrl} placeholder="https://grpc.api.kentik.com" onChange={onChangeCustomUrl} width={60} />
+            <Input value={dynamicUrl} placeholder="https://grpc.api.kentik.com" onChange={onChangeCustomUrl} width={60} />
           </Field>
         )}
 
         <Field label="API Token">
-          <SecretInput value={state.token} isConfigured={state.tokenSet} onChange={onChangeToken} onReset={onResetToken} width={60} />
+          <SecretInput
+            value={secureJsonData.token || ''}
+            isConfigured={isTokenConfigured}
+            onChange={onChangeToken}
+            onReset={onResetToken}
+            width={60}
+          />
         </Field>
 
-        {isConfigured() && state.apiError && (
+        <div className={s.statusBox}>
           <Stack direction="row" alignItems="center" gap={1}>
-            <Icon name="exclamation-circle" className={s.colorError} />
+            <Icon name="info-circle" />
             <span className={s.marginLeft}>
-              {state.apiErrorMessage || 'Invalid API credentials. This app won\'t work until the credentials are updated.'}
+              Enter your credentials, then click <strong>Save &amp; test</strong> below to validate the connection
+              and load the measurement catalog.
             </span>
           </Stack>
-        )}
-
-        {state.tokenSet && state.apiValidated && (
-          <div className={s.statusBox}>
-            <Stack direction="row" alignItems="center" gap={1}>
-              <Icon name="check-circle" className={s.colorSuccess} />
-              <span className={s.marginLeft}>
-                Successfully enabled.
-                {state.dictionaryMeasurementCount > 0 && (
-                  <> <strong>{state.dictionaryMeasurementCount} measurements</strong> available for querying. </>
-                )}
-                <strong> Next up: </strong>
-                <a href="d/xScUGST71/kentik-home" className="external-link">
-                  Go to Kentik Home Dashboard
-                </a>
-              </span>
-            </Stack>
-          </div>
-        )}
-
-        {state.tokenSet && state.apiValidated && state.apiMemberWarning && (
-          <div className={s.statusBox}>
-            <Stack direction="row" alignItems="center" gap={1}>
-              <Icon name="exclamation-triangle" className={s.colorWarning} />
-              <span className={s.marginLeft}>
-                The specified Kentik user seems to have Member access level (not Admin), Custom Dimensions in the
-                dashboard filters won&apos;t be available.
-              </span>
-            </Stack>
-          </div>
-        )}
-
-        <div className={s.marginTop}>
-          <Button
-            type="submit"
-            disabled={isSubmitDisabled || saving}
-            onClick={saveSettings}
-          >
-            {saving ? 'Saving…' : 'Save API settings'}
-          </Button>
         </div>
       </FieldSet>
     </div>
