@@ -1,0 +1,449 @@
+{
+  "uid": "kentik-topology",
+  "title": "Kentik: Geo Flow & Interface Health",
+  "tags": [
+    "kentik",
+    "topology"
+  ],
+  "timezone": "",
+  "editable": true,
+  "schemaVersion": 39,
+  "version": 3,
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "refresh": "5m",
+  "templating": {
+    "list": [
+      {
+        "name": "ds",
+        "type": "datasource",
+        "label": "Kentik datasource",
+        "query": "kentik-connect-datasource",
+        "current": {},
+        "hide": 0
+      },
+      {
+        "name": "device",
+        "type": "query",
+        "label": "Device",
+        "datasource": {
+          "type": "kentik-connect-datasource",
+          "uid": "${ds}"
+        },
+        "query": "values(/metrics/interfaces/counters, device_name)",
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": "__ALL__",
+        "multi": false,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "hide": 0
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "About this dashboard",
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### Geo flow & interface health\n\n- **Country flow graph** \u2014 nodes are countries (sized by total traffic), **lines are src\u2192dst flows** with bits/s on each edge. Built server-side via the backend `format: nodegraph` mode.\n- **Interface health** \u2014 per device + interface **utilization in/out**, **input/output errors**, and **discards** from NMS interface counters (`/metrics/interfaces/counters`), colored red when high."
+      }
+    },
+    {
+      "id": 2,
+      "type": "nodeGraph",
+      "title": "Country-to-Country Flow (edges = bits/s)",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "nodes": {
+          "mainStatUnit": "bps"
+        },
+        "edges": {
+          "mainStatUnit": "bps"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/traffic",
+          "metrics": [
+            "both_bits_per_sec"
+          ],
+          "dimensions": [
+            "src_geo",
+            "dst_geo"
+          ],
+          "filterGroups": [],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 15,
+          "format": "nodegraph",
+          "rollups": [
+            {
+              "metric": "both_bits_per_sec",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "title": "Interface Health: Utilization, Errors & Discards",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Utilization In"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "max",
+                "value": 100
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 70,
+                      "color": "yellow"
+                    },
+                    {
+                      "value": 90,
+                      "color": "red"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Utilization Out"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "max",
+                "value": 100
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 70,
+                      "color": "yellow"
+                    },
+                    {
+                      "value": 90,
+                      "color": "red"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Input Errors"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 1,
+                      "color": "red"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Output Errors"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 1,
+                      "color": "red"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Input Discards"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 1,
+                      "color": "yellow"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Output Discards"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 1,
+                      "color": "yellow"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Utilization In",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "device_name": "Device",
+              "name": "Interface",
+              "in-utilization": "Utilization In",
+              "out-utilization": "Utilization Out",
+              "in-errors": "Input Errors",
+              "out-errors": "Output Errors",
+              "in-discards": "Input Discards",
+              "out-discards": "Output Discards"
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/interfaces/counters",
+          "metrics": [
+            "in-utilization",
+            "out-utilization",
+            "in-errors",
+            "out-errors",
+            "in-discards",
+            "out-discards"
+          ],
+          "dimensions": [
+            "device_name",
+            "name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 50,
+          "format": "table",
+          "rollups": [
+            {
+              "metric": "in-utilization",
+              "fn": "avg"
+            },
+            {
+              "metric": "out-utilization",
+              "fn": "avg"
+            },
+            {
+              "metric": "in-errors",
+              "fn": "avg"
+            },
+            {
+              "metric": "out-errors",
+              "fn": "avg"
+            },
+            {
+              "metric": "in-discards",
+              "fn": "avg"
+            },
+            {
+              "metric": "out-discards",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

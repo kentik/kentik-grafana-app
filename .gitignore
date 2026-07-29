@@ -67,3 +67,8 @@ tmp/
 
 # Playwright auth state (contains tokens)
 playwright/.auth/
+ude-validation-report.json
+ude-validation-results.csv
+
+# Local research notes
+thoughts/

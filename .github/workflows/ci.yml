@@ -32,6 +32,17 @@ jobs:
 
       - run: npm run build
 
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: Install Mage
+        run: go install github.com/magefile/mage@latest
+
+      - name: Build backend
+        run: mage -v build:linux build:linuxARM64
+
       - run: npx jest --no-coverage
 
       - name: Package plugin
@@ -119,6 +130,8 @@ jobs:
           - grafana_image: grafana-enterprise
             grafana_version: "12.4.1"
           - grafana_image: grafana-enterprise
+            grafana_version: "13.0.2"
+          - grafana_image: grafana-enterprise
             grafana_version: latest
     steps:
       - uses: actions/checkout@v5
@@ -132,6 +145,17 @@ jobs:
       - run: npm ci
 
       - run: npm run build
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: Install Mage
+        run: go install github.com/magefile/mage@latest
+
+      - name: Build backend
+        run: mage -v build:linux build:linuxARM64
 
       - name: Start Grafana
         run: |

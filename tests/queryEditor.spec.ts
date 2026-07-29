@@ -1,6 +1,6 @@
 import { test, expect } from '@grafana/plugin-e2e';
 
-test('smoke: query editor renders all field sections', async ({
+test('smoke: query editor renders the measurement selector', async ({
   gotoPanelEditPage,
   readProvisionedDashboard,
 }) => {
@@ -13,43 +13,32 @@ test('smoke: query editor renders all field sections', async ({
 
   const queryRow = panelEditPage.getQueryEditorRow('A');
 
-  // Core fields that should always render regardless of API state
-  await expect(queryRow.getByText('Data Mode')).toBeVisible();
-  await expect(queryRow.getByText('Sites')).toBeVisible();
-  await expect(queryRow.getByText('Devices')).toBeVisible();
-  await expect(queryRow.getByText('Dimensions')).toBeVisible();
-  await expect(queryRow.getByText('Metric')).toBeVisible();
-  await expect(queryRow.getByText('DNS Lookup')).toBeVisible();
-  await expect(queryRow.getByText('Prefix')).toBeVisible();
-  await expect(queryRow.getByText('Alias by')).toBeVisible();
-  await expect(queryRow.getByText('Filters')).toBeVisible();
-  await expect(queryRow.getByText('Visualization depth')).toBeVisible();
+  // The UDE query editor always renders the Measurement field first. Downstream
+  // fields (units/metrics, dimensions, filters, response format) only appear once
+  // a measurement is selected, which requires a live dictionary API that is not
+  // available in CI — so the reliable, API-independent assertion is the Measurement
+  // field and its selector placeholder, both of which render immediately.
+  await expect(queryRow.getByText('Measurement', { exact: true })).toBeVisible();
+  await expect(queryRow.getByText('Select measurement...')).toBeVisible();
 });
 
-test('smoke: data mode toggle switches between graph and table', async ({
+test('smoke: measurement selector opens and is searchable', async ({
   gotoPanelEditPage,
   readProvisionedDashboard,
-  page,
 }) => {
   const dashboard = await readProvisionedDashboard({ fileName: 'kentik-e2e-test.json' });
   const panelEditPage = await gotoPanelEditPage({ dashboard, id: '1' });
 
   const queryRow = panelEditPage.getQueryEditorRow('A');
 
-  // Data Mode is a Combobox — scope to its Field container to avoid matching other comboboxes
-  const dataModeCombobox = queryRow.locator('div').filter({ hasText: /^Data Mode$/ }).getByRole('combobox');
-  await expect(dataModeCombobox).toBeVisible();
-  await expect(dataModeCombobox).toHaveValue('Graph');
+  // The selector button is disabled while the dictionary loads; wait for it to
+  // settle (the API call resolves or fails fast without credentials) before clicking.
+  const trigger = queryRow.getByRole('button', { name: /Select measurement/ });
+  await expect(trigger).toBeEnabled();
+  await trigger.click();
 
-  // Switch to Table via the combobox dropdown
-  await dataModeCombobox.click();
-  await page.getByRole('option', { name: 'Table' }).click();
-
-  // Verify the combobox now shows "Table"
-  await expect(dataModeCombobox).toHaveValue('Table');
-
-  // Switch back to Graph
-  await dataModeCombobox.click();
-  await page.getByRole('option', { name: 'Graph' }).click();
-  await expect(dataModeCombobox).toHaveValue('Graph');
+  // Opening the dropdown reveals the search box. With no credentials the catalog is
+  // empty, so the empty-state message is shown — both are API-independent.
+  await expect(queryRow.getByPlaceholder('Search measurements...')).toBeVisible();
+  await expect(queryRow.getByText('No measurements found')).toBeVisible();
 });

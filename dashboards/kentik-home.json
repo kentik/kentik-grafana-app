@@ -1,74 +1,348 @@
 {
-  "annotations": {
-    "list": []
-  },
-  "editable": true,
-  "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
-  "id": null,
-  "links": [],
-  "panels": [
-    {
-      "type": "text",
-      "title": "",
-      "gridPos": {
-        "h": 16,
-        "w": 12,
-        "x": 0,
-        "y": 0
-      },
-      "id": 1,
-      "options": {
-        "mode": "markdown",
-        "content": "![Kentik](/public/plugins/kentik-connect-datasource/img/logo_large.png)\n\n# Kentik for Grafana\n\nKentik for Grafana allows you to quickly and easily add network activity visibility metrics to your Grafana dashboard.\n\nBy leveraging the power of Kentik's monitoring SaaS, you can enjoy rich, actionable insights into consumers of network bandwidth and anomalies that can affect application or service performance.\n\n**Getting Started:**\n1. ✅ Install Kentik for Grafana\n2. Configure your [Kentik datasource](/connections/datasources) with API credentials\n3. Explore the dashboards in the Kentik folder →"
-      },
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      }
-    },
-    {
-      "type": "dashlist",
-      "title": "Kentik Dashboards",
-      "gridPos": {
-        "h": 16,
-        "w": 12,
-        "x": 12,
-        "y": 0
-      },
-      "id": 2,
-      "options": {
-        "showStarred": false,
-        "showRecentlyViewed": false,
-        "showSearch": true,
-        "showHeadings": false,
-        "maxItems": 10,
-        "query": "",
-        "folderId": null,
-        "tags": [
-          "kentik"
-        ]
-      },
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      }
-    }
-  ],
-  "schemaVersion": 39,
+  "uid": "kentik-home",
+  "title": "Kentik: Overview",
   "tags": [
     "kentik"
   ],
-  "templating": {
-    "list": []
-  },
+  "timezone": "",
+  "editable": true,
+  "schemaVersion": 39,
+  "version": 3,
   "time": {
     "from": "now-6h",
     "to": "now"
   },
-  "timepicker": {},
-  "timezone": "browser",
-  "title": "Kentik: Home",
-  "uid": "kentik-home",
-  "version": 1
+  "refresh": "5m",
+  "templating": {
+    "list": [
+      {
+        "name": "ds",
+        "type": "datasource",
+        "label": "Kentik datasource",
+        "query": "kentik-connect-datasource",
+        "current": {},
+        "hide": 0
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "Welcome to Kentik for Grafana (v3)",
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "## Kentik network observability \u2014 now backend-powered\n\nThis datasource queries the **Kentik Universal Data Explorer (UDE)** APIs from a Go backend, which unlocks:\n\n- **Grafana Alerting & recorded queries** \u2014 server-side execution against Kentik\n- **Template variables from the Kentik dictionary** \u2014 e.g. `measurements()`, `metrics(/traffic)`, `dimensions(/traffic)`, `dimension_values(/traffic, dst_geo)`\n- **Ad-hoc filters** sourced from Kentik dimensions\n- **\"Open in Kentik\"** data links on every series (click a point \u2192 jump to Data Explorer)\n- **Geo visualizations** using Kentik geo dimensions (see the *Global Traffic Map* dashboard)\n\nUse the **Kentik datasource** picker above to point these panels at your Kentik connection."
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Total Throughput",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 0,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 1000000000, "color": "yellow" },
+              { "value": 10000000000, "color": "red" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "graphMode": "area",
+        "colorMode": "value",
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+          "queryType": "ude",
+          "measurement": "/traffic",
+          "metrics": ["both_bits_per_sec"],
+          "dimensions": [],
+          "filterGroups": [],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 1,
+          "rollups": [{ "metric": "both_bits_per_sec", "fn": "avg" }]
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "Ingress",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 8,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+          "queryType": "ude",
+          "measurement": "/traffic",
+          "metrics": ["in_bits_per_sec"],
+          "dimensions": [],
+          "filterGroups": [],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 1,
+          "rollups": [{ "metric": "in_bits_per_sec", "fn": "avg" }]
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "Egress",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+          "queryType": "ude",
+          "measurement": "/traffic",
+          "metrics": ["out_bits_per_sec"],
+          "dimensions": [],
+          "filterGroups": [],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 1,
+          "rollups": [{ "metric": "out_bits_per_sec", "fn": "avg" }]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Traffic by Site",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 25,
+            "stacking": { "mode": "normal", "group": "A" },
+            "showPoints": "never",
+            "lineWidth": 1
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "showLegend": true, "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+          "queryType": "ude",
+          "measurement": "/traffic",
+          "metrics": ["both_bits_per_sec"],
+          "dimensions": ["i_device_site_name"],
+          "filterGroups": [],
+          "filterConnector": "All",
+          "vizType": 1,
+          "limit": 10,
+          "aliasBy": "{{i_device_site_name}}",
+          "rollups": [{ "metric": "both_bits_per_sec", "fn": "avg" }]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Top Applications",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "lineWidth": 2
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "showLegend": true, "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+          "queryType": "ude",
+          "measurement": "/traffic",
+          "metrics": ["both_bits_per_sec"],
+          "dimensions": ["application"],
+          "filterGroups": [],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 8,
+          "aliasBy": "{{application}}",
+          "rollups": [{ "metric": "both_bits_per_sec", "fn": "avg" }]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Top Protocols",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "lineWidth": 2
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "showLegend": true, "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+          "queryType": "ude",
+          "measurement": "/traffic",
+          "metrics": ["both_bits_per_sec"],
+          "dimensions": ["i_protocol_name"],
+          "filterGroups": [],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 8,
+          "aliasBy": "{{i_protocol_name}}",
+          "rollups": [{ "metric": "both_bits_per_sec", "fn": "avg" }]
+        }
+      ]
+    }
+  ]
 }

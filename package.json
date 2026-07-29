@@ -1,11 +1,17 @@
 {
   "name": "kentik-datasource",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
+    "build:backend": "mage -v build:linux build:linuxARM64",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
     "test": "jest --watch --onlyChanged",
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
+    "validate:ude": "node scripts/validate-ude-combinations.js",
+    "validate:ude:quick": "node scripts/validate-ude-combinations.js --max-measurements 10 --max-metrics 5 --concurrency 4",
+    "validate:ude:full": "node scripts/validate-ude-combinations.js --with-dimensions --max-dimensions 3 --concurrency 8 --timeout-ms 45000",
+    "validate:ude:multi:quick": "node scripts/validate-ude-combinations.js --max-measurements 10 --max-metrics 8 --metric-combo-sizes 1,2 --max-metric-combos 30 --concurrency 4",
+    "validate:ude:multi:full": "node scripts/validate-ude-combinations.js --with-dimensions --max-dimensions 3 --max-metrics 12 --metric-combo-sizes 1,2 --max-metric-combos 80 --concurrency 8 --timeout-ms 45000",
     "typecheck": "tsc --noEmit",
     "lint": "eslint --cache .",
     "lint:fix": "npm run lint -- --fix && prettier --write --list-different .",
@@ -18,7 +24,7 @@
   "devDependencies": {
     "@grafana/eslint-config": "^9.0.0",
     "@grafana/plugin-e2e": "^3.6.1",
-    "@grafana/tsconfig": "^2.0.1",
+    "@grafana/tsconfig": "^2.2.0",
     "@playwright/test": "^1.52.0",
     "@stylistic/eslint-plugin-ts": "^2.9.0",
     "@swc/core": "^1.3.71",
@@ -66,7 +72,12 @@
   },
   "overrides": {
     "glob": "^13.0.0",
-    "inflight": "npm:lru-cache@^11.0.0"
+    "inflight": "npm:lru-cache@^11.0.0",
+    "fast-uri": "^3.1.4",
+    "ws": "^8.21.0",
+    "postcss": "^8.5.25",
+    "websocket-driver": "^0.7.5",
+    "js-yaml": "^4.2.1"
   },
   "dependencies": {
     "@emotion/css": "11.10.6",

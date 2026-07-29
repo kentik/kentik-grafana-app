@@ -2,6 +2,73 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.0.0 (unreleased)
+
+**Features:**
+
+- Converted the plugin to a **backend datasource** (Go). Query execution, result
+  parsing, credential handling, and the dictionary cache now run server-side,
+  enabling Grafana Alerting, recorded queries, and shared dashboards.
+- Added a Go backend under `pkg/` (`QueryData`, `CheckHealth`, `CallResource`)
+  built with Mage; `plugin.json` now sets `backend`, `alerting`, and `executable`.
+- Rebuilt all bundled dashboards for the UDE query model:
+  - **Kentik: Overview** — feature-highlight panel, traffic by site/app/IP.
+  - **Kentik: Top Talkers** — dictionary-driven breakout variable, metric picker.
+  - **Kentik: Traffic Health** — ingress/egress/packets/bytes stats.
+  - **Kentik: Sites & Devices** — site and device breakdowns.
+  - **Kentik: Global Traffic Map** — Geomap with country color/size by traffic.
+  - **Kentik: Traffic Topology** — Node Graph (country→country flow lines) +
+    interface health table (utilization, errors, discards).
+  - **Kentik: NMS Device Health** — 5-section NMS dashboard (reachability, CPU,
+    memory, storage, environment/optics, interfaces) with a live device filter.
+- Dashboard template variables can drive `measurement`, `metrics`, `dimensions`,
+  `rollups`, and filter values. New `values(<measurement>, <dimension>)` function
+  for live distinct-value variables (e.g. device picker).
+- Every series carries an **"Open in Kentik"** data link (region-derived). To do, populate with a link for the Kentik Data Explorer with the same query parameters (currently links to the base Explorer URL; requires API team to provide a URL-builder endpoint or document the query-hash format).
+- Series carry dimension values as **field labels** for map lookups and transforms.
+- Backend supports `format: "table"` (instant aggregation) and
+  `format: "nodegraph"` (nodes + edges for the Node Graph panel).
+- Concurrent query execution (up to 10 parallel targets per request).
+- Retry with exponential backoff on HTTP 429/502 (honors `Retry-After`).
+- Namespace-aware error messages: cross-namespace metric×dimension 500s now
+  identify the conflict and suggest the universal equivalent.
+- `User-Agent: kentik-grafana-plugin/<version>` sent on all API calls.
+- Custom MeasurementSelector with collapsible family sections, search, and full
+  keyboard navigation.
+- DimensionsPicker warns on cross-namespace conflicts (⚠️ badge).
+
+**Backward compatibility:**
+
+- **Legacy v2 query shim**: old saved panels (dimension/metric/mode format) are
+  automatically translated to UDE queries and executed. A deprecation notice
+  prompts users to re-save in the new format. The shim will be removed in a
+  future version.
+
+**Changes:**
+
+- Removed the frontend proxy routes (`site`, `dictionary`, `query`) from
+  `plugin.json`; the backend calls Kentik's APIs directly with the configured
+  credentials. The frontend obtains dictionary metadata via the backend
+  `dictionary` resource.
+- `DataSource` now extends `DataSourceWithBackend`; `query()`/`testDatasource()`
+  route to the backend. Ad-hoc variables remain dictionary-driven.
+- Minimum supported Grafana version: **11.6.0** (tested against 11.6, 12.4, 13.0).
+- Requires **Go** and **Mage** for backend compilation (`npm run build:backend`).
+
+**Known limitations / planned follow-ups:**
+
+- [ ] Remove the legacy v2 query shim after one release cycle (once users have
+  migrated their panels to the new UDE format).
+- [ ] Deep-link to Kentik Data Explorer with full query state (currently links to
+  the base Explorer URL; requires API team to provide a URL-builder endpoint or
+  document the query-hash format).
+- [ ] EVENTS family support (`/events`, SNMP Traps, Syslog) — these measurements
+  are not served by the Query/execute API despite appearing in the dictionary;
+  needs a different API path from the Kentik backend team.
+- [ ] Auto-populate the UDE editor when editing a legacy-shimmed panel (currently
+  shows blank fields; user must reconfigure manually).
+- [ ] E2E Playwright tests covering real backend query execution.
+
 ## 2.0.1 (2026-04-09)
 
 **Fixes:**

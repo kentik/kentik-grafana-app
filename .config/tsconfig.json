@@ -9,14 +9,14 @@
     "alwaysStrict": true,
     "declaration": false,
     "rootDir": "../src",
-    "baseUrl": "../src",
+    "moduleResolution": "bundler",
     "typeRoots": ["../node_modules/@types"],
     "resolveJsonModule": true
   },
   "ts-node": {
     "compilerOptions": {
-      "module": "commonjs",
-      "target": "es5",
+      "module": "esnext",
+      "target": "es2020",
       "esModuleInterop": true
     },
     "transpileOnly": true
