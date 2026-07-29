@@ -8,6 +8,7 @@ import (
 	"io"
 	"math/big"
 	"net/http"
+	"net/url"
 	"strconv"
 	"sync"
 	"time"
@@ -56,13 +57,39 @@ func newKentikClient(settings dsSettings, httpClient *http.Client) *kentikClient
 	}
 }
 
+// validateAPIURL bounds SSRF exposure from the admin-configured region / custom
+// API URL: the base URL is only used to build outbound requests after it has
+// been confirmed to be a well-formed http(s) origin with a hostname and no
+// embedded credentials. Non-http(s) schemes (file, gopher, dict, ...), missing
+// hosts, and userinfo (which could smuggle a different target) are rejected
+// before any request is issued.
+func validateAPIURL(raw string) error {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return fmt.Errorf("invalid Kentik API URL: %w", err)
+	}
+	if u.Scheme != "https" && u.Scheme != "http" {
+		return fmt.Errorf("kentik API URL must use http or https (got %q)", u.Scheme)
+	}
+	if u.Hostname() == "" {
+		return fmt.Errorf("kentik API URL is missing a host")
+	}
+	if u.User != nil {
+		return fmt.Errorf("kentik API URL must not contain embedded credentials")
+	}
+	return nil
+}
+
 // doRequest performs an authenticated request against the Kentik v6 API,
 // retrying transient failures (network errors, HTTP 429, HTTP 502) with bounded
 // exponential backoff. A Content-Type header is added only for requests that
 // carry a body (POST), since Kentik's gRPC gateway rejects GET requests that
 // include Content-Type with 415.
 func (c *kentikClient) doRequest(ctx context.Context, method, path string, body []byte) ([]byte, int, error) {
-	url := c.settings.baseURL() + path
+	reqURL := c.settings.baseURL() + path
+	if err := validateAPIURL(reqURL); err != nil {
+		return nil, 0, err
+	}
 
 	var (
 		lastErr    error
@@ -86,7 +113,7 @@ func (c *kentikClient) doRequest(ctx context.Context, method, path string, body 
 			reader = bytes.NewReader(body)
 		}
 
-		req, err := http.NewRequestWithContext(ctx, method, url, reader)
+		req, err := http.NewRequestWithContext(ctx, method, reqURL, reader)
 		if err != nil {
 			return nil, 0, fmt.Errorf("build request: %w", err)
 		}
@@ -99,7 +126,12 @@ func (c *kentikClient) doRequest(ctx context.Context, method, path string, body 
 			req.Header.Set("Content-Type", "application/json")
 		}
 
-		resp, err := c.http.Do(req)
+		// The destination is the admin-configured Kentik API base URL, structurally
+		// validated by validateAPIURL above (http/https origin, host present, no
+		// embedded credentials) and dispatched via the SDK httpclient, which honors
+		// Grafana's outbound egress proxy. It is not attacker- or query-controlled,
+		// so gosec's SSRF taint finding here is a false positive.
+		resp, err := c.http.Do(req) // #nosec G704 -- validated admin-config URL, not user input
 		if err != nil {
 			// Network/transport error — retry.
 			lastErr = fmt.Errorf("request to %s: %w", path, err)
@@ -107,7 +139,7 @@ func (c *kentikClient) doRequest(ctx context.Context, method, path string, body 
 		}
 
 		data, readErr := io.ReadAll(resp.Body)
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		if readErr != nil {
 			lastErr = fmt.Errorf("read response from %s: %w", path, readErr)
 			continue
