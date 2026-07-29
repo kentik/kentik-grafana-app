@@ -1,255 +1,364 @@
 {
-  "annotations": {
-    "list": [
-      {
-        "builtIn": 1,
-        "datasource": {
-          "type": "grafana",
-          "uid": "-- Grafana --"
-        },
-        "enable": true,
-        "hide": true,
-        "iconColor": "rgba(0, 211, 255, 1)",
-        "name": "Annotations & Alerts",
-        "type": "dashboard"
-      }
-    ]
-  },
-  "editable": true,
-  "fiscalYearStartMonth": 0,
-  "graphTooltip": 1,
-  "id": null,
-  "links": [],
-  "panels": [
-    {
-      "title": "Protocol Traffic Density (Heatmap)",
-      "description": "Heatmap showing traffic volume distribution across protocols over time \u2014 bright cells indicate burst activity",
-      "type": "heatmap",
-      "gridPos": {
-        "h": 9,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "id": 1,
-      "datasource": {
-        "type": "kentik-connect-datasource",
-        "uid": "kentik"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "mode": "graph",
-          "dimension": [
-            "Proto"
-          ],
-          "metric": [
-            "avg_bits_per_sec"
-          ],
-          "hostnameLookup": "disabled",
-          "prefix": "",
-          "aliasBy": "{{Proto}}",
-          "topx": "25",
-          "customFilters": [],
-          "conjunctionOperator": "AND",
-          "datasource": {
-            "type": "kentik-connect-datasource",
-            "uid": "kentik"
-          }
-        }
-      ],
-      "options": {
-        "calculate": false,
-        "color": {
-          "mode": "scheme",
-          "scheme": "Oranges",
-          "reverse": false
-        },
-        "rowsFrame": {
-          "layout": "auto"
-        },
-        "tooltip": {
-          "show": true,
-          "yHistogram": false
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "bps",
-          "custom": {
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            }
-          }
-        },
-        "overrides": []
-      },
-      "links": []
-    },
-    {
-      "title": "Device Flow Activity (Status History)",
-      "description": "Status history showing per-device flow rates over time \u2014 red indicates low/no flows (possible collection outage), green indicates healthy activity",
-      "type": "status-history",
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 9
-      },
-      "id": 2,
-      "datasource": {
-        "type": "kentik-connect-datasource",
-        "uid": "kentik"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "mode": "graph",
-          "dimension": [
-            "i_device_id"
-          ],
-          "metric": [
-            "avg_flows_per_sec"
-          ],
-          "hostnameLookup": "enabled",
-          "prefix": "",
-          "aliasBy": "{{i_device_id}}",
-          "topx": "10",
-          "customFilters": [],
-          "conjunctionOperator": "AND",
-          "datasource": {
-            "type": "kentik-connect-datasource",
-            "uid": "kentik"
-          }
-        }
-      ],
-      "options": {
-        "colWidth": 0.9,
-        "rowHeight": 0.9,
-        "showValue": "never",
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "fps",
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 10
-              },
-              {
-                "color": "green",
-                "value": 100
-              }
-            ]
-          },
-          "custom": {
-            "lineWidth": 1,
-            "fillOpacity": 70
-          }
-        },
-        "overrides": []
-      },
-      "links": []
-    },
-    {
-      "title": "Site Traffic Overview (Bar Chart)",
-      "description": "Traffic volume by site \u2014 quickly identify which sites are driving the most bandwidth",
-      "type": "barchart",
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 17
-      },
-      "id": 3,
-      "datasource": {
-        "type": "kentik-connect-datasource",
-        "uid": "kentik"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "mode": "graph",
-          "dimension": [
-            "i_device_site_name"
-          ],
-          "metric": [
-            "avg_bits_per_sec"
-          ],
-          "hostnameLookup": "enabled",
-          "prefix": "Site",
-          "aliasBy": "{{i_device_site_name}}",
-          "topx": "15",
-          "customFilters": [],
-          "conjunctionOperator": "AND",
-          "datasource": {
-            "type": "kentik-connect-datasource",
-            "uid": "kentik"
-          }
-        }
-      ],
-      "options": {
-        "orientation": "horizontal",
-        "showValue": "auto",
-        "stacking": "none",
-        "barWidth": 0.8,
-        "tooltip": {
-          "mode": "multi"
-        },
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": [
-            "min",
-            "mean",
-            "max",
-            "lastNotNull"
-          ]
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "bps",
-          "custom": {
-            "fillOpacity": 80
-          }
-        },
-        "overrides": []
-      },
-      "links": []
-    }
-  ],
-  "schemaVersion": 39,
+  "uid": "kentik-site-overview",
+  "title": "Kentik: Sites & Devices",
   "tags": [
-    "kentik",
-    "site",
-    "overview"
+    "kentik"
   ],
-  "templating": {
-    "list": []
-  },
+  "timezone": "",
+  "editable": true,
+  "schemaVersion": 39,
+  "version": 3,
   "time": {
     "from": "now-6h",
     "to": "now"
   },
-  "timepicker": {},
-  "timezone": "browser",
-  "title": "Kentik: Site & Device Overview",
-  "uid": "kentik-site-overview",
-  "version": 1
+  "refresh": "5m",
+  "templating": {
+    "list": [
+      {
+        "name": "ds",
+        "type": "datasource",
+        "label": "Kentik datasource",
+        "query": "kentik-connect-datasource",
+        "current": {},
+        "hide": 0
+      },
+      {
+        "name": "site",
+        "type": "query",
+        "label": "Site",
+        "datasource": {
+          "type": "kentik-connect-datasource",
+          "uid": "${ds}"
+        },
+        "query": "values(/traffic, i_device_site_name)",
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": "__ALL__",
+        "multi": false,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "hide": 0
+      },
+      {
+        "name": "device",
+        "type": "query",
+        "label": "Device",
+        "datasource": {
+          "type": "kentik-connect-datasource",
+          "uid": "${ds}"
+        },
+        "query": "values(/traffic, i_device_name)",
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": "__ALL__",
+        "multi": false,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "hide": 0
+      },
+      {
+        "name": "metric",
+        "type": "custom",
+        "label": "Metric",
+        "query": "both_bits_per_sec,both_pkts_per_sec,total_bytes",
+        "current": {
+          "text": "both_bits_per_sec",
+          "value": "both_bits_per_sec"
+        },
+        "hide": 0
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Traffic by Site \u2014 $metric",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 25,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            },
+            "showPoints": "never",
+            "lineWidth": 1
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max",
+            "last"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/traffic",
+          "metrics": [
+            "$metric"
+          ],
+          "dimensions": [
+            "i_device_site_name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "i_device_site_name",
+                  "operator": "=",
+                  "filter_value": "$site"
+                },
+                {
+                  "filter_field": "i_device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 1,
+          "limit": 15,
+          "aliasBy": "{{i_device_site_name}}",
+          "rollups": [
+            {
+              "metric": "$metric",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Traffic by Device \u2014 $metric",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "lineWidth": 2
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/traffic",
+          "metrics": [
+            "$metric"
+          ],
+          "dimensions": [
+            "i_device_name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "i_device_site_name",
+                  "operator": "=",
+                  "filter_value": "$site"
+                },
+                {
+                  "filter_field": "i_device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 10,
+          "aliasBy": "{{i_device_name}}",
+          "rollups": [
+            {
+              "metric": "$metric",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Ingress vs Egress by Site",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "lineWidth": 2
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/traffic",
+          "metrics": [
+            "in_bits_per_sec",
+            "out_bits_per_sec"
+          ],
+          "dimensions": [
+            "i_device_site_name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "i_device_site_name",
+                  "operator": "=",
+                  "filter_value": "$site"
+                },
+                {
+                  "filter_field": "i_device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 1,
+          "limit": 10,
+          "aliasBy": "{{i_device_site_name}}",
+          "rollups": [
+            {
+              "metric": "in_bits_per_sec",
+              "fn": "avg"
+            },
+            {
+              "metric": "out_bits_per_sec",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

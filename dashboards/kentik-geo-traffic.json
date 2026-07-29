@@ -1,0 +1,311 @@
+{
+  "uid": "kentik-geo-traffic",
+  "title": "Kentik: Global Traffic Map",
+  "tags": ["kentik", "geo"],
+  "timezone": "",
+  "editable": true,
+  "schemaVersion": 39,
+  "version": 4,
+  "time": { "from": "now-6h", "to": "now" },
+  "refresh": "5m",
+  "templating": {
+    "list": [
+      {
+        "name": "ds",
+        "type": "datasource",
+        "label": "Kentik datasource",
+        "query": "kentik-connect-datasource",
+        "current": {},
+        "hide": 0
+      },
+      {
+        "name": "metric",
+        "type": "custom",
+        "label": "Metric",
+        "query": "both_bits_per_sec,in_bits_per_sec,out_bits_per_sec,both_pkts_per_sec,in_pkts_per_sec,out_pkts_per_sec,fps,total_bytes,total_packets,unique_src_ip,unique_dst_ip,bytes_per_src_ip,bytes_per_dst_ip",
+        "current": { "text": "both_bits_per_sec", "value": "both_bits_per_sec" },
+        "hide": 0
+      },
+      {
+        "name": "geo",
+        "type": "custom",
+        "label": "Geo dimension",
+        "query": "dst_geo,src_geo,dst_geo_city,src_geo_city,dst_geo_region,src_geo_region,i_device_site_country",
+        "current": { "text": "dst_geo", "value": "dst_geo" },
+        "hide": 0
+      },
+      {
+        "name": "mapgeo",
+        "type": "custom",
+        "label": "Map geo (country)",
+        "query": "dst_geo,src_geo,i_device_site_country",
+        "current": { "text": "dst_geo", "value": "dst_geo" },
+        "hide": 0
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 100,
+      "type": "row",
+      "title": "Summary Stats",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "panels": []
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Total Throughput",
+      "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "fieldConfig": { "defaults": { "unit": "bps", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "area", "colorMode": "value" },
+      "targets": [
+        { "refId": "A", "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" }, "queryType": "ude", "measurement": "/traffic", "metrics": ["both_bits_per_sec"], "dimensions": [], "filterGroups": [], "filterConnector": "All", "vizType": 3, "limit": 1, "rollups": [{ "metric": "both_bits_per_sec", "fn": "avg" }] }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Ingress",
+      "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "fieldConfig": { "defaults": { "unit": "bps", "color": { "mode": "fixed", "fixedColor": "green" } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "area", "colorMode": "value" },
+      "targets": [
+        { "refId": "A", "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" }, "queryType": "ude", "measurement": "/traffic", "metrics": ["in_bits_per_sec"], "dimensions": [], "filterGroups": [], "filterConnector": "All", "vizType": 3, "limit": 1, "rollups": [{ "metric": "in_bits_per_sec", "fn": "avg" }] }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Egress",
+      "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "fieldConfig": { "defaults": { "unit": "bps", "color": { "mode": "fixed", "fixedColor": "orange" } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "area", "colorMode": "value" },
+      "targets": [
+        { "refId": "A", "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" }, "queryType": "ude", "measurement": "/traffic", "metrics": ["out_bits_per_sec"], "dimensions": [], "filterGroups": [], "filterConnector": "All", "vizType": 3, "limit": 1, "rollups": [{ "metric": "out_bits_per_sec", "fn": "avg" }] }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Packets/s",
+      "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "fieldConfig": { "defaults": { "unit": "pps", "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "area", "colorMode": "value" },
+      "targets": [
+        { "refId": "A", "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" }, "queryType": "ude", "measurement": "/traffic", "metrics": ["both_pkts_per_sec"], "dimensions": [], "filterGroups": [], "filterConnector": "All", "vizType": 3, "limit": 1, "rollups": [{ "metric": "both_pkts_per_sec", "fn": "avg" }] }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Flows/s",
+      "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "yellow" } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "area", "colorMode": "value" },
+      "targets": [
+        { "refId": "A", "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" }, "queryType": "ude", "measurement": "/traffic", "metrics": ["fps"], "dimensions": [], "filterGroups": [], "filterConnector": "All", "vizType": 3, "limit": 1, "rollups": [{ "metric": "fps", "fn": "avg" }] }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Unique Src IPs",
+      "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "semi-dark-red" } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "area", "colorMode": "value" },
+      "targets": [
+        { "refId": "A", "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" }, "queryType": "ude", "measurement": "/traffic", "metrics": ["unique_src_ip"], "dimensions": [], "filterGroups": [], "filterConnector": "All", "vizType": 3, "limit": 1, "rollups": [{ "metric": "unique_src_ip", "fn": "avg" }] }
+      ]
+    },
+
+    {
+      "id": 200,
+      "type": "row",
+      "title": "Geographic Breakdown ($metric by $geo)",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "panels": []
+    },
+    {
+      "id": 10,
+      "type": "geomap",
+      "title": "Traffic Map: $metric by $mapgeo",
+      "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+      "gridPos": { "h": 14, "w": 16, "x": 0, "y": 6 },
+      "fieldConfig": {
+        "defaults": { "unit": "bps", "color": { "mode": "continuous-GrYlRd" } },
+        "overrides": []
+      },
+      "options": {
+        "view": { "id": "zero", "lat": 15, "lon": 0, "zoom": 1.5 },
+        "controls": { "showZoom": true, "mouseWheelZoom": true, "showAttribution": true },
+        "basemap": { "type": "default", "name": "Basemap" },
+        "tooltip": { "mode": "details" },
+        "layers": [
+          {
+            "type": "markers",
+            "name": "$metric by $mapgeo",
+            "location": { "mode": "lookup", "lookup": "$mapgeo", "gazetteer": "public/gazetteer/countries.json" },
+            "config": {
+              "style": {
+                "size": { "field": "value", "fixed": 6, "min": 4, "max": 18 },
+                "color": { "field": "value" },
+                "opacity": 0.7,
+                "symbol": { "mode": "fixed", "fixed": "img/icons/marker/circle.svg" }
+              },
+              "showLegend": true
+            },
+            "tooltip": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "exclude",
+            "match": "any",
+            "filters": [
+              { "fieldName": "$mapgeo", "config": { "id": "equal", "options": { "value": "-" } } },
+              { "fieldName": "$mapgeo", "config": { "id": "equal", "options": { "value": "---" } } }
+            ]
+          }
+        }
+      ],
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+          "queryType": "ude",
+          "measurement": "/traffic",
+          "metrics": ["$metric"],
+          "dimensions": ["$mapgeo"],
+          "filterGroups": [],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 40,
+          "format": "table",
+          "rollups": [{ "metric": "$metric", "fn": "avg" }]
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "bargauge",
+      "title": "Top 10: $metric by $geo",
+      "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+      "gridPos": { "h": 14, "w": 8, "x": 16, "y": 6 },
+      "fieldConfig": {
+        "defaults": { "unit": "bps", "color": { "mode": "continuous-GrYlRd" } },
+        "overrides": []
+      },
+      "options": { "displayMode": "gradient", "orientation": "horizontal", "showUnfilled": true, "reduceOptions": { "calcs": ["mean"] } },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+          "queryType": "ude",
+          "measurement": "/traffic",
+          "metrics": ["$metric"],
+          "dimensions": ["$geo"],
+          "filterGroups": [],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 10,
+          "aliasBy": "{{$geo}}",
+          "rollups": [{ "metric": "$metric", "fn": "avg" }]
+        }
+      ]
+    },
+
+    {
+      "id": 300,
+      "type": "row",
+      "title": "Time Series & Breakdowns",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 20 },
+      "panels": []
+    },
+    {
+      "id": 20,
+      "type": "timeseries",
+      "title": "$metric by $geo over time",
+      "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 21 },
+      "fieldConfig": { "defaults": { "unit": "bps", "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 20, "stacking": { "mode": "normal", "group": "A" }, "showPoints": "never", "lineWidth": 1 } }, "overrides": [] },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "showLegend": true, "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] } },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+          "queryType": "ude",
+          "measurement": "/traffic",
+          "metrics": ["$metric"],
+          "dimensions": ["$geo"],
+          "filterGroups": [],
+          "filterConnector": "All",
+          "vizType": 1,
+          "limit": 12,
+          "aliasBy": "{{$geo}}",
+          "rollups": [{ "metric": "$metric", "fn": "avg" }]
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "Ingress vs Egress over time",
+      "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 21 },
+      "fieldConfig": { "defaults": { "unit": "bps", "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 15, "showPoints": "never", "lineWidth": 2 } }, "overrides": [] },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "showLegend": true, "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "refId": "A", "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" }, "queryType": "ude", "measurement": "/traffic", "metrics": ["in_bits_per_sec", "out_bits_per_sec"], "dimensions": [], "filterGroups": [], "filterConnector": "All", "vizType": 3, "limit": 2, "rollups": [{ "metric": "in_bits_per_sec", "fn": "avg" }, { "metric": "out_bits_per_sec", "fn": "avg" }] }
+      ]
+    },
+    {
+      "id": 22,
+      "type": "timeseries",
+      "title": "Top Applications: $metric",
+      "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+      "gridPos": { "h": 9, "w": 8, "x": 0, "y": 30 },
+      "fieldConfig": { "defaults": { "unit": "bps", "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 10, "showPoints": "never", "lineWidth": 2 } }, "overrides": [] },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "showLegend": true, "displayMode": "table", "placement": "right", "calcs": ["mean"] } },
+      "targets": [
+        { "refId": "A", "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" }, "queryType": "ude", "measurement": "/traffic", "metrics": ["$metric"], "dimensions": ["application"], "filterGroups": [], "filterConnector": "All", "vizType": 3, "limit": 8, "aliasBy": "{{application}}", "rollups": [{ "metric": "$metric", "fn": "avg" }] }
+      ]
+    },
+    {
+      "id": 23,
+      "type": "timeseries",
+      "title": "Top Destination Ports: $metric",
+      "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+      "gridPos": { "h": 9, "w": 8, "x": 8, "y": 30 },
+      "fieldConfig": { "defaults": { "unit": "bps", "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 10, "showPoints": "never", "lineWidth": 2 } }, "overrides": [] },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "showLegend": true, "displayMode": "table", "placement": "right", "calcs": ["mean"] } },
+      "targets": [
+        { "refId": "A", "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" }, "queryType": "ude", "measurement": "/traffic", "metrics": ["$metric"], "dimensions": ["l4_dst_port"], "filterGroups": [], "filterConnector": "All", "vizType": 3, "limit": 8, "aliasBy": "port {{l4_dst_port}}", "rollups": [{ "metric": "$metric", "fn": "avg" }] }
+      ]
+    },
+    {
+      "id": 24,
+      "type": "timeseries",
+      "title": "Top Source ASNs: $metric",
+      "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" },
+      "gridPos": { "h": 9, "w": 8, "x": 16, "y": 30 },
+      "fieldConfig": { "defaults": { "unit": "bps", "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 10, "showPoints": "never", "lineWidth": 2 } }, "overrides": [] },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "showLegend": true, "displayMode": "table", "placement": "right", "calcs": ["mean"] } },
+      "targets": [
+        { "refId": "A", "datasource": { "type": "kentik-connect-datasource", "uid": "${ds}" }, "queryType": "ude", "measurement": "/traffic", "metrics": ["$metric"], "dimensions": ["src_as"], "filterGroups": [], "filterConnector": "All", "vizType": 3, "limit": 8, "aliasBy": "AS{{src_as}}", "rollups": [{ "metric": "$metric", "fn": "avg" }] }
+      ]
+    }
+  ]
+}

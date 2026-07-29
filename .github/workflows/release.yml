@@ -33,6 +33,17 @@ jobs:
       - name: Build plugin
         run: npm run build
 
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: Install Mage
+        run: go install github.com/magefile/mage@latest
+
+      - name: Build backend (all platforms)
+        run: mage -v buildAll
+
       - name: Run tests
         run: npx jest --no-coverage
 

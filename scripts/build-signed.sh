@@ -12,6 +12,8 @@
 #
 # Environment:
 #   GRAFANA_ACCESS_POLICY_TOKEN   (required) Grafana Cloud access policy token for signing
+#                                 May be provided via a local, gitignored .env file
+#                                 in the project root instead of exporting it.
 #
 # Output:
 #   kentik-connect-datasource-<version>.zip
@@ -44,19 +46,33 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# ── Validate ─────────────────────────────────────────────────────
-if [[ -z "${GRAFANA_ACCESS_POLICY_TOKEN:-}" ]]; then
-  echo "Error: GRAFANA_ACCESS_POLICY_TOKEN is not set." >&2
-  echo "Usage: GRAFANA_ACCESS_POLICY_TOKEN=<token> $0 [--version <ver>] [--root-urls <url>]" >&2
-  exit 1
-fi
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_DIR"
 
+# ── Load local .env (gitignored) if present ──────────────────────
+# Lets developers persist GRAFANA_ACCESS_POLICY_TOKEN without exporting
+# it into their shell. Existing environment variables take precedence.
+if [[ -f .env ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source .env
+  set +a
+fi
+
+# ── Validate ─────────────────────────────────────────────────────
+if [[ -z "${GRAFANA_ACCESS_POLICY_TOKEN:-}" ]]; then
+  echo "Error: GRAFANA_ACCESS_POLICY_TOKEN is not set." >&2
+  echo "Set it in a local .env file (GRAFANA_ACCESS_POLICY_TOKEN=...) or in your shell." >&2
+  echo "Usage: GRAFANA_ACCESS_POLICY_TOKEN=<token> $0 [--version <ver>] [--root-urls <url>]" >&2
+  exit 1
+fi
+
 echo "── Building plugin ────────────────────────────────────────"
 npm run build
+
+echo "── Building backend ───────────────────────────────────────"
+mage -v buildAll
 
 echo "── Signing plugin ─────────────────────────────────────────"
 export GRAFANA_ACCESS_POLICY_TOKEN

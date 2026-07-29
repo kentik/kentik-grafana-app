@@ -1,0 +1,248 @@
+apiVersion: 1
+
+groups:
+  # ─── Traffic Health alerts (aligns with Kentik: Traffic Health dashboard) ───
+  - orgId: 1
+    name: "Traffic Health"
+    folder: "Kentik Alerts"
+    interval: "1m"
+    rules:
+      - uid: "kentik-traffic-spike"
+        title: "Traffic spike detected"
+        condition: "C"
+        for: "2m"
+        annotations:
+          summary: "Network throughput exceeds 10 Gbps"
+          description: "Total throughput is {{ $values.B }} bps, which exceeds the 10 Gbps threshold."
+          dashboard_uid: "kentik-osi-health"
+          panel_id: "5"
+        labels:
+          severity: "warning"
+          category: "traffic"
+        data:
+          - refId: "A"
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: "kentik"
+            model:
+              queryType: "ude"
+              measurement: "/traffic"
+              metrics: ["both_bits_per_sec"]
+              dimensions: []
+              filterGroups: []
+              filterConnector: "All"
+              vizType: 3
+              limit: 1
+              rollups: [{ metric: "both_bits_per_sec", fn: "avg" }]
+          - refId: "B"
+            datasourceUid: "__expr__"
+            model: { type: "reduce", expression: "A", reducer: "last" }
+          - refId: "C"
+            datasourceUid: "__expr__"
+            model:
+              type: "threshold"
+              expression: "B"
+              conditions:
+                - evaluator: { type: "gt", params: [10000000000] }
+                  operator: { type: "and" }
+
+      - uid: "kentik-traffic-drop"
+        title: "Traffic drop below baseline"
+        condition: "C"
+        for: "5m"
+        annotations:
+          summary: "Network throughput dropped below 100 Mbps"
+          description: "Total throughput is {{ $values.B }} bps. Expected > 100 Mbps."
+          dashboard_uid: "kentik-osi-health"
+          panel_id: "5"
+        labels:
+          severity: "critical"
+          category: "traffic"
+        data:
+          - refId: "A"
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: "kentik"
+            model:
+              queryType: "ude"
+              measurement: "/traffic"
+              metrics: ["both_bits_per_sec"]
+              dimensions: []
+              filterGroups: []
+              filterConnector: "All"
+              vizType: 3
+              limit: 1
+              rollups: [{ metric: "both_bits_per_sec", fn: "avg" }]
+          - refId: "B"
+            datasourceUid: "__expr__"
+            model: { type: "reduce", expression: "A", reducer: "last" }
+          - refId: "C"
+            datasourceUid: "__expr__"
+            model:
+              type: "threshold"
+              expression: "B"
+              conditions:
+                - evaluator: { type: "lt", params: [100000000] }
+                  operator: { type: "and" }
+
+  # ─── NMS Device Health alerts (aligns with Kentik: NMS Device Health dashboard) ───
+  - orgId: 1
+    name: "NMS Device Health"
+    folder: "Kentik Alerts"
+    interval: "1m"
+    rules:
+      - uid: "kentik-cpu-high"
+        title: "Device CPU utilization high"
+        condition: "C"
+        for: "5m"
+        annotations:
+          summary: "A device's CPU utilization exceeded 85%"
+          description: "CPU utilization is {{ $values.B }}%."
+          dashboard_uid: "kentik-nms-health"
+          panel_id: "6"
+        labels:
+          severity: "warning"
+          category: "nms"
+        data:
+          - refId: "A"
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: "kentik"
+            model:
+              queryType: "ude"
+              measurement: "/metrics/components/cpu/utilization"
+              metrics: ["instant"]
+              dimensions: ["device_name"]
+              filterGroups: []
+              filterConnector: "All"
+              vizType: 3
+              limit: 50
+              rollups: [{ metric: "instant", fn: "avg" }]
+          - refId: "B"
+            datasourceUid: "__expr__"
+            model: { type: "reduce", expression: "A", reducer: "max" }
+          - refId: "C"
+            datasourceUid: "__expr__"
+            model:
+              type: "threshold"
+              expression: "B"
+              conditions:
+                - evaluator: { type: "gt", params: [85] }
+                  operator: { type: "and" }
+
+      - uid: "kentik-memory-high"
+        title: "Device memory utilization high"
+        condition: "C"
+        for: "5m"
+        annotations:
+          summary: "A device's memory utilization exceeded 90%"
+          description: "Memory utilization is {{ $values.B }}%."
+          dashboard_uid: "kentik-nms-health"
+          panel_id: "7"
+        labels:
+          severity: "critical"
+          category: "nms"
+        data:
+          - refId: "A"
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: "kentik"
+            model:
+              queryType: "ude"
+              measurement: "/metrics/components/memory"
+              metrics: ["utilization"]
+              dimensions: ["device_name"]
+              filterGroups: []
+              filterConnector: "All"
+              vizType: 3
+              limit: 50
+              rollups: [{ metric: "utilization", fn: "avg" }]
+          - refId: "B"
+            datasourceUid: "__expr__"
+            model: { type: "reduce", expression: "A", reducer: "max" }
+          - refId: "C"
+            datasourceUid: "__expr__"
+            model:
+              type: "threshold"
+              expression: "B"
+              conditions:
+                - evaluator: { type: "gt", params: [90] }
+                  operator: { type: "and" }
+
+      - uid: "kentik-interface-errors"
+        title: "Interface errors detected"
+        condition: "C"
+        for: "2m"
+        annotations:
+          summary: "Interface input errors are non-zero"
+          description: "Max interface input errors across devices: {{ $values.B }}"
+          dashboard_uid: "kentik-nms-health"
+          panel_id: "16"
+        labels:
+          severity: "warning"
+          category: "nms"
+        data:
+          - refId: "A"
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: "kentik"
+            model:
+              queryType: "ude"
+              measurement: "/metrics/interfaces/counters"
+              metrics: ["in-errors"]
+              dimensions: ["device_name", "name"]
+              filterGroups: []
+              filterConnector: "All"
+              vizType: 3
+              limit: 50
+              rollups: [{ metric: "in-errors", fn: "avg" }]
+          - refId: "B"
+            datasourceUid: "__expr__"
+            model: { type: "reduce", expression: "A", reducer: "max" }
+          - refId: "C"
+            datasourceUid: "__expr__"
+            model:
+              type: "threshold"
+              expression: "B"
+              conditions:
+                - evaluator: { type: "gt", params: [10] }
+                  operator: { type: "and" }
+
+  # ─── Geo/Topology alerts (aligns with Kentik: Global Traffic Map) ───
+  - orgId: 1
+    name: "Geographic Traffic"
+    folder: "Kentik Alerts"
+    interval: "5m"
+    rules:
+      - uid: "kentik-country-traffic-spike"
+        title: "Single country traffic exceeds 5 Gbps"
+        condition: "C"
+        for: "5m"
+        annotations:
+          summary: "A single destination country is receiving > 5 Gbps"
+          description: "Peak country traffic: {{ $values.B }} bps"
+          dashboard_uid: "kentik-geo-traffic"
+          panel_id: "20"
+        labels:
+          severity: "info"
+          category: "geo"
+        data:
+          - refId: "A"
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: "kentik"
+            model:
+              queryType: "ude"
+              measurement: "/traffic"
+              metrics: ["both_bits_per_sec"]
+              dimensions: ["dst_geo"]
+              filterGroups: []
+              filterConnector: "All"
+              vizType: 3
+              limit: 20
+              rollups: [{ metric: "both_bits_per_sec", fn: "avg" }]
+          - refId: "B"
+            datasourceUid: "__expr__"
+            model: { type: "reduce", expression: "A", reducer: "max" }
+          - refId: "C"
+            datasourceUid: "__expr__"
+            model:
+              type: "threshold"
+              expression: "B"
+              conditions:
+                - evaluator: { type: "gt", params: [5000000000] }
+                  operator: { type: "and" }

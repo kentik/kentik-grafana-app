@@ -42,7 +42,12 @@ To enable the datasource:
 
 ## Development
 
-This project requires **Node.js v22** or higher and **Docker**.
+This project requires **Node.js v22** or higher, **Go** (see `go.mod` for the
+version), **[Mage](https://magefile.org/)**, and **Docker**.
+
+Kentik is a **backend datasource plugin**: query execution, credential handling,
+and the dictionary cache run in a Go binary (`pkg/`). Grafana starts this binary
+when it loads the plugin. The query/config editor still run in the frontend.
 
 1.  **Install dependencies**:
 
@@ -56,7 +61,14 @@ This project requires **Node.js v22** or higher and **Docker**.
     npm run dev
     ```
 
-3.  **Run Grafana**:
+3.  **Build the backend binary**:
+    In a separate terminal, compile the Go backend into `dist/`:
+
+    ```bash
+    npm run build:backend   # = mage -v build:linux build:linuxARM64
+    ```
+
+4.  **Run Grafana**:
     In a separate terminal, start the Docker container:
 
     ```bash
@@ -65,17 +77,20 @@ This project requires **Node.js v22** or higher and **Docker**.
 
     Grafana will be accessible at `http://localhost:3000`.
 
-4.  **Run Tests**:
+5.  **Run Tests**:
     ```bash
-    npm run test
+    npm run test   # frontend (Jest)
+    go test ./...  # backend (Go)
     ```
 
 ## Build
 
-To produce a development build:
+To produce a development build, compile both the frontend assets and the backend
+binary into `dist/`:
 
 ```bash
-npm run build
+npm run build          # frontend (webpack)
+npm run build:backend  # backend (Go via Mage)
 ```
 
 ### Signed Build

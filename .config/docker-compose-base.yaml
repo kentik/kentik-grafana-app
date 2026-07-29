@@ -4,21 +4,19 @@ services:
     container_name: 'kentik-connect-datasource'
 
     build:
-      context: .
+      context: ..
+      dockerfile: .config/Dockerfile
       args:
-        grafana_image: ${GRAFANA_IMAGE:-grafana-enterprise}
-        grafana_version: ${GRAFANA_VERSION:-12.4.1}
+        grafana_image: ${GRAFANA_IMAGE:-grafana}
+        grafana_version: ${GRAFANA_VERSION:-latest}
         development: ${DEVELOPMENT:-false}
         anonymous_auth_enabled: ${ANONYMOUS_AUTH_ENABLED:-true}
     ports:
       - 3000:3000/tcp
-    volumes:
-      - ../dist:/var/lib/grafana/plugins/kentik-connect-datasource
-      - ../provisioning:/etc/grafana/provisioning
-      - ..:/root/kentik-connect-datasource
 
     environment:
       NODE_ENV: production
+      GF_PATHS_PLUGINS: /opt/grafana-plugins
       GF_LOG_FILTERS: plugin.kentik-connect-datasource:debug
       GF_LOG_LEVEL: debug
       GF_DATAPROXY_LOGGING: 1

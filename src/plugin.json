@@ -4,6 +4,9 @@
   "name": "Kentik",
   "id": "kentik-connect-datasource",
   "metrics": true,
+  "backend": true,
+  "alerting": true,
+  "executable": "gpx_kentik-connect-datasource",
   "info": {
     "description": "Visualize and explore Kentik network observability data in Grafana.",
     "author": {
@@ -25,100 +28,71 @@
       "large": "img/logo_large.png"
     },
     "links": [
-      {"name": "Kentik", "url": "https://www.kentik.com"},
-      {"name": "Documentation", "url": "https://kb.kentik.com/docs/apis-overview"},
-      {"name": "sponsor", "url": "https://www.kentik.com/get-started/"}
+      {
+        "name": "Kentik",
+        "url": "https://www.kentik.com"
+      },
+      {
+        "name": "Documentation",
+        "url": "https://kb.kentik.com/docs/apis-overview"
+      },
+      {
+        "name": "sponsor",
+        "url": "https://www.kentik.com/get-started/"
+      }
     ],
     "screenshots": [
-      {"name": "Query Editor", "path": "img/queryeditor.png"},
-      {"name": "Graph Panel", "path": "img/graphedit.png"},
-      {"name": "Datasource Configuration", "path": "img/datasourceconfig.png"}
+      {
+        "name": "Query Editor",
+        "path": "img/queryeditor.png"
+      },
+      {
+        "name": "Graph Panel",
+        "path": "img/graphedit.png"
+      },
+      {
+        "name": "Datasource Configuration",
+        "path": "img/datasourceconfig.png"
+      }
     ],
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
-  "routes": [
-    {
-      "path": "site",
-      "method": "*",
-      "url": "{{.JsonData.url.v6}}/site",
-      "headers": [
-        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
-        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
-        {"name": "Accept", "content": "application/json"}        
-      ]
-    },
-    {
-      "path": "user",
-      "method": "*",
-      "url": "{{.JsonData.url.v6}}/user",
-      "headers": [
-        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
-        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
-        {"name": "Accept", "content": "application/json"}        
-      ]
-    },
-    {
-      "path": "device",
-      "method": "*",
-      "url": "{{.JsonData.url.v6}}/device",
-      "headers": [
-        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
-        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
-        {"name": "Accept", "content": "application/json"}       
-      ]
-    },
-    {
-      "path": "custom_dimensions",
-      "method": "*",
-      "url": "{{.JsonData.url.v6}}/custom_dimensions",
-      "headers": [
-        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
-        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
-        {"name": "Accept", "content": "application/json"}        
-      ]
-    },
-    {
-      "path": "saved-filters",
-      "method": "*",
-      "url": "{{.JsonData.url.v6}}/saved-filters",
-      "headers": [
-        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
-        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
-        {"name": "Accept", "content": "application/json"}        
-      ]
-    },
-    {
-      "path": "api/v5",
-      "method": "*",
-      "url": "{{.JsonData.url.v5}}/api/v5",
-      "headers": [
-        {"name": "X-CH-Auth-API-Token", "content": "{{.SecureJsonData.token}}"},
-        {"name": "X-CH-Auth-Email", "content": "{{.JsonData.email}}"},
-        {"name": "Accept", "content": "application/json"}
-      ]
-    }
-  ],
   "includes": [
     {
       "type": "dashboard",
-      "name": "Kentik: Home",
+      "name": "Kentik: Overview",
       "path": "dashboards/kentik-home.json"
     },
     {
       "type": "dashboard",
-      "name": "Kentik Top Talkers",
+      "name": "Kentik: Top Talkers",
       "path": "dashboards/kentik-top-talkers.json"
     },
     {
       "type": "dashboard",
-      "name": "Kentik: Network Health & Traffic Overview",
+      "name": "Kentik: Traffic Detail",
       "path": "dashboards/kentik-osi-health.json"
     },
     {
       "type": "dashboard",
-      "name": "Kentik: Site & Device Overview",
+      "name": "Kentik: Sites & Devices",
       "path": "dashboards/kentik-site-overview.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Kentik: Global Traffic Map",
+      "path": "dashboards/kentik-geo-traffic.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Kentik: Geo Flow & Interface Health",
+      "path": "dashboards/kentik-topology.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Kentik: NMS Device Health",
+      "path": "dashboards/kentik-nms-health.json"
     }
   ],
   "dependencies": {

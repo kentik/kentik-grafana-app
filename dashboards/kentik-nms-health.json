@@ -1,0 +1,1817 @@
+{
+  "uid": "kentik-nms-health",
+  "title": "Kentik: NMS Device Health",
+  "tags": [
+    "kentik",
+    "nms"
+  ],
+  "timezone": "",
+  "editable": true,
+  "schemaVersion": 39,
+  "version": 1,
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "refresh": "1m",
+  "templating": {
+    "list": [
+      {
+        "name": "ds",
+        "type": "datasource",
+        "label": "Kentik datasource",
+        "query": "kentik-connect-datasource",
+        "current": {},
+        "hide": 0
+      },
+      {
+        "name": "device",
+        "type": "query",
+        "label": "Device",
+        "datasource": {
+          "type": "kentik-connect-datasource",
+          "uid": "${ds}"
+        },
+        "query": "values(/metrics/system, device_name)",
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": "",
+        "multi": false,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "hide": 0
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 100,
+      "type": "row",
+      "title": "Device Reachability & Health",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "panels": []
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Devices Reporting",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 0,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "count"
+          ],
+          "fields": "/.*/",
+          "values": false
+        },
+        "graphMode": "none",
+        "colorMode": "value",
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/system",
+          "metrics": [
+            "rtt-avg"
+          ],
+          "dimensions": [
+            "device_name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 500,
+          "format": "table",
+          "rollups": [
+            {
+              "metric": "rtt-avg",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Avg RTT",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 5,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "\u00b5s",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 50000,
+                "color": "yellow"
+              },
+              {
+                "value": 150000,
+                "color": "red"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/system",
+          "metrics": [
+            "rtt-avg"
+          ],
+          "dimensions": [],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 1,
+          "rollups": [
+            {
+              "metric": "rtt-avg",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Packet Loss",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 10,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 1,
+                "color": "yellow"
+              },
+              {
+                "value": 5,
+                "color": "red"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/system",
+          "metrics": [
+            "loss"
+          ],
+          "dimensions": [],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 1,
+          "rollups": [
+            {
+              "metric": "loss",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Round-Trip Time by Device",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 14,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "\u00b5s",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 8,
+            "showPoints": "never",
+            "lineWidth": 2
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/system",
+          "metrics": [
+            "rtt-avg"
+          ],
+          "dimensions": [
+            "device_name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 15,
+          "aliasBy": "{{device_name}}",
+          "rollups": [
+            {
+              "metric": "rtt-avg",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "Device Reachability (avg RTT)",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 14,
+        "x": 0,
+        "y": 6
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Avg RTT"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "\u00b5s"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 50000,
+                      "color": "yellow"
+                    },
+                    {
+                      "value": 150000,
+                      "color": "red"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Avg RTT",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "device_name": "Device",
+              "rtt-avg": "Avg RTT"
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/system",
+          "metrics": [
+            "rtt-avg"
+          ],
+          "dimensions": [
+            "device_name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 50,
+          "format": "table",
+          "rollups": [
+            {
+              "metric": "rtt-avg",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 200,
+      "type": "row",
+      "title": "CPU & Memory",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "panels": []
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "CPU Utilization by Device",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 0,
+        "y": 15
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "lineWidth": 2
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "yellow"
+              },
+              {
+                "value": 90,
+                "color": "red"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/components/cpu/utilization",
+          "metrics": [
+            "instant"
+          ],
+          "dimensions": [
+            "device_name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 15,
+          "aliasBy": "{{device_name}}",
+          "rollups": [
+            {
+              "metric": "instant",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Memory Utilization by Device",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 8,
+        "y": 15
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "lineWidth": 2
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "yellow"
+              },
+              {
+                "value": 90,
+                "color": "red"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/components/memory",
+          "metrics": [
+            "utilization"
+          ],
+          "dimensions": [
+            "device_name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 15,
+          "aliasBy": "{{device_name}}",
+          "rollups": [
+            {
+              "metric": "utilization",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "System Memory Used",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 15
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "lineWidth": 2
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/system/memory",
+          "metrics": [
+            "used"
+          ],
+          "dimensions": [
+            "device_name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 15,
+          "aliasBy": "{{device_name}}",
+          "rollups": [
+            {
+              "metric": "used",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 300,
+      "type": "row",
+      "title": "Storage",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "panels": []
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Storage Utilization by Device",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 25
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "lineWidth": 2
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "yellow"
+              },
+              {
+                "value": 90,
+                "color": "red"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/system/storage",
+          "metrics": [
+            "utilization"
+          ],
+          "dimensions": [
+            "device_name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 15,
+          "aliasBy": "{{device_name}}",
+          "rollups": [
+            {
+              "metric": "utilization",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "table",
+      "title": "Storage Free vs Used",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 25
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Free"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Used"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "device_name": "Device",
+              "free": "Free",
+              "used": "Used",
+              "size": "Total"
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/system/storage",
+          "metrics": [
+            "free",
+            "used",
+            "size"
+          ],
+          "dimensions": [
+            "device_name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 50,
+          "format": "table",
+          "rollups": [
+            {
+              "metric": "free",
+              "fn": "avg"
+            },
+            {
+              "metric": "used",
+              "fn": "avg"
+            },
+            {
+              "metric": "size",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 400,
+      "type": "row",
+      "title": "Environment (Temperature, Power & Optics)",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 34
+      },
+      "panels": []
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Component Temperature",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 0,
+        "y": 35
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 8,
+            "showPoints": "never",
+            "lineWidth": 2
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 60,
+                "color": "yellow"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/components/temperature",
+          "metrics": [
+            "instant"
+          ],
+          "dimensions": [
+            "device_name",
+            "name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 15,
+          "aliasBy": "{{device_name}} {{name}}",
+          "rollups": [
+            {
+              "metric": "instant",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Power Supply: Input Power",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 8,
+        "y": 35
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "watt",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 8,
+            "showPoints": "never",
+            "lineWidth": 2
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/components/power-supply",
+          "metrics": [
+            "input-power"
+          ],
+          "dimensions": [
+            "device_name",
+            "name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 15,
+          "aliasBy": "{{device_name}} {{name}}",
+          "rollups": [
+            {
+              "metric": "input-power",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "Optics: Transceiver Optical Power",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 35
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dBm",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 8,
+            "showPoints": "never",
+            "lineWidth": 2
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "min"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/interfaces/transceiver",
+          "metrics": [
+            "input-power",
+            "output-power"
+          ],
+          "dimensions": [
+            "device_name",
+            "name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 12,
+          "aliasBy": "{{device_name}} {{name}}",
+          "rollups": [
+            {
+              "metric": "input-power",
+              "fn": "avg"
+            },
+            {
+              "metric": "output-power",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 500,
+      "type": "row",
+      "title": "Interfaces (NMS counters)",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 44
+      },
+      "panels": []
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Interface In/Out Bit Rate (top interfaces)",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 45
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "lineWidth": 2
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/interfaces/counters",
+          "metrics": [
+            "in-bit-rate",
+            "out-bit-rate"
+          ],
+          "dimensions": [
+            "device_name",
+            "name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 10,
+          "aliasBy": "{{device_name}} {{name}}",
+          "rollups": [
+            {
+              "metric": "in-bit-rate",
+              "fn": "avg"
+            },
+            {
+              "metric": "out-bit-rate",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "Interface Utilization In/Out",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 45
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "lineWidth": 2
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 70,
+                "color": "yellow"
+              },
+              {
+                "value": 90,
+                "color": "red"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/interfaces/counters",
+          "metrics": [
+            "in-utilization",
+            "out-utilization"
+          ],
+          "dimensions": [
+            "device_name",
+            "name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 10,
+          "aliasBy": "{{device_name}} {{name}}",
+          "rollups": [
+            {
+              "metric": "in-utilization",
+              "fn": "avg"
+            },
+            {
+              "metric": "out-utilization",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "type": "table",
+      "title": "Interface Errors & Discards (NMS)",
+      "datasource": {
+        "type": "kentik-connect-datasource",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "In Errors"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 1,
+                      "color": "red"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Out Errors"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 1,
+                      "color": "red"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "In Discards"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 1,
+                      "color": "yellow"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Out Discards"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 1,
+                      "color": "yellow"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "In Errors",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "device_name": "Device",
+              "name": "Interface",
+              "in-errors": "In Errors",
+              "out-errors": "Out Errors",
+              "in-discards": "In Discards",
+              "out-discards": "Out Discards"
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "kentik-connect-datasource",
+            "uid": "${ds}"
+          },
+          "queryType": "ude",
+          "measurement": "/metrics/interfaces/counters",
+          "metrics": [
+            "in-errors",
+            "out-errors",
+            "in-discards",
+            "out-discards"
+          ],
+          "dimensions": [
+            "device_name",
+            "name"
+          ],
+          "filterGroups": [
+            {
+              "connector": "All",
+              "not": false,
+              "filters": [
+                {
+                  "filter_field": "device_name",
+                  "operator": "=",
+                  "filter_value": "$device"
+                }
+              ]
+            }
+          ],
+          "filterConnector": "All",
+          "vizType": 3,
+          "limit": 100,
+          "format": "table",
+          "rollups": [
+            {
+              "metric": "in-errors",
+              "fn": "avg"
+            },
+            {
+              "metric": "out-errors",
+              "fn": "avg"
+            },
+            {
+              "metric": "in-discards",
+              "fn": "avg"
+            },
+            {
+              "metric": "out-discards",
+              "fn": "avg"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
