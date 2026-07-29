@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## 3.0.0 (unreleased)
 
+**Plugin submission hardening:**
+
+- Use `crypto/rand` (not `math/rand`) for retry-backoff jitter and request-id
+  generation, resolving gosec **G404** (weak random number generator).
+- Grafana Go SDK (`grafana-plugin-sdk-go`) pinned to v0.294.0.
+- Release artifacts carry build-provenance attestation
+  (`actions/attest-build-provenance`).
+
 **Features:**
 
 - Converted the plugin to a **backend datasource** (Go). Query execution, result

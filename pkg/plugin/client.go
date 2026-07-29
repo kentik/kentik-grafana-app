@@ -3,9 +3,10 @@ package plugin
 import (
 	"bytes"
 	"context"
+	crand "crypto/rand"
 	"fmt"
 	"io"
-	"math/rand"
+	"math/big"
 	"net/http"
 	"strconv"
 	"sync"
@@ -130,6 +131,21 @@ func (c *kentikClient) doRequest(ctx context.Context, method, path string, body 
 	return nil, 0, lastErr
 }
 
+// cryptoRandInt63n returns a uniform random int64 in [0, n) using crypto/rand.
+// Used for retry jitter and request-id generation so the codebase avoids the
+// weak math/rand generator (gosec G404). On the practically impossible error
+// path it returns 0, which degrades gracefully without panicking.
+func cryptoRandInt63n(n int64) int64 {
+	if n <= 0 {
+		return 0
+	}
+	v, err := crand.Int(crand.Reader, big.NewInt(n))
+	if err != nil {
+		return 0
+	}
+	return v.Int64()
+}
+
 // backoffDelay returns the wait before the given attempt, honoring an explicit
 // Retry-After hint when present, otherwise exponential backoff with jitter.
 func backoffDelay(attempt int, retryAfter time.Duration) time.Duration {
@@ -144,7 +160,7 @@ func backoffDelay(attempt int, retryAfter time.Duration) time.Duration {
 		delay = maxBackoff
 	}
 	// Full jitter to avoid synchronized retries.
-	return time.Duration(rand.Int63n(int64(delay) + 1))
+	return time.Duration(cryptoRandInt63n(int64(delay) + 1))
 }
 
 // parseRetryAfter parses the delay-seconds form of a Retry-After header. The

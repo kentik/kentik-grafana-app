@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -587,5 +586,5 @@ func statusFromHTTP(httpStatus int) backend.Status {
 
 // randHex returns a single random nibble (0-15) for request-id generation.
 func randHex() int64 {
-	return int64(rand.Intn(16))
+	return cryptoRandInt63n(16)
 }
