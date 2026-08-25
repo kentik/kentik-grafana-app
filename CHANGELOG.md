@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## 3.0.0 (unreleased)
+## 3.0.0
 
 **Plugin submission hardening:**
 
@@ -66,15 +66,15 @@ All notable changes to this project will be documented in this file.
 **Known limitations / planned follow-ups:**
 
 - [ ] Remove the legacy v2 query shim after one release cycle (once users have
-  migrated their panels to the new UDE format).
+      migrated their panels to the new UDE format).
 - [ ] Deep-link to Kentik Data Explorer with full query state (currently links to
-  the base Explorer URL; requires API team to provide a URL-builder endpoint or
-  document the query-hash format).
+      the base Explorer URL; requires API team to provide a URL-builder endpoint or
+      document the query-hash format).
 - [ ] EVENTS family support (`/events`, SNMP Traps, Syslog) — these measurements
-  are not served by the Query/execute API despite appearing in the dictionary;
-  needs a different API path from the Kentik backend team.
+      are not served by the Query/execute API despite appearing in the dictionary;
+      needs a different API path from the Kentik backend team.
 - [ ] Auto-populate the UDE editor when editing a legacy-shimmed panel (currently
-  shows blank fields; user must reconfigure manually).
+      shows blank fields; user must reconfigure manually).
 - [ ] E2E Playwright tests covering real backend query execution.
 
 ## 2.0.1 (2026-04-09)
