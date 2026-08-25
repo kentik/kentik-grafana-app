@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.0.1
+
+**Security / dependency fixes:**
+
+- Resolve high-severity npm CVEs: `fast-uri` (CVE-2026-18446), `js-yaml`,
+  `nanoid` (CVE-2026-67213).
+- Corrected changelog metadata (removed erroneous "unreleased" tag from 3.0.0).
+
 ## 3.0.0
 
 **Plugin submission hardening:**
