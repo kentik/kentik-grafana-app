@@ -17,7 +17,8 @@
     "lint:fix": "npm run lint -- --fix && prettier --write --list-different .",
     "e2e": "playwright test",
     "server": "docker compose up --build",
-    "sign": "npx --yes @grafana/sign-plugin@latest"
+    "sign": "npx --yes @grafana/sign-plugin@latest",
+    "security": "(npm audit --audit-level=high --omit=dev || echo 'WARN: npm audit found issues') && govulncheck ./..."
   },
   "author": "Kentik",
   "license": "Apache-2.0",
