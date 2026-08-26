@@ -1,6 +1,6 @@
 module github.com/kentik/kentik-connect-datasource
 
-go 1.26.5
+go 1.27.0
 
 require github.com/grafana/grafana-plugin-sdk-go v0.294.0
 

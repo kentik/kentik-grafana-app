@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.0.2
+
+**Security / toolchain:**
+
+- Upgrade Go toolchain to 1.27.0, resolving 8 govulncheck findings
+  (GO-2026-5026, GO-2026-5942, GO-2026-5972, GO-2026-6088, GO-2026-6089,
+  GO-2026-6090, GO-2026-6091, GO-2026-6218).
+
 ## 3.0.1
 
 **Security / dependency fixes:**
