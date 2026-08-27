@@ -1,6 +1,6 @@
 {
   "name": "kentik-datasource",
-  "version": "3.0.2",
+  "version": "3.0.1",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "build:backend": "mage -v build:linux build:linuxARM64",
