@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## 3.0.1
 
+**Performance:**
+
+- Coalesce duplicate panel queries: dashboards with many panels (or multiple
+  users loading the same dashboard concurrently) previously fired one upstream
+  Kentik API call per panel per user, which could hit Kentik API rate limits
+  and cause timeouts on panel-heavy dashboards. Identical concurrent/
+  near-concurrent queries now share a single upstream call.
+
 **Security / dependency fixes:**
 
 - Upgrade Go toolchain to 1.27.0, resolving 8 govulncheck findings
