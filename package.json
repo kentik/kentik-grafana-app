@@ -79,7 +79,9 @@
     "postcss": "^8.5.25",
     "websocket-driver": "^0.7.5",
     "js-yaml": "^5.4.0",
-    "nanoid": "^5.1.16"
+    "nanoid": "^5.1.16",
+    "browserslist": "^4.28.9",
+    "@humanfs/node": "^0.16.8"
   },
   "dependencies": {
     "@emotion/css": "11.10.6",
