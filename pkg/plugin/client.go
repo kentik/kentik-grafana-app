@@ -4,14 +4,21 @@ import (
 	"bytes"
 	"context"
 	crand "crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"math/big"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
+	"golang.org/x/sync/singleflight"
 )
 
 // Kentik API paths (relative to the v6 base URL).
@@ -22,6 +29,27 @@ const (
 )
 
 const dictionaryTTL = 5 * time.Minute
+
+// queryCacheTTL bounds how long an identical query result is reused. This
+// coalesces duplicate upstream calls when multiple panels or multiple users
+// issue the same query within a short window (e.g. several people opening the
+// same dashboard around the same time), which otherwise multiplies load
+// against the Kentik API's rate limits on panel-heavy dashboards.
+//
+// This also applies to Grafana Alerting evaluations (plugin.json declares
+// "alerting": true), which run through the same execute() path as panel
+// queries: an alert rule could observe a value up to queryCacheTTL old rather
+// than a fully fresh evaluation. This is an accepted, bounded tradeoff — typical
+// alert evaluation intervals are far longer than this window — rather than an
+// oversight.
+const queryCacheTTL = 5 * time.Second
+
+// queryCacheSweepThreshold bounds how often storeCachedQuery scans the whole
+// map for expired entries: only once the map has grown past this size, rather
+// than on every single insert. Reads already ignore expired entries on their
+// own (see cachedQuery), so this is purely about bounding memory growth
+// without paying an O(n) scan under the lock on every successful query.
+const queryCacheSweepThreshold = 64
 
 // PluginVersion is set at link time via -ldflags by the Mage build
 // (-X 'main.version=...'). It is forwarded from main.go into the
@@ -45,6 +73,25 @@ type kentikClient struct {
 	dictMu   sync.Mutex
 	dictData []byte
 	dictTime time.Time
+
+	// queryGroup coalesces concurrent identical execute() calls into a single
+	// upstream request; queryCache additionally serves recently-completed
+	// results so back-to-back identical calls within queryCacheTTL don't
+	// re-hit the Kentik API.
+	queryGroup   singleflight.Group
+	queryCacheMu sync.Mutex
+	queryCache   map[string]cachedQuery
+
+	// disableQueryDedup bypasses queryGroup/queryCache entirely when set (via
+	// KENTIK_DISABLE_QUERY_DEDUP), restoring the pre-dedup one-request-per-call
+	// behavior without requiring a plugin rollback.
+	disableQueryDedup bool
+}
+
+type cachedQuery struct {
+	data   []byte
+	status int
+	time   time.Time
 }
 
 // newKentikClient builds a client around the provided HTTP client. The caller
@@ -54,6 +101,9 @@ func newKentikClient(settings dsSettings, httpClient *http.Client) *kentikClient
 	return &kentikClient{
 		settings: settings,
 		http:     httpClient,
+		// Escape hatch: unset by default. Lets an operator disable query
+		// coalescing/caching without a plugin rollback if it ever misbehaves.
+		disableQueryDedup: os.Getenv("KENTIK_DISABLE_QUERY_DEDUP") != "",
 	}
 }
 
@@ -214,9 +264,106 @@ func (c *kentikClient) getSites(ctx context.Context) (int, []byte, error) {
 	return status, data, err
 }
 
-// execute runs a UDE query via the Query API.
+// execute runs a UDE query via the Query API. Identical concurrent or
+// near-concurrent calls (same *query*, ignoring the per-call request_id nonce —
+// see queryCacheKey) are coalesced via queryGroup and queryCache.
+//
+// The shared upstream call is detached from any single caller's context
+// (context.WithoutCancel) so one caller giving up doesn't abort the request
+// for every other caller coalesced onto the same key; c.http's own configured
+// timeout still bounds its worst-case duration. Each individual caller
+// (leader or follower) still honors its own ctx while *waiting* for the
+// result, via the select below.
 func (c *kentikClient) execute(ctx context.Context, payload []byte) ([]byte, int, error) {
-	return c.doRequest(ctx, http.MethodPost, pathQuery, payload)
+	if c.disableQueryDedup {
+		return c.doRequest(ctx, http.MethodPost, pathQuery, payload)
+	}
+
+	key := queryCacheKey(payload)
+
+	if data, status, ok := c.cachedQuery(key); ok {
+		log.DefaultLogger.Debug("kentik query cache hit", "key", key[:12])
+		return data, status, nil
+	}
+
+	resultCh := c.queryGroup.DoChan(key, func() (interface{}, error) {
+		data, status, err := c.doRequest(context.WithoutCancel(ctx), http.MethodPost, pathQuery, payload)
+		if err != nil {
+			return nil, err
+		}
+		// Only cache well-formed 200 responses — a malformed/truncated body
+		// (proxy hiccup, partial write) must not be replayed to every caller
+		// sharing this key for the rest of the TTL window.
+		if status == http.StatusOK && json.Valid(data) {
+			c.storeCachedQuery(key, data, status)
+		}
+		return cachedQuery{data: data, status: status}, nil
+	})
+
+	select {
+	case res := <-resultCh:
+		if res.Err != nil {
+			return nil, 0, res.Err
+		}
+		if res.Shared {
+			log.DefaultLogger.Debug("kentik query coalesced with an in-flight identical query", "key", key[:12])
+		}
+		result := res.Val.(cachedQuery)
+		return result.data, result.status, nil
+	case <-ctx.Done():
+		// This caller gave up; the shared call (detached from this ctx above)
+		// keeps running for any other caller still waiting on the same key.
+		return nil, 0, ctx.Err()
+	}
+}
+
+// queryCacheKey derives a cache/coalescing key from the semantically
+// meaningful part of the request — the "query" field — deliberately excluding
+// request_id and application_metadata. buildExecuteRequest stamps every
+// payload with a fresh crypto/rand request_id, so hashing the full payload
+// would mean no two calls ever produce the same key, even for the identical
+// query issued by two concurrent users: the coalescing above would never
+// engage. Falls back to hashing the full payload if it doesn't have the
+// expected shape (defensive; should not happen given the current callers).
+func queryCacheKey(payload []byte) string {
+	var envelope struct {
+		Query json.RawMessage `json:"query"`
+	}
+	keyed := payload
+	if err := json.Unmarshal(payload, &envelope); err == nil && len(envelope.Query) > 0 {
+		keyed = envelope.Query
+	}
+	sum := sha256.Sum256(keyed)
+	return hex.EncodeToString(sum[:])
+}
+
+func (c *kentikClient) cachedQuery(key string) ([]byte, int, bool) {
+	c.queryCacheMu.Lock()
+	defer c.queryCacheMu.Unlock()
+	entry, ok := c.queryCache[key]
+	if !ok || time.Since(entry.time) >= queryCacheTTL {
+		return nil, 0, false
+	}
+	return entry.data, entry.status, true
+}
+
+func (c *kentikClient) storeCachedQuery(key string, data []byte, status int) {
+	c.queryCacheMu.Lock()
+	defer c.queryCacheMu.Unlock()
+	if c.queryCache == nil {
+		c.queryCache = make(map[string]cachedQuery)
+	}
+	c.queryCache[key] = cachedQuery{data: data, status: status, time: time.Now()}
+	// Only sweep once the map has grown past the threshold, rather than on
+	// every insert, so a busy instance doesn't pay an O(n) scan under the lock
+	// on every successful query.
+	if len(c.queryCache) > queryCacheSweepThreshold {
+		for k, v := range c.queryCache {
+			if time.Since(v.time) >= queryCacheTTL {
+				delete(c.queryCache, k)
+			}
+		}
+	}
 }
 
 // getDictionary returns the raw dictionary JSON, serving from cache when fresh.

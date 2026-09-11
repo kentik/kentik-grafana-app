@@ -44,6 +44,9 @@ jobs:
       - name: Build backend (all platforms)
         run: mage -v buildAll
 
+      - name: Test backend
+        run: go test ./... -race
+
       - name: npm audit (high + critical)
         run: npm audit --audit-level=high --omit=dev || echo "::warning::npm audit found issues (may be unfixable @grafana/* transitive deps)"
 
