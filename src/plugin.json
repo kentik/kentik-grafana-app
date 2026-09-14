@@ -37,6 +37,10 @@
         "url": "https://kb.kentik.com/docs/apis-overview"
       },
       {
+        "name": "Repository",
+        "url": "https://github.com/kentik/kentik-grafana-app"
+      },
+      {
         "name": "sponsor",
         "url": "https://www.kentik.com/get-started/"
       }

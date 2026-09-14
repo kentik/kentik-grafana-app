@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -361,17 +360,30 @@ func (d *Datasource) CheckHealth(ctx context.Context, _ *backend.CheckHealthRequ
 		}, nil
 	}
 
-	// Credentials are valid. Enrich the message with region and measurement
-	// count from the dictionary (best-effort — a failure here does not fail the
-	// health check, since the connection itself is already confirmed).
+	// Credentials are valid: the Site API is reachable and authenticated. The
+	// plugin also requires the UDE Dictionary API to enumerate measurements and
+	// run queries, and that API is versioned independently of the Site API.
+	// Validate it here so that a decommissioned or unavailable Dictionary/Query
+	// API version surfaces as a clear health error instead of silently breaking
+	// every panel while the health check still reports "Connected" (which only
+	// proves the Site API works). A failure here does not mean the credentials
+	// are bad — it means the query path is not usable.
 	region := regionLabel(d.client.settings)
-	if dict, derr := d.client.getDictionary(ctx); derr == nil {
-		if count := countMeasurements(dict); count > 0 {
-			return &backend.CheckHealthResult{
-				Status:  backend.HealthStatusOk,
-				Message: fmt.Sprintf("Connected to Kentik (%s). %d measurements available.", region, count),
-			}, nil
-		}
+	dict, derr := d.client.getDictionary(ctx)
+	if derr != nil {
+		log.DefaultLogger.Error("health check: dictionary/query API not usable", "error", derr)
+		return &backend.CheckHealthResult{
+			Status: backend.HealthStatusError,
+			Message: fmt.Sprintf(
+				"Credentials are valid (Kentik Site API reachable), but the UDE Dictionary/Query API is not usable, so queries will fail. This usually means the configured API version is unavailable. Details: %v",
+				derr),
+		}, nil
+	}
+	if count := countMeasurements(dict); count > 0 {
+		return &backend.CheckHealthResult{
+			Status:  backend.HealthStatusOk,
+			Message: fmt.Sprintf("Connected to Kentik (%s). %d measurements available.", region, count),
+		}, nil
 	}
 
 	return &backend.CheckHealthResult{
@@ -587,5 +599,5 @@ func statusFromHTTP(httpStatus int) backend.Status {
 
 // randHex returns a single random nibble (0-15) for request-id generation.
 func randHex() int64 {
-	return int64(rand.Intn(16))
+	return cryptoRandInt63n(16)
 }

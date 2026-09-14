@@ -60,6 +60,7 @@ tmp/
 !.gitignore
 !.github/
 !.config/
+!.githooks/
 !.prettierrc*
 !.nvmrc
 !.cprc.json

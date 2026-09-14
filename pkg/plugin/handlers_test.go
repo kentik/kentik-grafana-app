@@ -84,6 +84,39 @@ func TestCheckHealthRejected(t *testing.T) {
 	}
 }
 
+// TestCheckHealthDictionaryUnavailable covers the case where credentials are
+// valid (Site API returns 200) but the UDE Dictionary/Query API version is
+// decommissioned or otherwise unavailable (e.g. HTTP 501). The health check
+// must surface an error rather than reporting "Connected", since queries cannot
+// work in that state.
+func TestCheckHealthDictionaryUnavailable(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case pathSite:
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"sites":[{"id":"1"}]}`))
+		case pathDictionary:
+			w.WriteHeader(http.StatusNotImplemented)
+			_, _ = w.Write([]byte(`{"code":12,"message":"The server does not implement the method"}`))
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer srv.Close()
+
+	ds := newTestDatasource(srv.URL, "me@example.com", "tok")
+	res, err := ds.CheckHealth(context.Background(), &backend.CheckHealthRequest{})
+	if err != nil {
+		t.Fatalf("CheckHealth error: %v", err)
+	}
+	if res.Status != backend.HealthStatusError {
+		t.Errorf("status = %v, want Error (%q)", res.Status, res.Message)
+	}
+	if !strings.Contains(res.Message, "Credentials are valid") {
+		t.Errorf("message = %q, want it to explain credentials are valid but the API is unusable", res.Message)
+	}
+}
+
 // ── CallResource: dictionary ─────────────────────────────────────────────────
 
 type fakeSender struct{ resp *backend.CallResourceResponse }

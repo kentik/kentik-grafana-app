@@ -394,6 +394,29 @@ func TestBaseURL(t *testing.T) {
 	}
 }
 
+func TestValidateAPIURL(t *testing.T) {
+	cases := []struct {
+		raw     string
+		wantErr bool
+	}{
+		{"https://grpc.api.kentik.com/query/v1/execute", false},
+		{"https://grpc.api.kentik.eu/site/v1/sites", false},
+		{"http://127.0.0.1:8080/dictionary", false},       // loopback (tests / on-prem)
+		{"file:///etc/passwd", true},                      // dangerous scheme
+		{"gopher://internal/", true},                      // dangerous scheme
+		{"ftp://host/x", true},                            // dangerous scheme
+		{"https:///no-host", true},                        // missing host
+		{"https://user:pass@grpc.api.kentik.com/x", true}, // embedded credentials
+		{"://broken", true},                               // unparseable
+	}
+	for _, c := range cases {
+		err := validateAPIURL(c.raw)
+		if (err != nil) != c.wantErr {
+			t.Errorf("validateAPIURL(%q) error = %v, wantErr %v", c.raw, err, c.wantErr)
+		}
+	}
+}
+
 func TestPortalURL(t *testing.T) {
 	cases := []struct {
 		settings dsSettings

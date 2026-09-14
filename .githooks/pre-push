@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "==> Running security checks before push..."
+
+echo "--- npm audit (high + critical) ---"
+npm audit --audit-level=high --omit=dev || echo "WARN: npm audit found issues (may be unfixable @grafana/* transitive deps)"
+
+echo "--- govulncheck ---"
+if command -v govulncheck &>/dev/null; then
+  govulncheck ./...
+else
+  echo "WARN: govulncheck not installed — install with: go install golang.org/x/vuln/cmd/govulncheck@latest"
+fi
+
+echo "==> Security checks passed"

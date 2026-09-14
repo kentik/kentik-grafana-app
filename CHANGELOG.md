@@ -2,7 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
-## 3.0.0 (unreleased)
+## 3.0.1
+
+**Performance:**
+
+- Coalesce duplicate panel queries: dashboards with many panels (or multiple
+  users loading the same dashboard concurrently) previously fired one upstream
+  Kentik API call per panel per user, which could hit Kentik API rate limits
+  and cause timeouts on panel-heavy dashboards. Identical concurrent/
+  near-concurrent queries now share a single upstream call.
+
+**Security / dependency fixes:**
+
+- Resolve high-severity CVEs flagged by the Grafana plugin validator's
+  osv-scanner: `google.golang.org/grpc` (CVE-2026-84445, CVE-2026-84304),
+  `browserslist` (CVE-2026-73088, CVE-2026-73089).
+- Upgrade Go toolchain to 1.27.0, resolving 8 govulncheck findings
+  (GO-2026-5026, GO-2026-5942, GO-2026-5972, GO-2026-6088, GO-2026-6089,
+  GO-2026-6090, GO-2026-6091, GO-2026-6218).
+- Resolve high-severity npm CVEs: `fast-uri` (CVE-2026-18446), `js-yaml`,
+  `nanoid` (CVE-2026-67213).
+- Corrected changelog metadata (removed erroneous "unreleased" tag from 3.0.0).
+- Added `npm audit` and `govulncheck` to CI and pre-push hook.
+
+## 3.0.0
+
+**Plugin submission hardening:**
+
+- Use `crypto/rand` (not `math/rand`) for retry-backoff jitter and request-id
+  generation, resolving gosec **G404** (weak random number generator).
+- Grafana Go SDK (`grafana-plugin-sdk-go`) pinned to v0.294.0.
+- Release artifacts carry build-provenance attestation
+  (`actions/attest-build-provenance`).
 
 **Features:**
 
@@ -58,15 +89,15 @@ All notable changes to this project will be documented in this file.
 **Known limitations / planned follow-ups:**
 
 - [ ] Remove the legacy v2 query shim after one release cycle (once users have
-  migrated their panels to the new UDE format).
+      migrated their panels to the new UDE format).
 - [ ] Deep-link to Kentik Data Explorer with full query state (currently links to
-  the base Explorer URL; requires API team to provide a URL-builder endpoint or
-  document the query-hash format).
+      the base Explorer URL; requires API team to provide a URL-builder endpoint or
+      document the query-hash format).
 - [ ] EVENTS family support (`/events`, SNMP Traps, Syslog) — these measurements
-  are not served by the Query/execute API despite appearing in the dictionary;
-  needs a different API path from the Kentik backend team.
+      are not served by the Query/execute API despite appearing in the dictionary;
+      needs a different API path from the Kentik backend team.
 - [ ] Auto-populate the UDE editor when editing a legacy-shimmed panel (currently
-  shows blank fields; user must reconfigure manually).
+      shows blank fields; user must reconfigure manually).
 - [ ] E2E Playwright tests covering real backend query execution.
 
 ## 2.0.1 (2026-04-09)
