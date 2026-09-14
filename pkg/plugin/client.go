@@ -34,7 +34,9 @@ const dictionaryTTL = 5 * time.Minute
 // coalesces duplicate upstream calls when multiple panels or multiple users
 // issue the same query within a short window (e.g. several people opening the
 // same dashboard around the same time), which otherwise multiplies load
-// against the Kentik API's rate limits on panel-heavy dashboards.
+// against the Kentik API's rate limits on panel-heavy dashboards. 30s is well
+// under the typical 1-minute query window/granularity, so it doesn't mask
+// meaningful data changes.
 //
 // This also applies to Grafana Alerting evaluations (plugin.json declares
 // "alerting": true), which run through the same execute() path as panel
@@ -42,7 +44,7 @@ const dictionaryTTL = 5 * time.Minute
 // than a fully fresh evaluation. This is an accepted, bounded tradeoff — typical
 // alert evaluation intervals are far longer than this window — rather than an
 // oversight.
-const queryCacheTTL = 5 * time.Second
+const queryCacheTTL = 30 * time.Second
 
 // queryCacheSweepThreshold bounds how often storeCachedQuery scans the whole
 // map for expired entries: only once the map has grown past this size, rather

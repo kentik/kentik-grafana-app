@@ -183,6 +183,8 @@ func TestExecuteCoalescesRealBuildExecuteRequestPayloads(t *testing.T) {
 
 // TestExecuteTTLExpiryRefetches proves a cached result is not served forever:
 // after queryCacheTTL elapses, an identical call must reach upstream again.
+// The cache entry's timestamp is backdated directly (rather than sleeping for
+// the real queryCacheTTL) to keep this test fast regardless of the TTL value.
 func TestExecuteTTLExpiryRefetches(t *testing.T) {
 	var calls int32
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -199,7 +201,12 @@ func TestExecuteTTLExpiryRefetches(t *testing.T) {
 		t.Fatalf("first execute() error: %v", err)
 	}
 
-	time.Sleep(queryCacheTTL + 50*time.Millisecond)
+	key := queryCacheKey(payload)
+	c.queryCacheMu.Lock()
+	entry := c.queryCache[key]
+	entry.time = time.Now().Add(-(queryCacheTTL + time.Millisecond))
+	c.queryCache[key] = entry
+	c.queryCacheMu.Unlock()
 
 	if _, _, err := c.execute(context.Background(), payload); err != nil {
 		t.Fatalf("second execute() error: %v", err)
