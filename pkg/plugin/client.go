@@ -12,7 +12,6 @@ import (
 	"math/big"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -83,11 +82,6 @@ type kentikClient struct {
 	queryGroup   singleflight.Group
 	queryCacheMu sync.Mutex
 	queryCache   map[string]cachedQuery
-
-	// disableQueryDedup bypasses queryGroup/queryCache entirely when set (via
-	// KENTIK_DISABLE_QUERY_DEDUP), restoring the pre-dedup one-request-per-call
-	// behavior without requiring a plugin rollback.
-	disableQueryDedup bool
 }
 
 type cachedQuery struct {
@@ -103,9 +97,6 @@ func newKentikClient(settings dsSettings, httpClient *http.Client) *kentikClient
 	return &kentikClient{
 		settings: settings,
 		http:     httpClient,
-		// Escape hatch: unset by default. Lets an operator disable query
-		// coalescing/caching without a plugin rollback if it ever misbehaves.
-		disableQueryDedup: os.Getenv("KENTIK_DISABLE_QUERY_DEDUP") != "",
 	}
 }
 
@@ -277,10 +268,6 @@ func (c *kentikClient) getSites(ctx context.Context) (int, []byte, error) {
 // (leader or follower) still honors its own ctx while *waiting* for the
 // result, via the select below.
 func (c *kentikClient) execute(ctx context.Context, payload []byte) ([]byte, int, error) {
-	if c.disableQueryDedup {
-		return c.doRequest(ctx, http.MethodPost, pathQuery, payload)
-	}
-
 	key := queryCacheKey(payload)
 
 	if data, status, ok := c.cachedQuery(key); ok {
